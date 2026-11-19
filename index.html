@@ -128,6 +128,8 @@ input{font:inherit;user-select:text;-webkit-user-select:text}
 .bottle .lb{position:absolute;left:9px;right:5px;top:46%;height:22px;background:#fff;border:1px solid #c9d3d7;border-radius:3px;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;z-index:2;opacity:.92}
 .bottle .mk{z-index:4}
 .step .ic{flex:none;font-size:20px}
+.step .dn{margin-left:auto;flex:none;color:var(--teal-d);font-size:12px;font-weight:800}
+.step small{font-weight:600;color:#3c5960}
 .incub2{background:linear-gradient(#f6f9fa,#dbe5e8);border:4px solid #8fa3a9;border-radius:16px;padding:10px 12px 14px;margin:12px 0;position:relative}
 .incub2 .disp{background:#17323a;color:#7ff0b8;font-family:monospace;font-weight:700;font-size:15px;border-radius:8px;padding:5px 12px;display:inline-block;margin-bottom:10px}
 .incub2 .shelf{display:flex;justify-content:center;gap:10px;padding:10px 0 8px;border-bottom:5px solid #a9bcc1;background:rgba(255,214,140,.22);border-radius:8px 8px 0 0}
@@ -385,9 +387,9 @@ const P={ npc:[-3,-8], bridge:[130,ROAD_Z], door:[28,-8.6], board:[8,-13], info:
 /* ───────── 게임 상태 ───────── */
 const G={ name:'', step:0, driving:false, yaw:0, lock:true, waitLeft:0,
   score:{equip:0,depth:0,bottle:0,order:0,grade:0}, bod:0, receipt:'',
-  air:{equip:0,haul:0,gauge:0,filter:0,weigh:0,judge:0}, dust:0 };
+  air:{equip:0,haul:0,gauge:0,filter:0,weigh:0,judge:0}, dust:0, done:{w:false,a:false} };
 const STEPS=[
-  {t:'선배 연구원에게 가서 임무를 받으세요', at:()=>P.npc},
+  {t:'선배 연구원에게 가서 임무를 고르세요', at:()=>P.npc},
   {t:'도로에 세워 둔 수질 채수차량에 타세요', at:()=>[car.position.x,car.position.z]},
   {t:'차를 몰고 동쪽 강의 다리로! 가는 길에 장비 3개를 챙기세요', at:()=>P.bridge},
   {t:'다리 위에서 강물을 채취하세요', at:()=>P.bridge},
@@ -405,7 +407,8 @@ const STEPS=[
   {t:'본관 앞 게시판에 결과를 보고하세요', at:()=>P.board},
   {t:'수질·대기 임무 완료! 마을을 자유롭게 둘러보세요', at:()=>null},
 ];
-function setStep(n){ G.step=n; $('#qno').textContent=n>=16?'완료':n<8?`수질 ${n+1}/8`:`대기 ${n-7}/8`; $('#qtx').textContent=STEPS[n].t;
+function setStep(n){ G.step=n; const all=G.done.w&&G.done.a; $('#qno').textContent=n===0?(all?'완료':'임무 선택'):n<8?`수질 ${n}/7`:`대기 ${n-8}/7`;
+  $('#qtx').textContent=n===0&&all?'모든 임무 완료! 다시 하려면 선배 연구원에게 가세요':n===0&&(G.done.w||G.done.a)?'선배 연구원에게 가서 다음 임무를 고르세요':STEPS[n].t;
   drawChips(); $('#timer').style.display=(n===5||n===13)?'flex':'none'; }
 
 /* ───────── UI 도우미 ───────── */
@@ -544,7 +547,7 @@ function reportGame(grade){
     <div class="cert"><small>${CONFIG.ORG}</small><b>환경 지킴이 연구원</b>${G.name} 연구원<br><small>하천수 BOD ${G.bod.toFixed(1)} mg/L · ${grade}</small></div>
     <div class="fact"><b>알고 계셨나요?</b><br>실제 BOD 검사는 20℃에서 5일 동안 배양해야 결과가 나와요. 연구원은 이렇게 강물의 건강을 꾸준히 살펴요.</div>
     <button class="go" id="ok">마을 둘러보기</button></div>`);
-  $('#ok').addEventListener('click',()=>{ closeMini(); flag.visible=true; setStep(8); toast('환경동 앞에 완료 깃발이 꽂혔어요!'); });
+  $('#ok').addEventListener('click',()=>{ closeMini(); flag.visible=true; G.done.w=true; setStep(0); toast('환경동 앞에 완료 깃발이 꽂혔어요!'); });
 }
 /* ───────── 대기 임무: 굴뚝 측정 ───────── */
 function airField(done){ gearGame(()=>climbGame(()=>haulGame(()=>gaugeGame(()=>filterGame(done))))); }
@@ -714,10 +717,10 @@ function airReport(){
   openMini(`<div class="card"><h3>보고 완료!</h3><div class="stars">${'★'.repeat(stars)}<span style="opacity:.2">${'★'.repeat(3-stars)}</span></div>
     <div class="rows"><div><span>안전장비 챙기기</span><b>${s.equip} / 15</b></div><div><span>장비 끌어올리기</span><b>${s.haul} / 25</b></div><div><span>굴뚝 시료 채취</span><b>${s.gauge} / 25</b></div>
     <div><span>필터 회수</span><b>${s.filter} / 10</b></div><div><span>무게 재기</span><b>${s.weigh} / 10</b></div><div><span>기준 판정</span><b>${s.judge} / 15</b></div><div><span>합계</span><b>${total}점</b></div></div>
-    <div class="cert"><small>${CONFIG.ORG}</small><b>환경 지킴이 연구원</b>${G.name} 연구원<br><small>수질·대기 임무 완료 · 굴뚝 먼지 ${G.dust} mg/Sm³ (${over?'기준 초과':'기준 이내'})</small></div>
+    <div class="cert"><small>${CONFIG.ORG}</small><b>환경 지킴이 연구원</b>${G.name} 연구원<br><small>대기 임무 완료 · 굴뚝 먼지 ${G.dust} mg/Sm³ (${over?'기준 초과':'기준 이내'})</small></div>
     <div class="fact"><b>알고 계셨나요?</b><br>굴뚝 측정은 연구원이 무거운 장비를 직접 올려 연기가 밖으로 나오기 전 농도를 재요. 그래야 공장이 기준을 지키는지 정확히 알 수 있어요.</div>
     <button class="go" id="ok">마을 둘러보기</button></div>`);
-  $('#ok').addEventListener('click',()=>{ closeMini(); flag2.visible=true; setStep(16); toast('공장 굴뚝 앞에 완료 깃발이 꽂혔어요!'); });
+  $('#ok').addEventListener('click',()=>{ closeMini(); flag2.visible=true; G.done.a=true; setStep(0); toast('공장 굴뚝 앞에 완료 깃발이 꽂혔어요!'); });
 }
 const FACTS=['왜 굴뚝에 직접 올라갈까요? 연기가 밖으로 퍼지기 전의 농도를 재야 정확하기 때문이에요.','왜 다리 위에서 뜰까요? 강 한가운데 흐르는 물이 그 하천을 가장 잘 대표하기 때문이에요.',
   '왜 아이스박스에 넣을까요? 온도가 오르면 미생물이 활동해 수질이 변하기 때문이에요.',
@@ -751,10 +754,24 @@ function board(c){ drv=c; G.driving=true; player.g.visible=false;
 function getOff(){ const a=drv.rotation.y; for(const s of [1,-1,0]){ const x=drv.position.x+Math.cos(a)*2.3*s, z=drv.position.z-Math.sin(a)*2.3*s; if(!blocked(x,z,0.5)||s===0){ player.g.position.set(x,0,z); break; } }
   G.driving=false; player.g.visible=true; player.g.rotation.y=drv.rotation.y; if(G.step===2&&dist(car.position,P.bridge)<14) setStep(3);
   if(G.step===10&&dist(car2.position,P.stack)<26) setStep(11); }
+function missionSelect(){ const d=G.done, tag=x=>x?'<span class="dn">완료 ✓</span>':'';
+  openMini(`<div class="card"><h3>어떤 임무를 맡을까요?</h3><p>${G.name} 연구원, 오늘 할 임무를 골라요.</p><div class="steps">
+    <button class="step" id="mw"><span class="ic">💧</span><span><b>수질 임무</b><br><small>차를 타고 강으로 가서 다리 위에서 물을 떠요</small></span>${tag(d.w)}</button>
+    <button class="step" id="ma"><span class="ic">🏭</span><span><b>대기 임무</b><br><small>공장 굴뚝에 올라 장비를 올리고 연기를 채취해요</small></span>${tag(d.a)}</button>
+    <button class="step" disabled style="opacity:.5"><span class="ic">🧫</span><span><b>보건 임무</b><br><small>준비 중이에요</small></span></button></div>
+    <button class="opt" id="mx" style="width:100%;margin-top:8px">나중에 할게요</button></div>`);
+  $('#mw').addEventListener('click',()=>{ closeMini(); startMission('w'); }); $('#ma').addEventListener('click',()=>{ closeMini(); startMission('a'); }); $('#mx').addEventListener('click',closeMini);
+}
+function startMission(k){
+  if(k==='w'){ ITEMS.forEach(i=>{ i.got=false; i.g.visible=false; }); G.score={equip:0,depth:0,bottle:0,order:0,grade:0}; bridgeHint=false; iceBox.visible=false;
+    say([[SENIOR,'수질 임무예요, {n} 연구원! 강물이 깨끗한지 검사해 달라는 의뢰가 들어왔어요.'],[SENIOR,'도로의 초록 줄 채수차량을 타고 동쪽 강의 다리로 가세요. 가는 길에 장비 3개도 꼭 챙기고요!']],()=>setStep(1)); }
+  else { ITEMS_A.forEach(i=>{ i.got=false; i.g.visible=false; }); G.air={equip:0,haul:0,gauge:0,filter:0,weigh:0,judge:0};
+    say([[SENIOR,'대기 임무예요, {n} 연구원! 공장 굴뚝에서 나오는 연기에 먼지가 얼마나 있는지 검사해야 해요.'],[SENIOR,'도로의 파란 줄 측정차량을 타고 서쪽 공장으로 가세요. 굴뚝은 높고 장비는 무거우니 안전장비를 꼭 챙기고요!']],()=>setStep(9)); }
+}
 function getAction(){
   if(G.driving) return {label:'차에서 내리기',fn:getOff};
   const p=player.g.position;
-  if(G.step===0&&dist(p,P.npc)<4.2) return {label:'대화하기',fn:()=>say([[SENIOR,'어서 와요, {n} 연구원! 오늘 첫 임무예요.'],[SENIOR,'강물이 깨끗한지 검사해 달라는 의뢰가 들어왔어요.'],[SENIOR,'도로의 채수차량을 타고 동쪽 강의 다리로 가세요. 가는 길에 장비 3개도 꼭 챙기고요!']],()=>setStep(1))};
+  if(G.step===0&&dist(p,P.npc)<4.2) return {label:'임무 고르기',fn:missionSelect};
   if((G.step===2||G.step===3)&&dist(p,P.bridge)<8) return {label:'물 채취하기',fn:()=>{ if(dist(car.position,P.bridge)>20){ toast('채수 장비가 차에 있어요. 차를 다리까지 몰고 오세요.'); return; }
     sampleGame(()=>{ iceBox.visible=true; ITEMS.forEach(i=>i.g.visible=false); setStep(4); say([[SENIOR,'수고했어요! 시료는 아이스박스에 잘 담겼어요.'],[SENIOR,'차를 타고 환경동으로 돌아와 시료를 접수하세요.']]); }); }};
   if(G.step===4&&dist(p,P.door)<5) return {label:'실험실 들어가기',fn:()=>{ if(dist(car.position,P.door)>34){ toast('시료가 차에 있어요. 차를 환경동 앞 도로에 세워 주세요.'); return; }
@@ -768,8 +785,8 @@ function getAction(){
     airLab(()=>{ G.waitLeft=CONFIG.WAIT_SEC; setStep(13); say([[SENIOR,'분석 장비가 돌아가고 있어요. 결과가 나올 때까지 잠깐 쉬어요.']]); }); }};
   if(G.step===14&&dist(p,P.door)<5) return {label:'결과 확인하기',fn:()=>airResult(()=>{ setStep(15); toast('결과지를 들고 본관 게시판으로!'); })};
   if(G.step===15&&dist(p,P.board)<4.5) return {label:'보고하기',fn:airReport};
-  if(G.step>=9&&dist(p,[car2.position.x,car2.position.z])<4.6) return {label:'차에 타기',fn:()=>board(car2)};
-  if(G.step>=1&&dist(p,[car.position.x,car.position.z])<4.6) return {label:'차에 타기',fn:()=>board(car)};
+  if(dist(p,[car2.position.x,car2.position.z])<4.6) return {label:'차에 타기',fn:()=>board(car2)};
+  if(dist(p,[car.position.x,car.position.z])<4.6) return {label:'차에 타기',fn:()=>board(car)};
   if(dist(p,P.info)<3.6) return {label:'안내판 읽기',fn:()=>{ const f=FACTS[factI++%FACTS.length]; openMini(`<div class="card"><h3>연구원 이야기</h3><div class="fact">${f}</div><button class="go" id="ok">닫기</button></div>`); $('#ok').addEventListener('click',closeMini); }};
   return null;
 }
