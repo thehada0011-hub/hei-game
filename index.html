@@ -406,6 +406,9 @@ function floorAt(x,z){ if(z<ROOF.z0||z>ROOF.z1||x<ROOF.x0||x>ROOF.sx1) return 0;
   for(const z of [65.1,72.1]) box(10,0.6,0.12,0xe9eef0,12,7.65,z); box(0.12,0.6,7,0xe9eef0,7.1,7.65,68.6); box(0.12,0.6,5.6,0xe9eef0,16.9,7.65,67.9);   // 동쪽 난간은 계단 끝에서 들어오도록 남쪽을 틔웠어요
   for(let i=0;i<14;i++){ const h=(i+1)*ROOF.y/14; box(2.4,h,6/14+0.02,i%2?0xb9c1c6:0xc7ced2,18.3,h/2,65+(i+0.5)*6/14); } box(2.4,ROOF.y,1.4,0xb9c1c6,18.3,ROOF.y/2,71.7);   // 바깥 계단과 계단참
   box(0.08,0.08,9.5,0x7c878d,19.45,4.7,68).rotation.x=-Math.atan(ROOF.y/6); box(0.08,1,1.4,0x7c878d,19.45,ROOF.y+0.5,71.7); box(2.4,1,0.08,0x7c878d,18.3,ROOF.y+0.5,72.36);
+  // 미세먼지 신호등: 숫자 전광판 아래에 등급 표지 네 개가 붙어 있어요
+  cyl(0.12,0.12,2,0x3a4046,22.5,1,63.2,scene,10); box(1,1.9,0.22,0xd9d5c8,22.5,2.95,63.2); box(1.3,1.1,0.7,0x20262b,22.5,4.45,63.2); sign('초미세 7',1.1,0.8,22.5,4.45,62.84,Math.PI,{bg:'#0b0f12',fg:'#3bd0ff'});
+  [['좋음','#3b82f6'],['보통','#22c55e'],['나쁨','#eab308'],['매우 나쁨','#ef4444']].forEach(([t,c],i)=>sign(t,0.8,0.34,22.5,3.6-i*0.43,63.08,Math.PI,{bg:c,fg:'#fff'}));
   box(0.15,2.2,0.15,0x7c878d,14.6,1.1,63.4); panel2('옥상 측정소 · 계단으로 올라가요',5.4,0.8,14.6,2.4,63.4,{bg:'#e6f1fb',fg:'#0c447c'}); }
 box(9,3.2,6,0xffe9a8,-74,1.6,52); box(9.4,0.4,6.4,0xff8fa3,-74,3.4,52); for(const x of [-77,-71]) box(1.4,1.4,0.1,0x7fd3e6,x,1.8,48.95); box(1.4,2.2,0.1,0x8a5a2b,-74,1.1,48.95); panel2('해님 어린이집',4.4,0.8,-74,2.75,48.9,{bg:'#fff0f5',fg:'#a8326a'});
 { box(12,6,10,0xc9c2b4,160,3,-45); box(12.6,0.5,10.6,0x8d979d,160,6.2,-45); cyl(0.7,0.9,9,0xd9dee1,163,4.5,-47); sign('강 건너 공장',7,0.9,160,4.6,-39.94,0,{bg:'#17323a',fg:'#fff'});
@@ -1123,7 +1126,7 @@ function getAction(){
   if(G.step===23&&dist(p,P.play)<7) return {label:'다시 측정하기',fn:()=>remeasure(ok=>{ if(ok){ setPlay('ok'); setStep(20); toast('적합! 아이들이 물놀이터로 달려가요. 본관에 결과를 보고하세요.',3200); }
       else { setStep(21); toast('아직 부적합이에요. 투입량을 다시 맞추고 30분 뒤에 또 측정해요.',3200); } })};
   if(G.step===20&&dist(p,P.board)<4.5) return {label:'보고하기',fn:playReport};
-  if(G.step===24&&dist(p,XM.at)<(XM.roof?4:7)&&(!XM.roof||player.g.position.y>6)) return {label:XM.job+' 시작',fn:()=>focusPick(XM,()=>{ setStep(25); toast('측정 끝! 본관 게시판에 결과를 보고하세요.',2800); })};
+  if(G.step===24&&dist(p,XM.at)<(XM.roof?4:7)&&(!XM.roof||player.g.position.y>6)) return {label:XM.job+' 시작',fn:()=>xGame(G.xk)(XM,()=>{ setStep(25); toast('측정 끝! 본관 게시판에 결과를 보고하세요.',2800); })};
   if(G.step===25&&dist(p,P.board)<4.5) return {label:'보고하기',fn:xReport};
   if(G.step===0&&dist(p,P.npc)<4.2) return {label:'임무 고르기',fn:missionSelect};
   if((G.step===2||G.step===3)&&dist(p,P.bridge)<8) return {label:'물 채취하기',fn:()=>{ if(needItems(ITEMS)) return; if(dist(car.position,P.bridge)>20){ toast('채수 장비가 차에 있어요. 차를 다리까지 몰고 오세요.'); return; }
@@ -1232,7 +1235,7 @@ $('#enter').addEventListener('click',()=>{ const v=nm.value.trim().slice(0,6);
   $('#start').style.display='none'; $('#hud').style.display='block'; setStep(0); G.lock=false;
   say([['안내',`${G.name} 연구원, 첫 출근을 환영해요! 왼쪽 아래 조이스틱으로 걷고, 화면을 좌우로 밀면 둘러볼 수 있어요.`]]);
 });
-window.__G=G; window.__dbg={player,car,car2,P}; window.__t={sampleGame,bottleGame,labGame,climbGame,haulGame,gaugeGame,filterGame,closeMini,focusSample,focusCatch,focusHaul,playTest,setPlay,playReport,doseGame,remeasure,focusPick,xReport,startMission,setStep,XMS};
+window.__G=G; window.__dbg={player,car,car2,P}; window.__t={sampleGame,bottleGame,labGame,climbGame,haulGame,gaugeGame,filterGame,closeMini,focusSample,focusCatch,focusHaul,playTest,setPlay,playReport,doseGame,remeasure,focusDust,focusStrip,focusNoise,xReport,startMission,setStep,XMS};
 // 실제 청사 3D 모형(hq.glb). 못 불러오면 위에서 만든 상자 건물을 그대로 써요.
 const HQ_MODEL={ file:'hq.glb', width:64, x:10, z:-46.5, rotY:0 };
 let DOOR_LIMIT=34;   // 차를 실험동 입구에서 이 거리 안에 세워야 시료를 접수할 수 있어요
@@ -1281,34 +1284,106 @@ const FOC={};
   new GLTFLoader().load('sampler.glb',gltf=>{ const m=gltf.scene, w=new THREE.Group(); let b=new THREE.Box3().setFromObject(m); const sz=b.getSize(new THREE.Vector3()); m.scale.setScalar(1.15/sz.y); b=new THREE.Box3().setFromObject(m); const ct=b.getCenter(new THREE.Vector3()); m.position.sub(ct);
     m.traverse(o=>{ if(o.isMesh&&o.material){ o.material.metalness=0.45; o.material.roughness=0.34; o.material.envMapIntensity=2.2; } }); w.add(m); FOC.sampler=w; },undefined,()=>{}); }
 // 측정값을 보고 알맞은 깃발 올리기 (미세먼지분석과, 산업폐수과, 생활환경과가 같이 써요)
-function focusPick(M,next){ const {s,c,r}=FOC; focusUI({hintTop:1}); const hint=t=>$('#fhint').textContent=t, grp=new THREE.Group(); s.add(grp); c.position.set(0,0.9,9); c.lookAt(0,0.9,0);
-  const base=new THREE.Mesh(new THREE.BoxGeometry(9,0.3,3),PBR(0xb9c1c6,{roughness:.9})); base.position.y=-0.75; grp.add(base);
-  if(M.roof){ const add=(w,h,d,c,x,y,z)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),PBR(c,{roughness:.8})); m.position.set(x,y,z); grp.add(m); return m; };   // 옥상 난간과 측정소 상자, 환기구
-    { const cv=document.createElement('canvas'); cv.width=512; cv.height=320; const g=cv.getContext('2d'), gr=g.createLinearGradient(0,0,0,320); gr.addColorStop(0,'#8fc9f2'); gr.addColorStop(.7,'#dff1fb'); g.fillStyle=gr; g.fillRect(0,0,512,320);   // 옥상에서 보이는 하늘과 먼 마을
-      g.fillStyle='#9dc79a'; g.beginPath(); g.moveTo(0,250); for(let x=0;x<=512;x+=64) g.lineTo(x,232+Math.sin(x*0.02)*16); g.lineTo(512,320); g.lineTo(0,320); g.fill();
-      for(let i=0;i<16;i++){ const w=18+(i*7%14), h=26+(i*13%44); g.fillStyle=i%2?'#e9ece9':'#d5dcdd'; g.fillRect(i*33+4,262-h,w,h+60); } g.fillStyle='#b9d8a8'; g.fillRect(0,290,512,30);
-      const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; const sky=new THREE.Mesh(new THREE.PlaneGeometry(34,21),new THREE.MeshBasicMaterial({map:t})); sky.position.set(0,4.1,-7); grp.add(sky); }
-    add(9,0.45,0.25,0xe9eef0,0,-0.38,-1.35); add(9,0.06,0.06,0x8d979d,0,0.25,-1.35); for(let x=-4;x<=4;x+=2) add(0.06,0.6,0.06,0x8d979d,x,-0.05,-1.35);
-    add(1.9,1.5,1.2,0xf4f5f3,-2.9,0.15,-0.5); add(2.1,0.12,1.4,0x8d979d,-2.9,0.96,-0.5); add(0.7,0.5,0.7,0xb9c1c6,3.2,-0.35,-0.6); }
-  const pole=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,3.4,10),PBR(0xdfe6ea,{metalness:.8,roughness:.3})); pole.position.set(0.6,1.1,0); grp.add(pole);
-  const flag=new THREE.Mesh(new THREE.BoxGeometry(0.75,0.48,0.02),PBR(0xffffff)); flag.position.set(1.0,-0.2,0); grp.add(flag);
-  const dev=new THREE.Mesh(new THREE.BoxGeometry(0.8,1.0,0.5),PBR(0xf4f7f8,{roughness:.4})); dev.position.set(-0.75,-0.1,0); grp.add(dev);
-  const cvs=document.createElement('canvas'); cvs.width=256; cvs.height=128; const tex=new THREE.CanvasTexture(cvs); tex.colorSpace=THREE.SRGBColorSpace; const disp=new THREE.Mesh(new THREE.PlaneGeometry(0.66,0.33),new THREE.MeshBasicMaterial({map:tex})); disp.position.set(-0.75,0.1,0.26); grp.add(disp);
-  const show=v=>{ const g=cvs.getContext('2d'); g.fillStyle='#17323a'; g.fillRect(0,0,256,128); g.fillStyle='#7ff0b8'; g.font='bold 80px monospace'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(v,128,68); tex.needsUpdate=true; };
-  const wk=fxWorker(grp,{hat:0xffc53d,scale:0.5}); wk.body.position.set(-0.05,-0.6,0.3); wk.body.rotation.y=0.3;
-  const dots=[]; for(let i=0;i<60;i++){ const m=new THREE.Mesh(new THREE.SphereGeometry(0.03,6,5),new THREE.MeshBasicMaterial({color:0x8a7a66,transparent:true,opacity:.7})); m.position.set((Math.random()-0.5)*3,-0.4+Math.random()*3.6,Math.random()*1.4); grp.add(m); dots.push(m); }
-  const O=M.opts, ob=$('#fopts'); ob.style.display='grid'; ob.innerHTML=O.map((g,i)=>`<button data-i="${i}" style="background:${g[1]}">${g[0]}</button>`).join('');
-  let round=0,stars=0,miss=0,val=0,want=0,fy=-0.2,ft=-0.2,t=0,alive=true,last=performance.now(),sadT=0,hopT=0,busy=false;
+// 세 과의 현장 게임이 같이 쓰는 무대, 숫자 화면, 마무리
+function xStage(floorCol,camY=0.9){ const {s,c,r,cv}=FOC, grp=new THREE.Group(); const T=Math.tan(17.5*Math.PI/180), D=Math.max(9,Math.min(16,3.3/(T*c.aspect))), hw=T*D*c.aspect; s.add(grp); c.position.set(0,camY+(D-9)*0.12,D); c.lookAt(0,camY+(D-9)*0.12,0);   // 세로로 긴 휴대폰에서는 카메라를 뒤로 빼서 무대가 다 보이게 해요
+  const add=(w,h,d,col,x,y,z,o={})=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),PBR(col,{roughness:.8,...o})); m.position.set(x,y,z); grp.add(m); return m; };
+  const rod=(r1,r2,h,col,x,y,z,o={})=>{ const m=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,h,18),PBR(col,o)); m.position.set(x,y,z); grp.add(m); return m; };
+  add(9,0.3,3,floorCol,0,-0.75,0,{roughness:.9});
+  const lim=Math.min(3,hw-0.35), px=e=>Math.max(-lim,Math.min(lim,(e.clientX/innerWidth*2-1)*hw));
+  return {s,c,r,cv,grp,add,rod,px,hw,lim,hint:t=>$('#fhint').textContent=t}; }
+// 글자를 띄우는 작은 화면. top을 주면 위에 작은 글씨, 아래에 큰 글씨로 두 줄을 써요.
+function xScreen(grp,w,h,bg='#17323a'){ const cvs=document.createElement('canvas'); cvs.width=256; cvs.height=Math.round(256*h/w); const H=cvs.height, tex=new THREE.CanvasTexture(cvs); tex.colorSpace=THREE.SRGBColorSpace;
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:tex})); grp.add(m);
+  m.userData.show=(v,col='#7ff0b8',size=76,top='')=>{ const g=cvs.getContext('2d'); g.fillStyle=bg; g.fillRect(0,0,256,H); g.textAlign='center'; g.textBaseline='middle';
+    if(top){ g.fillStyle='#fff'; g.font=`bold ${Math.round(H*0.24)}px ${FONT}`; g.fillText(top,128,H*0.24); }
+    g.fillStyle=col; g.font=`bold ${size}px ${FONT}`; g.fillText(v,128,top?H*0.66:H*0.53); tex.needsUpdate=true; }; return m; }
+function xFinish(stars,grp,next,clean){ G.xStars=stars; sfx('ok'); fConfetti(); fPop(stars>=13?'최고의 연구원!':'참 잘했어요!','good'); setTimeout(()=>{ clean(); focusOff(grp); next(); },2800); }
+// 옥상에서 보이는 하늘과 먼 마을, 난간, 측정소 상자
+function roofBack(grp,add){ const cv=document.createElement('canvas'); cv.width=512; cv.height=320; const g=cv.getContext('2d'), gr=g.createLinearGradient(0,0,0,320); gr.addColorStop(0,'#8fc9f2'); gr.addColorStop(.7,'#dff1fb'); g.fillStyle=gr; g.fillRect(0,0,512,320);
+  g.fillStyle='#9dc79a'; g.beginPath(); g.moveTo(0,250); for(let x=0;x<=512;x+=64) g.lineTo(x,232+Math.sin(x*0.02)*16); g.lineTo(512,320); g.lineTo(0,320); g.fill();
+  for(let i=0;i<16;i++){ const w=18+(i*7%14), h=26+(i*13%44); g.fillStyle=i%2?'#e9ece9':'#d5dcdd'; g.fillRect(i*33+4,262-h,w,h+60); } g.fillStyle='#b9d8a8'; g.fillRect(0,290,512,30);
+  const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; const sky=new THREE.Mesh(new THREE.PlaneGeometry(34,21),new THREE.MeshBasicMaterial({map:t})); sky.position.set(0,4.1,-7); grp.add(sky);
+  add(9,0.45,0.25,0xe9eef0,0,-0.38,-1.35); add(9,0.06,0.06,0x8d979d,0,0.25,-1.35); for(let x=-4;x<=4;x+=2) add(0.06,0.6,0.06,0x8d979d,x,-0.05,-1.35);
+  add(1.5,1.4,1.2,0xf4f5f3,-3.6,0.1,-0.6); add(1.7,0.12,1.4,0x8d979d,-3.6,0.86,-0.6); }
+// 미세먼지분석과: 옥상에서 흡입구를 움직여 떠다니는 먼지를 모아요. 꽃잎과 나뭇잎은 피해요. 다 모으면 미세먼지 신호등에 결과가 켜져요.
+function focusDust(M,next){ const NEED=12, O=M.opts; focusUI({hintTop:1,star:`먼지 0/${NEED}`}); const S=xStage(0xb9c1c6), {grp,add,rod,cv,r,s,c,hint}=S; roofBack(grp,add);
+  hint('흡입구를 좌우로 움직여 먼지를 모아요. 꽃잎과 나뭇잎은 피해요!');
+  const tool=new THREE.Group(); grp.add(tool); { const p=new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.04,1.5,10),PBR(0xdfe6ea,{metalness:.8,roughness:.3})); p.position.y=0.15; tool.add(p);
+    const f=new THREE.Mesh(new THREE.CylinderGeometry(0.42,0.1,0.36,24,1,true),PBR(0x3b82c4,{side:THREE.DoubleSide,roughness:.4})); f.position.y=1.06; tool.add(f);
+    const b=new THREE.Mesh(new THREE.BoxGeometry(0.34,0.3,0.3),PBR(0xf4f7f8)); b.position.y=-0.45; tool.add(b); }
+  // 미세먼지 신호등: 기둥, 등급 표지 네 개, 숫자 전광판
+  const gx=Math.min(3.5,S.hw-0.6); rod(0.07,0.07,0.9,0x3a4046,gx,-0.15,-0.5); add(0.8,1.5,0.14,0xd9d5c8,gx,1.05,-0.5); add(1.0,0.85,0.5,0x20262b,gx,2.25,-0.5);
+  const tags=O.map((o,i)=>{ const t=xScreen(grp,0.62,0.26,o[1]); t.position.set(gx,1.57-i*0.34,-0.42); t.userData.show(o[0],'#fff',52); return t; });
+  const led=xScreen(grp,0.86,0.7,'#0b0f12'); led.position.set(gx,2.25,-0.24); led.userData.show('--','#7fd3ff',110,'초미세');
+  const wk=fxWorker(grp,{hat:0xffc53d,scale:0.5}); wk.body.position.set(-0.5,-0.6,0.3); wk.body.rotation.y=0.5;
+  const parts=[]; const spawn=()=>{ const bad=Math.random()<0.3, pink=Math.random()<0.5;
+    const m=bad?new THREE.Mesh(new THREE.BoxGeometry(0.26,0.02,0.16),PBR(pink?0xf58fb4:0x5fae5a)):new THREE.Mesh(new THREE.SphereGeometry(0.1,10,8),PBR(0x6b5a48,{roughness:1}));
+    m.position.set((Math.random()-0.5)*2*(S.lim-0.2),3.8,0.3); grp.add(m); parts.push({m,bad,pink,vy:0.95+Math.random()*0.5,ph:Math.random()*6}); };
+  let ix=0,tx=0,got=0,miss=0,t=0,nextAt=0.4,alive=true,ended=false,last=performance.now(),sadT=0,hopT=0;
+  const off=()=>{ alive=false; focusOff(grp); };
+  cv.onpointerdown=cv.onpointermove=e=>{ tx=S.px(e); };
+  $('#fclose').onclick=off;
+  (function loop(now){ if(!alive) return; const dt=Math.min(0.05,Math.max(0,(now-last)/1000)); last=now; t+=dt;
+    ix+=(tx-ix)*Math.min(1,dt*10); tool.position.x=ix; wk.body.position.x=ix-0.5;
+    if(!ended&&t>nextAt){ nextAt=t+0.6; spawn(); }
+    for(let i=parts.length-1;i>=0;i--){ const p=parts[i], m=p.m; m.position.y-=p.vy*dt; m.position.x+=Math.sin(t*2+p.ph)*0.35*dt; if(p.bad){ m.rotation.x+=dt*2; m.rotation.z+=dt*1.3; }
+      const hit=!ended&&m.position.y<1.3&&m.position.y>0.95&&Math.abs(m.position.x-ix)<0.44;
+      if(hit){ if(p.bad){ miss++; sadT=1; sfx('no'); fPop(p.pink?'앗, 꽃잎!':'앗, 나뭇잎!','warn'); } else { got++; hopT=0.3; sfx('pop'); $('#fstar').textContent=`먼지 ${got}/${NEED}`; } }
+      if(hit||m.position.y<-0.6){ grp.remove(m); parts.splice(i,1); } }
+    if(!ended&&got>=NEED){ ended=true; const k=Math.floor(Math.random()*3), lo=k?O[k-1][2]+1:M.lo, v=Math.round(lo+Math.random()*(O[k][2]-lo));
+      led.userData.show(String(v),O[k][1],120,'초미세'); tags[k].scale.setScalar(1.3); tags[k].position.z=-0.36; hint(`먼지를 다 모았어요! 신호등에 초미세먼지 ${v}, "${O[k][0]}"이 켜졌어요`); xFinish(Math.max(6,15-miss*2),grp,next,()=>{ alive=false; }); }
+    sadT=Math.max(0,sadT-dt); hopT=Math.max(0,hopT-dt); wk.face(sadT>0); wk.body.position.y=-0.6+Math.sin(hopT/0.3*Math.PI)*0.12; wk.who.armR.rotation.x=-1.3; r.render(s,c); requestAnimationFrame(loop); })(last); }
+// 산업폐수과: 방류구 물에 시험지를 담그고, 변한 색을 색 견본에서 골라요.
+function focusStrip(M,next){ focusUI({hintTop:1,go:'시험지 담그기'}); const S=xStage(0x9fb08a,0.1), {grp,add,rod,r,s,c,hint}=S, go=$('#fgo'), ob=$('#fopts');
+  rod(0.45,0.45,2.4,0x6b7780,-3.3,0.2,-0.3).rotation.z=Math.PI/2; rod(0.13,0.2,0.8,0x6fb7d6,-2.0,-0.2,-0.3,{transparent:true,opacity:.8}); add(2.6,0.02,1.8,0x4f9bb5,-1.9,-0.59,0,{roughness:.2});
+  add(1.7,0.08,0.9,0xe9eef0,0.5,-0.05,0.3); for(const x of [-0.25,1.25]) add(0.08,0.55,0.8,0x8d979d,x,-0.33,0.3);
+  const glass=new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.3,0.62,24),new THREE.MeshPhysicalMaterial({color:0xd6f1ff,transparent:true,opacity:.45,roughness:.05,depthWrite:false})); glass.position.set(0.3,0.3,0.3); grp.add(glass);
+  rod(0.27,0.27,0.4,0x8fb9b0,0.3,0.2,0.3,{transparent:true,opacity:.85});
+  const strip=new THREE.Group(); const paper=new THREE.Mesh(new THREE.BoxGeometry(0.13,1,0.02),PBR(0xffffff)); strip.add(paper); const pad=new THREE.Mesh(new THREE.BoxGeometry(0.135,0.36,0.03),PBR(0xfdfdf5)); pad.position.y=-0.32; strip.add(pad); strip.position.set(0.3,1.45,0.3); grp.add(strip);
+  const wk=fxWorker(grp,{hat:0xffc53d,scale:0.5}); wk.body.position.set(1.15,-0.6,0.3); wk.body.rotation.y=-0.5;
+  const CH=[[4,'#e5484d'],[5,'#f97316'],[6,'#eab308'],[7,'#22c55e'],[9,'#3b82f6'],[11,'#8b5cf6']];
+  ob.innerHTML=CH.map((g,i)=>`<button data-i="${i}" style="background:${g[1]};padding:13px 6px">pH ${g[0]}</button>`).join('');
+  let round=0,stars=0,miss=0,want=0,phase='ready',sy=1.45,st=1.45,dipT=0,t=0,alive=true,last=performance.now(),sadT=0,hopT=0;
   const off=()=>{ alive=false; ob.style.display='none'; ob.onclick=null; focusOff(grp); };
-  const nextRound=()=>{ want=Math.floor(Math.random()*O.length); const st=M.dec?0.1:1, lo=want?O[want-1][2]+st:M.lo, v=lo+Math.random()*(O[want][2]-lo); val=M.dec?v.toFixed(1):Math.round(v); show(val); ft=-0.2; flag.material.color.set(0xffffff); miss=0; busy=false; hint(M.ask(val)+` (${round+1}/5)`); };
-  ob.onclick=e=>{ const b=e.target.closest('button'); if(!b||busy) return; const i=+b.dataset.i;
-    if(i!==want){ miss++; sadT=1.1; sfx('no'); fPop('다시!','warn'); hint(M.help); return; }
-    busy=true; hopT=0.35; const got=miss===0?3:miss===1?2:1; stars+=got; flag.material.color.set(O[i][1]); ft=2.4; sfx(got===3?'ok':'good'); fPop('★'.repeat(got)+' '+O[i][0]+'!','good'); $('#fstar').textContent='★ '+stars;
-    setTimeout(()=>{ round++; if(round<5){ nextRound(); return; } G.xStars=stars; sfx('ok'); fConfetti(); fPop(stars>=13?'최고의 연구원!':'참 잘했어요!','good'); setTimeout(()=>{ off(); next(); },2400); },1500); };
-  $('#fclose').onclick=off; nextRound();
-  (function loop(now){ if(!alive) return; const dt=Math.min(0.05,Math.max(0,(now-last)/1000)); last=now; t+=dt; fy+=(ft-fy)*Math.min(1,dt*5); flag.position.y=fy;
-    const n=Math.round(60*want/(O.length-1)); dots.forEach((m,i)=>{ m.visible=i<n; m.position.x+=dt*0.25; if(m.position.x>1.6) m.position.x=-1.6; });
-    sadT=Math.max(0,sadT-dt); hopT=Math.max(0,hopT-dt); wk.face(sadT>0); wk.body.position.y=-0.6+Math.sin(hopT/0.35*Math.PI)*0.15; wk.who.armR.rotation.x=busy?-2.6:0; r.render(s,c); requestAnimationFrame(loop); })(last); }
+  const newRound=()=>{ let w; do{ w=Math.floor(Math.random()*CH.length); }while(w===want&&round>0); want=w; pad.material.color.set(0xfdfdf5); phase='ready'; miss=0; ob.style.display='none'; go.style.display='block'; hint(`방류구에서 뜬 물에 시험지를 담가요 (${round+1}/5)`); };
+  go.onclick=()=>{ if(phase!=='ready') return; phase='dip'; dipT=0; st=0.72; go.style.display='none'; sfx('pop'); hint('시험지 색이 변하고 있어요…'); };
+  ob.onclick=e=>{ const b=e.target.closest('button'); if(!b||phase!=='pick') return; const i=+b.dataset.i;
+    if(i!==want){ miss++; sadT=1.1; sfx('no'); fPop('다시!','warn'); hint('시험지 색을 잘 보고 같은 색 견본을 골라요'); return; }
+    phase='done'; hopT=0.35; const got=miss===0?3:miss===1?2:1, v=CH[i][0], verdict=v<5.8?M.opts[0][0]:v<=8.6?M.opts[1][0]:M.opts[2][0]; stars+=got; sfx(got===3?'ok':'good'); fPop('★'.repeat(got)+' pH '+v,'good'); $('#fstar').textContent='★ '+stars;
+    ob.style.display='none'; hint(`pH ${v}: ${verdict}! 기준은 5.8부터 8.6까지예요`);
+    setTimeout(()=>{ if(!alive) return; round++; if(round<5){ newRound(); return; } xFinish(stars,grp,next,()=>{ alive=false; ob.onclick=null; }); },2400); };
+  $('#fclose').onclick=off; newRound();
+  (function loop(now){ if(!alive) return; const dt=Math.min(0.05,Math.max(0,(now-last)/1000)); last=now; t+=dt;
+    if(phase==='dip'){ dipT+=dt; if(dipT>0.9){ pad.material.color.set(CH[want][1]); st=1.45; } if(dipT>1.7){ phase='pick'; ob.style.display='grid'; hint('시험지와 같은 색 견본을 골라요'); } }
+    sy+=(st-sy)*Math.min(1,dt*6); strip.position.y=sy; sadT=Math.max(0,sadT-dt); hopT=Math.max(0,hopT-dt); wk.face(sadT>0); wk.body.position.y=-0.6+Math.sin(hopT/0.35*Math.PI)*0.15; wk.who.armR.rotation.x=phase==='dip'?-1.2:phase==='done'?-2.6:0;
+    r.render(s,c); requestAnimationFrame(loop); })(last); }
+// 생활환경과: 소음계를 들고 움직이며 가장 시끄러운 물건을 찾아요.
+function focusNoise(M,next){ focusUI({hintTop:1,go:'여기예요!'}); const S=xStage(0xcfc7b4), {grp,add,rod,cv,r,s,c,hint}=S, go=$('#fgo');
+  add(9,2.7,0.3,0xffe9a8,0,0.75,-1.4); add(9.2,0.28,0.6,0xff8fa3,0,2.2,-1.4); for(const x of [-3.2,-1.1,1.1,3.2]) add(0.8,0.6,0.06,0x7fd3e6,x,1.6,-1.22); add(9,0.6,1.3,0xbdb5a2,0,-0.3,-0.6);   // 물건은 연구원에게 가리지 않게 단 위에 올려요
+  const sp=Math.min(1.6,(S.hw-0.55)*2/3), SX=[-1.5,-0.5,0.5,1.5].map(k=>k*sp), NAME=['트럭','확성기','공사 드릴','스피커'], src=SX.map(x=>{ const g=new THREE.Group(); g.position.set(x,0,-0.6); g.scale.setScalar(Math.min(1,sp/1.3)); grp.add(g); return g; });
+  const put=(g,geo,col,x,y,z,o)=>{ const m=new THREE.Mesh(geo,PBR(col,o)); m.position.set(x,y,z); g.add(m); return m; }, B=(w,h,d)=>new THREE.BoxGeometry(w,h,d), C=(a,b,h)=>new THREE.CylinderGeometry(a,b,h,16);
+  put(src[0],B(0.75,0.5,0.5),0x3b82c4,-0.12,0.42,0); put(src[0],B(0.32,0.38,0.5),0xf4f7f8,0.42,0.36,0); for(const x of [-0.3,0.4]) put(src[0],C(0.13,0.13,0.54),0x2b2b2b,x,0.13,0).rotation.x=Math.PI/2;
+  put(src[1],C(0.035,0.035,1.1),0x8d979d,0,0.55,0); put(src[1],new THREE.ConeGeometry(0.26,0.5,20,1,true),0xe5484d,0,1.15,0.18,{side:THREE.DoubleSide}).rotation.x=-Math.PI/2; put(src[1],B(0.16,0.16,0.16),0xf4f7f8,0,1.15,-0.12);
+  put(src[2],B(0.3,0.26,0.22),0xffc53d,0,0.78,0); put(src[2],C(0.05,0.03,0.65),0x6b7780,0,0.33,0); put(src[2],B(0.5,0.05,0.05),0x2b2b2b,0,0.93,0);
+  put(src[3],B(0.5,0.85,0.4),0x2b2b2b,0,0.43,0); put(src[3],C(0.17,0.17,0.03),0x8d979d,0,0.3,0.21).rotation.x=Math.PI/2; put(src[3],C(0.09,0.09,0.03),0x8d979d,0,0.66,0.21).rotation.x=Math.PI/2;
+  const rings=[0,1,2].map(()=>{ const m=new THREE.Mesh(new THREE.TorusGeometry(0.4,0.025,8,32),new THREE.MeshBasicMaterial({color:0xff5d5d,transparent:true})); m.visible=false; grp.add(m); return m; });
+  const wk=fxWorker(grp,{hat:0xffc53d,scale:0.5}); wk.body.position.set(0,-0.6,0.7); const scr=xScreen(grp,0.95,0.48);
+  let wx=0,tx=0,loud=-1,round=0,stars=0,miss=0,busy=false,val=0,t=0,alive=true,last=performance.now(),sadT=0,hopT=0,showT=0;
+  const off=()=>{ alive=false; focusOff(grp); };
+  const newRound=()=>{ let k; do{ k=Math.floor(Math.random()*4); }while(k===loud); loud=k; miss=0; busy=false; rings.forEach(m=>m.visible=false); go.style.display='block'; hint(`소음계를 들고 좌우로 움직여 가장 시끄러운 곳을 찾아요 (${round+1}/5)`); };
+  cv.onpointerdown=cv.onpointermove=e=>{ if(!busy) tx=S.px(e); };
+  go.onclick=()=>{ if(busy) return; let k=0; SX.forEach((x,i)=>{ if(Math.abs(x-wx)<Math.abs(SX[k]-wx)) k=i; });
+    if(Math.abs(SX[k]-wx)>sp*0.42){ hint('소리 나는 물건 바로 앞에 서서 눌러요'); return; }
+    if(k!==loud){ miss++; sadT=1.1; sfx('no'); fPop('여긴 조용해요','warn'); hint(`${NAME[k]} 앞은 ${val}데시벨이에요. 숫자가 가장 큰 곳을 찾아요`); return; }
+    busy=true; hopT=0.35; go.style.display='none'; const got=miss===0?3:miss===1?2:1; stars+=got; sfx(got===3?'ok':'good'); fPop('★'.repeat(got)+' '+NAME[k]+'!','good'); $('#fstar').textContent='★ '+stars;
+    rings.forEach(m=>{ m.visible=true; m.position.set(SX[k],0.5,-0.5); }); hint(`${NAME[k]} 소리가 ${val}데시벨! 어린이집 옆에서는 소리를 줄여 달라고 알려 줘요`);
+    setTimeout(()=>{ if(!alive) return; round++; src[k].position.x=SX[k]; if(round<5){ newRound(); return; } xFinish(stars,grp,next,()=>{ alive=false; }); },2400); };
+  $('#fclose').onclick=off; newRound();
+  (function loop(now){ if(!alive) return; const dt=Math.min(0.05,Math.max(0,(now-last)/1000)); last=now; t+=dt; wx+=(tx-wx)*Math.min(1,dt*8); wk.body.position.x=wx; scr.position.set(wx,-1.2,1.52);
+    showT-=dt; if(showT<=0){ showT=0.12; val=Math.round(43+47*Math.exp(-((wx-SX[loud])**2)/(sp*sp*0.3))+Math.sin(t*9)*1.5); scr.userData.show(val+'dB',val<60?'#7ff0b8':val<78?'#ffd84d':'#ff7b7b',64); }
+    if(busy){ src[loud].position.x=SX[loud]+Math.sin(t*45)*0.03; rings.forEach((m,i)=>{ const k=(t*0.9+i/3)%1; m.scale.setScalar(0.6+k*2.2); m.material.opacity=0.8*(1-k); }); }
+    sadT=Math.max(0,sadT-dt); hopT=Math.max(0,hopT-dt); wk.face(sadT>0); wk.body.position.y=-0.6+Math.sin(hopT/0.35*Math.PI)*0.15; wk.who.armR.rotation.x=-1.4; r.render(s,c); requestAnimationFrame(loop); })(last); }
+function xGame(k){ return {d:focusDust,i:focusStrip,l:focusNoise}[k]; }
 function xReport(){ const st=G.xStars||0, k=G.xk; G.done[k]=true;
   openMini(`<div class="card"><h3>보고 완료!</h3><div class="stars" style="font-size:30px">★ ${st} / 15</div>${stampsHtml(k)}<p style="font-weight:800;color:#c8102e">도장 쾅! ${XM.name} · ${XM.job} 완료</p>
     <div class="fact"><b>알고 계셨나요?</b><br>${XM.fact}</div><button class="go" id="ok">마을 둘러보기</button></div>`); $('#ok').addEventListener('click',()=>{ closeMini(); setStep(0); }); }
