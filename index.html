@@ -430,8 +430,14 @@ const FISH=Array.from({length:9},(_,i)=>{ const g=new THREE.Group(), col=[0xc7d3
   return {pv,g,ring,next:1+i*0.7,t0:-1,x:0,z:0,y:0,len:2.4,h:1.4,dur:0.95}; });
 // 영산강 벚꽃길 꽃잎: 연구원이 있는 쪽 벚나무 아래로 계속 떨어져요 (꽃잎 수를 아끼려고 연구원을 따라다녀요)
 const PETALS_R=Array.from({length:56},(_,i)=>{ const m=box(0.14,0.02,0.1,i%2?0xf7b6cf:0xfbdbe8,-30+i*1.1,0.5+(i*37%70)/10,-90+(i*13%70)/10); m.userData.ph=i*1.7; return m; });
+// 서쪽 산과 터널: 큰길이 서쪽으로 이어져 산속 터널로 들어가요. 농산물 트럭이 이 터널로 드나들어요.
+{ flat(22,ROAD_W,0x59646b,-91,0.08,ROAD_Z).material=texMat(TEX.road,5.5,2); for(let x=-97;x<-77;x+=7) flat(3,0.25,0xf4f4f4,x,0.12,ROAD_Z);
+  for(const [x,z,r,hh,c] of [[-133,15,35,32,0x6f9f7c],[-128,-22,26,22,0x7dae86],[-130,50,28,25,0x7dae86]]){ const m=new THREE.Mesh(new THREE.ConeGeometry(r,hh,8),new THREE.MeshLambertMaterial({color:c,flatShading:true})); m.position.set(x,hh/2-1.5,z); m.rotation.y=0.4; scene.add(m); }
+  box(5,7.6,13,0xb9bec4,-101.5,3.8,ROAD_Z); box(5.4,0.6,13.6,0x9aa09c,-101.5,7.9,ROAD_Z); box(0.3,5.6,9,0x14181b,-98.95,2.8,ROAD_Z);          // 터널 입구: 콘크리트 벽과 어두운 구멍
+  for(const z of [ROAD_Z-6.2,ROAD_Z+6.2]) box(4,3.2,1.2,0xa8aeab,-97.5,1.6,z); panel2('터널',2.6,0.8,-98.7,6.9,ROAD_Z,{bg:'#2f6f4f',fg:'#fff'});
+  for(const z of [ROAD_Z-2.2,ROAD_Z+2.2]) box(0.2,0.2,0.2,0xffe38a,-98.75,5.2,z); }
 // 농산물 유통센터 (서남쪽 빈터). 농산물검사소의 사무실과 검사실은 유통센터 건물 안에 있어요.
-const MK={x:-52,z:52,bx:-35.3,bz:52,rows:[-3.4,0,3.4],trucks:[[-58,41.5],[-47,41.5]]};
+const MK={x:-52,z:52,bx:-35.3,bz:52,rows:[-3.4,0,3.4],trucks:[[-58,41.5]]};   // 오른쪽 짐 내리는 자리는 터널에서 오는 트럭이 써요
 { const mx=MK.x, mz=MK.z, VEG=[0x5fae5a,0xf08a24,0xe5484d,0x8e5bd0,0xf2c531,0x7fbf4a];
   flat(46,38,0xd6d0c2,-45,0.07,55);                                                                                           // 시장 마당
   box(23,0.4,13,0x4f8a6b,mx,5.4,mz); box(23.4,0.15,13.4,0xe9eef0,mx,5.68,mz); for(const x of [-10.5,-3.5,3.5,10.5]) for(const z of [-5.8,5.8]) cyl(0.25,0.25,5.2,0xdfe3e3,mx+x,2.6,mz+z,scene,10);   // 경매장 지붕과 기둥
@@ -1341,6 +1347,23 @@ function getAction(){
 }
 let curAct=null; const actEl=$('#act');
 
+// 농산물 트럭: 터널에서 나와 큰길을 달려 유통센터에 들어가 상자를 내리고, 다시 터널로 돌아가요.
+const TRK={ g:new THREE.Group(), crates:[], stack:[], seg:0, k:0, wait:3, state:'wait', un:0 };
+{ const g=TRK.g, VEG=[0x5fae5a,0xf08a24,0xe5484d,0x8e5bd0,0xf2c531,0x7fbf4a]; scene.add(g); g.visible=false;
+  box(2.2,1.3,1.7,0x2f8f5b,0,1.2,2.1,g); box(2.0,0.6,0.06,0x2a3f55,0,1.55,2.96,g); box(2.2,0.25,4.2,0x55636b,0,0.6,-0.9,g); for(const x of [-1.05,1.05]) box(0.1,0.7,4.2,0x8fb07a,x,1.05,-0.9,g); box(2.2,0.7,0.1,0x8fb07a,0,1.05,-3.0,g);
+  for(const dx of [-1.1,1.1]) for(const dz of [-2.2,1.9]){ const w=cyl(0.42,0.42,0.3,0x2b2b2b,dx,0.42,dz,g,12); w.rotation.z=Math.PI/2; } for(const x of [-0.7,0.7]) box(0.35,0.2,0.06,0xffe38a,x,0.85,2.97,g);
+  for(let i=0;i<6;i++){ const c=new THREE.Group(); c.position.set(i%2?0.5:-0.5,0.98+(i>3?0.62:0),0.2-(i%4>1?1.5:0)-(i>3?0.7:0)); g.add(c); box(0.9,0.5,1.2,0x9a6b3a,0,0,0,c); const top=box(0.78,0.2,1.05,VEG[i],0,0.3,0,c); TRK.crates.push({c,top}); }
+  for(let i=0;i<6;i++){ const c=new THREE.Group(); c.position.set(-50.3+(i%2)*1.05,0.3+Math.floor(i/2)*0.62,44.6); c.visible=false; scene.add(c); box(0.9,0.5,1.2,0x9a6b3a,0,0,0,c); const top=box(0.78,0.2,1.05,VEG[i],0,0.3,0,c); TRK.stack.push({c,top}); }
+  TRK.man=makePerson({coat:0x2f8f5b,pants:0x55636b}); TRK.man.g.position.set(-49.6,0,42.4); TRK.man.g.rotation.y=1.2;
+  TRK.veg=VEG; TRK.path=[[-104,17],[-50,17],[-48.5,19],[-48.5,37],[-47,42.6],[-47,42.6],[-44.4,45.2],[-42.6,42.5],[-45.5,37.5],[-45.5,19],[-47.5,13],[-104,13]]; TRK.stop=4; }
+function truckTick(dt){ const T=TRK, g=T.g, P2=T.path;
+  if(T.state==='wait'){ T.wait-=dt; if(T.wait<=0){ T.state='go'; T.seg=0; T.k=0; g.position.set(P2[0][0],0,P2[0][1]); g.rotation.y=Math.PI/2; const o=Math.floor(Math.random()*6); T.crates.forEach((c,i)=>{ c.c.visible=true; c.top.material=mat(T.veg[(i+o)%6]); }); T.stack.forEach((c,i)=>{ c.c.visible=false; c.top.material=mat(T.veg[(i+o)%6]); }); } return; }
+  if(T.state==='unload'){ T.un+=dt; const n=Math.min(6,Math.floor(T.un/0.9)); T.crates.forEach((c,i)=>{ c.c.visible=i<6-n; }); T.stack.forEach((c,i)=>{ c.c.visible=i<n; }); T.man.armL.rotation.x=T.man.armR.rotation.x=-1.3+Math.sin(T.un*7)*0.4;
+    if(T.un>0.4&&!T.said&&!G.driving&&Math.hypot(player.g.position.x+47,player.g.position.z-42)<22){ T.said=true; bubble(T.man.g,['싱싱한 채소가 도착했어요!','오늘 들어온 과일이에요. 검사 부탁해요!','조심조심, 상자 내려요~'][Math.floor(Math.random()*3)]); }
+    if(T.un>6.6){ T.state='go'; T.seg=T.stop+1; T.k=0; T.said=false; } return; }
+  const a=P2[T.seg], b=P2[T.seg+1], len=Math.hypot(b[0]-a[0],b[1]-a[1])||0.01; T.k+=dt*(len>20?10:5)/len;
+  if(T.k>=1){ T.seg++; T.k=0; if(T.seg===T.stop){ T.state='unload'; T.un=0; g.position.set(b[0],0,b[1]); return; } if(T.seg>=P2.length-1){ T.state='wait'; T.wait=5+Math.random()*6; g.visible=false; return; } return; }
+  const x=a[0]+(b[0]-a[0])*T.k, z=a[1]+(b[1]-a[1])*T.k; g.position.set(x,0,z); g.rotation.y=lerpAng(g.rotation.y,Math.atan2(b[0]-a[0],b[1]-a[1]),dt*4); g.visible=x>-99.2; }
 // 서남쪽 구석의 작은 캠핑장: 텐트 두 동, 모닥불, 불 앞에 앉은 가족. 모닥불은 일렁이고 연기가 올라가요.
 const CAMP={x:-86,z:76,flames:[],smoke:[],people:[],talk:3};
 // 가족마다 하는 말이 달라요. 아이들(시아, 시우)이 더 자주, 더 여러 가지로 말해요.
@@ -1455,6 +1478,7 @@ function frame(now){
   STN_TX.forEach((m,i)=>{ const s=DSTN[i], k=(time*0.3+i*0.37)%1, y0=s.roof?10:3.6; m.position.set(s.x+(2-s.x)*k,y0+(13-y0)*k+Math.sin(k*Math.PI)*9,s.z+(-45-s.z)*k); m.scale.setScalar(0.6+Math.sin(k*Math.PI)*0.7); m.visible=!s.bad; });
   { const b=DSTN.find(s=>s.bad); STN_WARN.visible=!!b&&Math.sin(time*6)>-0.6; if(b) STN_WARN.position.set(b.x,(b.roof?ROOF.y+6.2:5.6),b.z); }
   if(G.alertLeft>0){ G.alertLeft-=dt; if(G.alertLeft<=0){ G.airK=1; setDust('28','#22c55e','보통'); setMasks(false); WALKERS.forEach(w=>w.told=false); toast('미세먼지 주의보가 해제됐어요. 이제 마스크를 벗어도 돼요!',3600); } }
+  truckTick(dt); animPerson(TRK.man,false,dt);
   // 캠핑장: 모닥불이 일렁이고 연기가 올라가요. 가까이 가면 캠핑 온 가족이 한마디씩 해요.
   { const fl=1+Math.sin(time*13)*0.12+Math.sin(time*7.3)*0.1; CAMP.flames.forEach((f,i)=>{ const sy=fl+Math.sin(time*9+i*2)*0.14; f.m.scale.set(1+Math.sin(time*11+i)*0.08,sy,1); f.m.position.y=0.3+f.h*sy/2; });
     CAMP.light.intensity=1.6+Math.sin(time*11)*0.35+Math.sin(time*5.3)*0.2; CAMP.smoke.forEach((m,i)=>{ const k=(time*0.22+i/4)%1; m.position.set(CAMP.x+Math.sin(k*5+i)*0.5,1.3+k*4.5,CAMP.z+Math.cos(k*4+i)*0.3); m.scale.setScalar(0.5+k*1.8); m.material.opacity=0.32*(1-k); });
