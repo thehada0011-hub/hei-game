@@ -246,6 +246,8 @@ function sign(text,W,H,x,y,z,ry=0,o={},p=scene){
   const m=new THREE.Mesh(new THREE.PlaneGeometry(W,H),new THREE.MeshBasicMaterial({map:textTex(text,{w:Math.round(128*W/H),h:128,...o})}));
   m.position.set(x,y,z); m.rotation.y=ry; p.add(m); return m;
 }
+// 양면 안내판: 두께가 있는 판의 앞뒤에 글자를 붙여요. 어느 쪽에서 봐도 보이고 기둥과 겹치지 않아요.
+function panel2(text,W,H,x,y,z,o={}){ box(W,H,0.12,0xf4f5f3,x,y,z); sign(text,W-0.12,H-0.12,x,y,z+0.075,0,o); sign(text,W-0.12,H-0.12,x,y,z-0.075,Math.PI,o); }
 function label(text,o={}){
   const s=new THREE.Sprite(new THREE.SpriteMaterial({map:textTex(text,{w:512,h:112,pill:true,bg:'rgba(255,253,247,.94)',...o}),transparent:true}));
   s.scale.set(2.5,0.55,1); return s;
@@ -264,7 +266,7 @@ flat(330,2.4,0xd8cba6,45,0.06,-91); flat(330,2.4,0xd8cba6,45,0.06,-117);
   spots.forEach(([x,z],i)=>{ const s=0.9+(i*37%10)/22; d.position.set(x,1.2*s,z); d.scale.set(s,2.4*s,s); d.rotation.set(0,0,0); d.updateMatrix(); tr.setMatrixAt(i,d.matrix);
     for(let j=0;j<4;j++){ const a=j*2.1+i, off=j?1.1*s:0, b=(j?1.25:1.6)*s; d.position.set(x+Math.cos(a)*off,2.4*s+(j?0.5:1.3)*s,z+Math.sin(a)*off); d.scale.set(b,b*0.8,b); d.rotation.set(0,i+j,0); d.updateMatrix(); bl.setMatrixAt(k,d.matrix); col.setHex(PINK[(i+j)%4]); bl.setColorAt(k,col); k++; } });
   tr.castShadow=bl.castShadow=true; bl.receiveShadow=true; scene.add(tr,bl); }
-box(0.18,1.7,0.18,0x7a5b3a,-8,0.85,-83.5); box(3,1.1,0.14,0xc9a26b,-8,1.95,-83.5); sign('🌸 영산강 벚꽃길',2.8,0.9,-8,1.95,-83.38,0,{bg:'#fff0f5',fg:'#a8326a'});
+box(0.18,1.7,0.18,0x7a5b3a,-8,0.85,-83.5); box(3,1.1,0.14,0xc9a26b,-8,1.95,-83.5); sign('🌸 영산강 벚꽃길',2.8,0.9,-8,1.95,-83.38,0,{bg:'#fff0f5',fg:'#a8326a'}); sign('🌸 영산강 벚꽃길',2.8,0.9,-8,1.95,-83.62,Math.PI,{bg:'#fff0f5',fg:'#a8326a'});
 const water=flat(22,220,0x4fa8e0,130,-1.1,0); water.material=texMat(TEX.water,2,18,{transparent:true,opacity:.92});
 flat(22,220,0x8a7a5c,130,-2.2,0);                       // 강바닥
 box(1,2.4,220,0x8fb07a,119.6,-1.2,0); box(1,2.4,220,0x8fb07a,140.4,-1.2,0);  // 강둑
@@ -276,7 +278,7 @@ box(20.8,0.6,ROAD_W,0x7c878d,130,-0.28,ROAD_Z);
 for(const z of [ROAD_Z-ROAD_W/2,ROAD_Z+ROAD_W/2]){ box(20.8,0.14,0.2,0xe9eef0,130,1.05,z); box(20.8,0.14,0.2,0xe9eef0,130,0.6,z);
   for(let x=120;x<=140;x+=2.5) box(0.22,1.1,0.22,0xe9eef0,x,0.55,z); }
 for(const x of [125,135]) cyl(0.9,1.1,2.4,0x9aa5aa,x,-1.5,ROAD_Z);
-sign('채수 지점',3.4,0.8,130,2.2,ROAD_Z-ROAD_W/2-0.05,0,{bg:'#12a594',fg:'#fff'}); box(0.15,2.2,0.15,0x7c878d,130,1.1,ROAD_Z-ROAD_W/2-0.1);
+panel2('채수 지점',3.4,0.8,130,2.2,ROAD_Z-ROAD_W/2-0.2,{bg:'#12a594',fg:'#fff'}); box(0.15,1.8,0.15,0x7c878d,130,0.9,ROAD_Z-ROAD_W/2-0.2);
 // 광장과 길
 { const m=new THREE.Mesh(new THREE.CircleGeometry(11,40),texMat(TEX.slab,5.5,5.5)); m.rotation.x=-Math.PI/2; m.position.set(0,0.11,-3); scene.add(m); }
 flat(5,9.4,0xeadfc8,0,0.07,6.2).material=texMat(TEX.slab,1.25,2.4);
@@ -319,8 +321,8 @@ for(const [x,z] of [[-27.2,4.8],[-24.8,4.8],[-27.2,7.2],[-24.8,7.2]]) cyl(0.12,0
 // 멀리 보이는 아파트
 for(let i=0;i<13;i++){ const h=32+(i*13%20), w=14+(i*7%8); fbox(w,h,10,'#f1f1ec',['#9aa7ad','#b8c2c6','#7d8a90'],60+i,-130+i*24,h/2,-135-(i%3)*14,0.82); }
 // 보고 게시판
-box(0.2,2.4,0.2,0x7a5b3a,6.6,1.2,-15); box(0.2,2.4,0.2,0x7a5b3a,9.4,1.2,-15);
-sign('결과 보고 게시판',3,1.5,8,1.8,-14.9,0,{bg:'#fff',fg:'#0b7d70'});
+box(0.2,2.6,0.2,0x7a5b3a,6.3,1.3,-15); box(0.2,2.6,0.2,0x7a5b3a,9.7,1.3,-15);
+panel2('결과 보고 게시판',3.2,1.5,8,1.8,-15,{bg:'#fff',fg:'#0b7d70'});
 // 환경동
 const E0=scene.children.length;
 fbox(16,7.5,10,'#8d969b',WIN_G,47,28,3.75,-16,0.5);
@@ -330,7 +332,7 @@ const OLD_ENV=scene.children.slice(E0);
 // 보건동 (공사 중)
 box(16,0.3,10,0xcdbfa5,-32,0.15,-55);
 for(let i=0;i<9;i++){ box(1.6,1.3,0.12,i%2?0xffa94d:0xfff3d6,-39+i*1.75,0.75,-49.9); }
-sign('보건동 · 공사 중 (곧 열려요)',9,1,-32,2.4,-49.9,0,{bg:'#ffa94d',fg:'#3b2a00'}); box(0.15,2.4,0.15,0x7c878d,-36,1.2,-49.95); box(0.15,2.4,0.15,0x7c878d,-28,1.2,-49.95);
+panel2('보건동 · 공사 중 (곧 열려요)',9,1,-32,2.4,-49.95,{bg:'#ffa94d',fg:'#3b2a00'}); box(0.15,2.4,0.15,0x7c878d,-36,1.2,-49.95); box(0.15,2.4,0.15,0x7c878d,-28,1.2,-49.95);
 // 공장과 굴뚝 (도로 건너 동남쪽 구석). FX, FZ가 굴뚝 위치예요.
 const FX=100.5, FZ=54, PGX=-66, PGZ=-66;   // PGX, PGZ는 어린이 물놀이터 가운데
 box(18,7,12,0xb9c1c6,FX-12.5,3.5,FZ); box(18.6,0.5,12.6,0x8d979d,FX-12.5,7.2,FZ);
@@ -343,7 +345,7 @@ box(0.5,0.5,0.4,0x2b2b2b,FX,15,FZ-1.45);                                        
 flat(6,25,0x59646b,FX+6,0.08,31.5).material=texMat(TEX.road,1.5,6); flat(16,8,0x59646b,FX+1,0.08,FZ-8).material=texMat(TEX.road,4,2);   // 공장 진입로
 const SMOKE=Array.from({length:7},()=>{ const m=new THREE.Mesh(new THREE.SphereGeometry(1.2,10,8),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.5,depthWrite:false})); scene.add(m); return m; });
 // 안내판
-box(0.2,2,0.2,0x7a5b3a,-9,1,2); sign('연구원 이야기',2.6,1.2,-9,1.9,2.12,0,{bg:'#fff7e0',fg:'#7a4b00'});
+box(0.2,1.3,0.2,0x7a5b3a,-9,0.65,2); panel2('연구원 이야기',2.7,1.2,-9,1.9,2,{bg:'#fff7e0',fg:'#7a4b00'});
 // 산
 for(let i=0;i<14;i++){ const a=i/14*Math.PI*2+0.3, r=215+(i%3)*18, h=40+(i*37%30);
   const m=new THREE.Mesh(new THREE.ConeGeometry(55+(i%4)*10,h,7),new THREE.MeshLambertMaterial({color:i%2?0x6f9f7c:0x7dae86,flatShading:true})); m.position.set(40+Math.cos(a)*r,h/2-2,Math.sin(a)*r); scene.add(m); }
@@ -454,7 +456,7 @@ const PLAY={state:'wait',jets:[],kids:[],board:null};
   cyl(0.35,0.45,3,0xffffff,PGX,1.5,PGZ); { const cap=new THREE.Mesh(new THREE.SphereGeometry(2,16,8,0,Math.PI*2,0,Math.PI/2),mat(0xe5484d)); cap.position.set(PGX,3,PGZ); scene.add(cap); for(let i=0;i<6;i++){ const a=i/6*6.28; sph(0.3,0xffffff,PGX+Math.cos(a)*1.3,3.95,PGZ+Math.sin(a)*1.3,scene); } }
   [[0xf2a7c3,-6,3],[0xffc53d,6,-3],[0x7fd08a,4,6]].forEach(([c,dx,dz],i)=>{ const t=new THREE.Mesh(new THREE.TorusGeometry(1.8,0.16,8,20,Math.PI),mat(c)); t.position.set(PGX+dx,0.1,PGZ+dz); t.rotation.y=i*1.1; scene.add(t); });
   for(let i=0;i<30;i++){ const a=i/30*Math.PI*2; if(Math.abs(a-Math.PI/2)<0.3) continue; box(0.2,1,0.2,[0xf2a7c3,0x7fd3e6,0xffc53d][i%3],PGX+Math.cos(a)*11.5,0.5,PGZ+Math.sin(a)*11.5); }   // 울타리 (남쪽이 입구)
-  box(0.18,2.2,0.18,0x7a5b3a,PGX-6,1.1,PGZ+12.5); box(4.2,1.2,0.14,0x3b82c4,PGX-6,2.4,PGZ+12.5); sign('💦 어린이 물놀이터',4,1,PGX-6,2.4,PGZ+12.62,0,{bg:'#e6f6ff',fg:'#0c447c'});
+  box(0.18,2.2,0.18,0x7a5b3a,PGX-6,1.1,PGZ+12.5); box(4.2,1.2,0.14,0x3b82c4,PGX-6,2.4,PGZ+12.5); sign('💦 어린이 물놀이터',4,1,PGX-6,2.4,PGZ+12.62,0,{bg:'#e6f6ff',fg:'#0c447c'}); sign('💦 어린이 물놀이터',4,1,PGX-6,2.4,PGZ+12.38,Math.PI,{bg:'#e6f6ff',fg:'#0c447c'});
   const KC=[0xff8fa3,0x6ec6ff,0xffd166,0x95d98b,0xc9a0ff];
   for(let i=0;i<5;i++){ const k=makePerson({coat:KC[i],hair:[0x2b2622,0x5a4632,0x8a5a2b][i%3],pants:0x3d4a6b}); k.g.scale.setScalar(0.62); const wx=PGX+1+i*1.9, wz=PGZ+14.5+(i%2)*1.3;
     k.g.position.set(wx,0,wz); k.g.rotation.y=Math.PI; PLAY.kids.push({p:k,wx,wz,tx:wx,tz:wz,t:Math.random()*3,sigh:3+i*1.7}); } }
