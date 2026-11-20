@@ -30,6 +30,9 @@ html,body{margin:0;height:100%;overflow:hidden;position:fixed;inset:0;background
 #fmeter{position:absolute;left:50%;top:calc(126px + env(safe-area-inset-top));transform:translateX(-50%);display:none;align-items:center;gap:8px;padding:8px 14px}
 #fmeter i{display:block;width:130px;height:12px;border-radius:999px;background:rgba(255,255,255,.25);overflow:hidden}
 #fmeter b{display:block;height:100%;width:100%;background:#7dffb0;border-radius:999px}
+#fopts{position:absolute;left:14px;right:14px;bottom:calc(26px + env(safe-area-inset-bottom));display:none;grid-template-columns:1fr 1fr;gap:10px}
+#fopts button{padding:18px 6px;border-radius:18px;color:#fff;font-weight:800;font-size:18px;box-shadow:0 5px 0 rgba(0,0,0,.25);text-shadow:0 1px 2px rgba(0,0,0,.4)}
+.stamps{flex-wrap:wrap}
 #fpop.show{animation:fpop 1.6s ease-out}
 #fpop.good{color:#ffe45c}#fpop.warn{color:#ffc2b8}
 @keyframes fpop{0%{opacity:0;transform:scale(.4)}18%{opacity:1;transform:scale(1.15)}30%{transform:scale(1)}80%{opacity:1}100%{opacity:0;transform:translateY(-24px)}}
@@ -201,6 +204,7 @@ input{font:inherit;user-select:text;-webkit-user-select:text}
   <div class="pill" id="fdepth"><i></i><b></b><span id="fd1">수면</span><span id="fd2">여기!</span><span id="fd3">강바닥</span></div>
   <div class="pill" id="fmeter"><span>힘</span><i><b></b></i></div>
   <div id="fpop"></div>
+  <div id="fopts"></div>
   <button class="pill" id="fsub">밧줄 고정</button>
   <button id="fgo">물 뜨기!</button>
 </div>
@@ -390,6 +394,13 @@ for(const x of [FX-0.3,FX+0.3]) box(0.06,14,0.06,0x5d6b71,x,7,FZ-1.8); for(let y
 box(0.5,0.5,0.4,0x2b2b2b,FX,15,FZ-1.45);                                                                                                 // 측정구
 flat(6,25,0x59646b,FX+6,0.08,31.5).material=texMat(TEX.road,1.5,6); flat(16,8,0x59646b,FX+1,0.08,FZ-8).material=texMat(TEX.road,4,2);   // 공장 진입로
 const SMOKE=Array.from({length:7},()=>{ const m=new THREE.Mesh(new THREE.SphereGeometry(1.2,10,8),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.5,depthWrite:false})); scene.add(m); return m; });
+// 대기환경측정소(미세먼지분석과), 어린이집(생활환경과), 공장 방류구(산업폐수과)
+// 맵 전체를 쓰도록 남쪽 가운데, 서남쪽, 강 건너 동북쪽에 하나씩 놓았어요. XAT는 플레이어가 서는 자리예요.
+const XAT={ d:[12,60], l:[-74,46.5], i:[146,-41] };
+box(8,3.4,6,0xf4f5f3,12,1.7,68); box(8.4,0.3,6.4,0x8d979d,12,3.55,68); cyl(0.06,0.06,3,0xdfe6ea,14,5.1,68,scene,8); box(1.2,0.9,0.9,0xdfe6ea,10.5,4.1,68); panel2('대기환경측정소',5,0.9,12,2.4,64.9,{bg:'#e6f1fb',fg:'#0c447c'});
+box(9,3.2,6,0xffe9a8,-74,1.6,52); box(9.4,0.4,6.4,0xff8fa3,-74,3.4,52); for(const x of [-77,-71]) box(1.4,1.4,0.1,0x7fd3e6,x,1.8,48.95); box(1.4,2.2,0.1,0x8a5a2b,-74,1.1,48.95); panel2('해님 어린이집',4.4,0.8,-74,2.75,48.9,{bg:'#fff0f5',fg:'#a8326a'});
+{ box(12,6,10,0xc9c2b4,160,3,-45); box(12.6,0.5,10.6,0x8d979d,160,6.2,-45); cyl(0.7,0.9,9,0xd9dee1,163,4.5,-47); sign('강 건너 공장',7,0.9,160,4.6,-39.94,0,{bg:'#17323a',fg:'#fff'});
+  const m=cyl(0.5,0.5,10.5,0x6b7780,148.75,0.6,-45,scene,14); m.rotation.z=Math.PI/2; flat(2.6,3,0x4f9bb5,142.2,0.09,-45); box(0.15,1.6,0.15,0x7c878d,146,0.8,-43); panel2('방류구',2,0.7,146,1.8,-43,{bg:'#17323a',fg:'#fff'}); }
 // 안내판
 box(0.2,1.3,0.2,0x7a5b3a,-9,0.65,2); panel2('연구원 이야기',2.7,1.2,-9,1.9,2,{bg:'#fff7e0',fg:'#7a4b00'});
 // 산
@@ -398,7 +409,7 @@ for(let i=0;i<14;i++){ const a=i/14*Math.PI*2+0.3, r=215+(i%3)*18, h=40+(i*37%30
 
 /* 충돌 */
 const WALLS=[ [-12,12,-27,-17],[20,36,-21,-11],[-40,-24,-60,-49.6],[FX-21.5,FX-3.5,FZ-6,FZ+6],[FX-2,FX+2,FZ-2,FZ+2],[6.4,9.6,-15.4,-14.6],
-  [-20,-12,-27,-19],[-4,4,-17,-15.7],[-19.5,-14.5,-5.5,-0.5],[52.2,54.6,-33,-25], ...PARKED.map(([x,z])=>[x-0.9,x+0.9,z-1.9,z+1.9]) ];
+  [-20,-12,-27,-19],[-4,4,-17,-15.7],[-19.5,-14.5,-5.5,-0.5],[52.2,54.6,-33,-25],[8,16,65,71],[-78.5,-69.5,49,55],[154,166,-50,-40],[143.5,154,-45.6,-44.4], ...PARKED.map(([x,z])=>[x-0.9,x+0.9,z-1.9,z+1.9]) ];
 function blocked(x,z,r){
   if(x<-100+r||x>190-r||z<-89.5+r||z>90-r) return true;
   for(const w of WALLS) if(x>w[0]-r&&x<w[1]+r&&z>w[2]-r&&z<w[3]+r) return true;
@@ -418,7 +429,7 @@ const SIGNS=[
 // 나무
 { let seed=7; const rnd=()=>{ seed=(seed*16807)%2147483647; return seed/2147483647; };
   const spots=[]; while(spots.length<120){ const x=-95+rnd()*280, z=-85+rnd()*170;
-    if(Math.abs(z-ROAD_Z)<8||Math.hypot(x,z+3)<16||(x>-42&&x<62&&z>-13&&z<8)||(z<-82)||(x>-44&&x<60&&z<-14&&z>-82)||SIGNS.some(s=>Math.hypot(x-s.x,z-s.z)<5)||Math.hypot(x-FX,z-FZ)<16||Math.hypot(x-PGX,z-PGZ-6)<25||(x>FX-2&&x<FX+12&&z>18&&z<50)||blocked(x,z,4)||(x>114&&x<146)||(Math.abs(x)<5&&z>0&&z<14)||(x>4&&x<32&&z>-12&&z<-4)) continue;
+    if(Object.values(XAT).some(a=>Math.hypot(x-a[0],z-a[1])<11)||Math.abs(z-ROAD_Z)<8||Math.hypot(x,z+3)<16||(x>-42&&x<62&&z>-13&&z<8)||(z<-82)||(x>-44&&x<60&&z<-14&&z>-82)||SIGNS.some(s=>Math.hypot(x-s.x,z-s.z)<5)||Math.hypot(x-FX,z-FZ)<16||Math.hypot(x-PGX,z-PGZ-6)<25||(x>FX-2&&x<FX+12&&z>18&&z<50)||blocked(x,z,4)||(x>114&&x<146)||(Math.abs(x)<5&&z>0&&z<14)||(x>4&&x<32&&z>-12&&z<-4)) continue;
     spots.push([x,z,0.85+rnd()*0.9,rnd()]); }
   // 줄기와 잎 뭉치를 한꺼번에 그려서 휴대폰에서도 가볍게 (단풍 든 나무와 소나무)
   const d=new THREE.Object3D(), col=new THREE.Color(), PAL=[0x4f9d58,0x5fae62,0x3f8a4f,0x7fb857,0xd9a43a,0xd8742f,0xc9492f,0xe0b84a];
@@ -434,7 +445,7 @@ const SIGNS=[
   // 풀숲과 꽃
   const bush=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshLambertMaterial({flatShading:true}),170); let bi=0;
   const FL=[0x5fae62,0x4f9d58,0x7fb857,0xf2a7c3,0xf6d55c,0xffffff];
-  while(bi<170){ const x=-95+rnd()*280, z=-85+rnd()*170; if(Math.abs(z-ROAD_Z)<5||blocked(x,z,2)||(x>114&&x<146)||(x>-44&&x<60&&z<-12&&z>-82)||(z<-84)||Math.hypot(x-PGX,z-PGZ-3)<16||(x>FX-2&&x<FX+12&&z>18&&z<50)||SIGNS.some(s=>Math.hypot(x-s.x,z-s.z)<3)||Math.hypot(x,z+3)<12||(x>36&&x<61&&z>-12&&z<6)) continue;
+  while(bi<170){ const x=-95+rnd()*280, z=-85+rnd()*170; if(Object.values(XAT).some(a=>Math.hypot(x-a[0],z-a[1])<7)||Math.abs(z-ROAD_Z)<5||blocked(x,z,2)||(x>114&&x<146)||(x>-44&&x<60&&z<-12&&z>-82)||(z<-84)||Math.hypot(x-PGX,z-PGZ-3)<16||(x>FX-2&&x<FX+12&&z>18&&z<50)||SIGNS.some(s=>Math.hypot(x-s.x,z-s.z)<3)||Math.hypot(x,z+3)<12||(x>36&&x<61&&z>-12&&z<6)) continue;
     const fl=rnd()<0.3, s=fl?0.18+rnd()*0.12:0.5+rnd()*0.6; d.position.set(x,s*0.5,z); d.scale.set(s,s*0.7,s); d.rotation.set(0,rnd()*6,0); d.updateMatrix(); bush.setMatrixAt(bi,d.matrix);
     col.setHex(fl?FL[3+Math.floor(rnd()*3)]:FL[Math.floor(rnd()*3)]); bush.setColorAt(bi,col); bi++; }
   bush.castShadow=true; bush.receiveShadow=true; scene.add(bush); }
@@ -562,12 +573,21 @@ const flag=new THREE.Group(); cyl(0.07,0.07,4,0x7c878d,0,2,0,flag,8); box(1.6,0.
 
 const flag2=new THREE.Group(); cyl(0.07,0.07,4,0x7c878d,0,2,0,flag2,8); box(1.6,0.9,0.05,0x3b82c4,0.85,3.5,0,flag2); flag2.position.set(FX+4.5,0,FZ-5); flag2.visible=false; scene.add(flag2);
 const P={ npc:[-3,-8], bridge:[130,ROAD_Z], door:[28,-8.6], board:[8,-13], info:[-9,3.6], stack:[FX,FZ-5], boss:[5,-7], play:[PGX,PGZ+12.5] };
+// 측정값을 보고 알맞은 깃발을 올리는 세 과의 임무. opts는 [깃발 이름, 색, 이 값까지]예요.
+const XMS={
+  d:{name:'미세먼지분석과',job:'미세먼지 측정',ic:'📡',sub:'대기환경측정소에서 초미세먼지를 재고 등급 깃발을 올려요',at:XAT.d,go:'남쪽 대기환경측정소로 가서 미세먼지를 재세요',ask:v=>`초미세먼지 ${v}! 알맞은 등급 깃발을 올려요`,lo:3,
+    opts:[['좋음','#3b82f6',15],['보통','#22c55e',35],['나쁨','#eab308',75],['매우 나쁨','#ef4444',130]],help:'좋음 15까지 · 보통 35까지 · 나쁨 75까지 · 그보다 높으면 매우 나쁨',fact:'대기환경측정소는 하루 24시간 미세먼지와 오존을 재서 알려 줘요. 나쁨이면 마스크를 쓰고 바깥 활동을 줄여요.'},
+  i:{name:'산업폐수과',job:'폐수 검사',ic:'🏭',sub:'공장 방류구에서 나오는 물의 pH를 재고 판정 깃발을 올려요',at:XAT.i,go:'다리를 건너 북쪽 공장 방류구로 가서 폐수를 검사하세요',ask:v=>`폐수의 pH가 ${v}! 알맞은 판정 깃발을 올려요`,lo:3,dec:1,
+    opts:[['산성이 강해요','#f97316',5.7],['기준 이내','#22c55e',8.6],['알칼리가 강해요','#8b5cf6',12]],help:'5.8보다 낮으면 산성 · 5.8부터 8.6까지 기준 이내 · 8.6보다 높으면 알칼리',fact:'공장에서 쓴 물은 깨끗하게 처리한 뒤에 내보내야 해요. 연구원은 방류구의 물을 떠서 기준을 지켰는지 검사해요.'},
+  l:{name:'생활환경과',job:'소음 측정',ic:'🔊',sub:'어린이집 앞에서 소음을 재고 알맞은 깃발을 올려요',at:XAT.l,go:'서남쪽 끝 해님 어린이집으로 가서 소음을 재세요',ask:v=>`소음이 ${v}데시벨! 알맞은 깃발을 올려요`,lo:30,
+    opts:[['조용해요','#3b82f6',45],['보통이에요','#22c55e',60],['시끄러워요','#eab308',75],['매우 시끄러워요','#ef4444',100]],help:'조용 45까지 · 보통 60까지 · 시끄러움 75까지 · 그보다 크면 매우 시끄러움',fact:'생활환경과는 소음뿐 아니라 실내 공기와 어린이 활동공간이 안전한지도 검사해요.'} };
+let XM=XMS.d;
 const allDone=()=>G.done.w&&G.done.a&&G.done.p, doneCount=()=>(G.done.w?1:0)+(G.done.a?1:0)+(G.done.p?1:0);
 
 /* ───────── 게임 상태 ───────── */
 const G={ name:'', step:0, driving:false, yaw:0, lock:true, waitLeft:0,
   score:{equip:0,depth:0,bottle:0,order:0,grade:0}, bod:0, receipt:'',
-  air:{equip:0,haul:0,gauge:0,filter:0,weigh:0,judge:0}, dust:0, done:{w:false,a:false,p:false}, cert:false, vy:0, pl:{equip:0,sample:0,cl:0,ph:0,judge:0}, playCase:null };
+  air:{equip:0,haul:0,gauge:0,filter:0,weigh:0,judge:0}, dust:0, done:{w:false,a:false,p:false,d:false,i:false,l:false}, xStars:0, cert:false, vy:0, pl:{equip:0,sample:0,cl:0,ph:0,judge:0}, playCase:null };
 const STEPS=[
   {t:'선배 연구원에게 가서 임무를 고르세요', at:()=>G.cert?null:allDone()?P.boss:P.npc},
   {t:'도로에 세워 둔 수질 채수차량에 타세요', at:()=>[car.position.x,car.position.z]},
@@ -593,9 +613,12 @@ const STEPS=[
   {t:'부적합! 물놀이터에서 염소 투입량을 늘리세요', at:()=>P.play},
   {t:'소독약이 퍼지는 중이에요. 30분을 기다려요', at:()=>null},
   {t:'30분이 지났어요. 물놀이터에서 다시 측정하세요', at:()=>P.play},
+  {t:'', at:()=>XM.at},
+  {t:'본관 앞 게시판에 결과를 보고하세요', at:()=>P.board},
 ];
 function setStep(n){ G.step=n; qtCache=null; const all=allDone(); $('#qno').textContent=n===0?(all?(G.cert?'완료':'임명장'):'임무 선택'):n<8?`수질 ${n}/7`:n<17?`대기 ${n-8}/7`:n>20?'물놀이터 재측정':`물놀이터 ${n-16}/4`;
   $('#qtx').textContent=n===0&&all?(G.cert?'명예 연구원이 되었어요! 마을을 자유롭게 둘러보세요':'도장을 모두 모았어요! 원장님께 가서 임명장을 받으세요'):n===0&&doneCount()>0?'선배 연구원에게 가서 다음 임무를 고르세요':STEPS[n].t;
+  if(n>=24){ STEPS[24].t=XM.go; $('#qno').textContent=XM.name; $('#qtx').textContent=STEPS[n].t; }
   drawChips(); $('#timer').style.display=(n===5||n===13||n===22)?'flex':'none'; }
 
 /* ───────── UI 도우미 ───────── */
@@ -1023,7 +1046,7 @@ function playReport(){ const s=G.pl, C=G.playCase, total=s.equip+s.sample+s.cl+s
     <button class="go" id="ok">마을 둘러보기</button></div>`);
   $('#ok').addEventListener('click',()=>{ closeMini(); setStep(0); }); }
 /* ───────── 도장과 임명장 ───────── */
-function stampsHtml(nw){ return `<div class="stamps">${[['w','<small>물환경조사과</small><br>하천 수질'],['p','<small>물환경조사과</small><br>물놀이터'],['a','<small>대기환경과</small><br>굴뚝 대기']].map(([k,t])=>`<div class="stamp ${G.done[k]?'on':''} ${k===nw?'new':''}"><span>${t}${G.done[k]?'<br>완료':''}</span></div>`).join('')}</div>`; }
+function stampsHtml(nw){ return `<div class="stamps">${[['w','<small>물환경조사과</small><br>하천 수질'],['p','<small>물환경조사과</small><br>물놀이터'],['a','<small>대기환경과</small><br>굴뚝 대기'],['d','<small>미세먼지분석과</small><br>미세먼지'],['i','<small>산업폐수과</small><br>폐수 검사'],['l','<small>생활환경과</small><br>소음 측정']].map(([k,t])=>`<div class="stamp ${G.done[k]?'on':''} ${k===nw?'new':''}"><span>${t}${G.done[k]?'<br>완료':''}</span></div>`).join('')}</div>`; }
 function stampBook(){ if(G.lock) return; const n=doneCount();
   openMini(`<div class="card"><h3>연구 도장판</h3><p>임무를 끝낼 때마다 도장을 받아요.<br>모두 모으면 원장님이 임명장을 주세요. (${n}/3)</p>${stampsHtml()}<p style="font-weight:700">🪧 마을에서 읽은 팻말 ${SIGNS.filter(x=>x.read).length} / ${SIGNS.length}<br>🐾 인사한 동물 친구 ${ANIMALS.filter(x=>x.met).length} / ${ANIMALS.length}</p><button class="go" id="ok">닫기</button></div>`); $('#ok').addEventListener('click',closeMini); }
 $('#stampBtn').addEventListener('click',stampBook);
@@ -1054,14 +1077,16 @@ function missionSelect(){ const d=G.done, tag=x=>x?'<span class="dn">완료 ✓<
     <button class="step" id="mw"><span class="ic">💧</span><span><b>하천 수질 검사</b><br><small>차를 타고 강으로 가서 다리 위에서 물을 떠요</small></span>${tag(d.w)}</button>
     <button class="step" id="mp"><span class="ic">💦</span><span><b>물놀이터 수질 검사</b><br><small>아이들이 기다리는 물놀이터의 물을 현장에서 검사해요</small></span>${tag(d.p)}</button>
     ${dept('대기환경과')}
-    <button class="step" id="ma"><span class="ic">🏭</span><span><b>굴뚝 대기 검사</b><br><small>공장 굴뚝에 올라 장비를 올리고 연기를 채취해요</small></span>${tag(d.a)}</button></div>
+    <button class="step" id="ma"><span class="ic">🏭</span><span><b>굴뚝 대기 검사</b><br><small>공장 굴뚝에 올라 장비를 올리고 연기를 채취해요</small></span>${tag(d.a)}</button>
+    ${Object.entries(XMS).map(([k,m])=>dept(m.name)+`<button class="step" data-x="${k}"><span class="ic">${m.ic}</span><span><b>${m.job}</b><br><small>${m.sub}</small></span>${tag(d[k])}</button>`).join('')}</div>
     <button class="opt" id="mx" style="width:100%;margin-top:8px">나중에 할게요</button></div>`);
-  $('#mw').addEventListener('click',()=>{ closeMini(); startMission('w'); }); $('#ma').addEventListener('click',()=>{ closeMini(); startMission('a'); }); $('#mp').addEventListener('click',()=>{ closeMini(); startMission('p'); }); $('#mx').addEventListener('click',closeMini);
+  $('#mw').addEventListener('click',()=>{ closeMini(); startMission('w'); }); $('#ma').addEventListener('click',()=>{ closeMini(); startMission('a'); }); $('#mp').addEventListener('click',()=>{ closeMini(); startMission('p'); }); document.querySelectorAll('[data-x]').forEach(b=>b.addEventListener('click',()=>{ closeMini(); startMission(b.dataset.x); })); $('#mx').addEventListener('click',closeMini);
 }
 // 장비를 현장 근처에 무작위로 흩어 놓아요. ok(x,z)가 참인 곳에만 놓고, 서로 6 이상 떨어뜨려요.
 function scatter(list,ok){ const used=[]; for(const it of list){ let x,z,n=0; do{ [x,z]=ok(); n++; } while(n<300&&(blocked(x,z,2)||used.some(u=>Math.hypot(u[0]-x,u[1]-z)<6)));
     used.push([x,z]); it.x=x; it.z=z; it.g.position.x=x; it.g.position.z=z; it.got=false; it.g.visible=false; } }
 function startMission(k){
+  if(XMS[k]){ XM=XMS[k]; G.xk=k; say([[SENIOR,`${XM.name} 임무예요, {n} 연구원! ${XM.sub}.`],[SENIOR,XM.go+'. 걸어가도 되고 차를 타고 가도 돼요.']],()=>setStep(24)); return; }
   if(k==='w'){ scatter(ITEMS,()=>[86+Math.random()*31,-14+Math.random()*44]); G.score={equip:0,depth:0,bottle:0,order:0,grade:0}; bridgeHint=false; iceBox.visible=false;
     say([[SENIOR,'수질 임무예요, {n} 연구원! 강물이 깨끗한지 검사해 달라는 의뢰가 들어왔어요.'],[SENIOR,'도로의 초록 줄 채수차량을 타고 동쪽 강의 다리로 가세요. 장비 3개가 다리 근처 어딘가에 흩어져 있으니 꼭 찾아서 챙기고요!']],()=>setStep(1)); }
   else if(k==='p'){ scatter(ITEMS_P,()=>{ const a=Math.random()*6.28, r=13+Math.random()*14; return [PGX+Math.cos(a)*r,Math.max(-82,PGZ+Math.sin(a)*r)]; }); G.pl={equip:0,sample:0,cl:0,ph:0,judge:0}; setPlay('wait');
@@ -1083,6 +1108,8 @@ function getAction(){
   if(G.step===23&&dist(p,P.play)<7) return {label:'다시 측정하기',fn:()=>remeasure(ok=>{ if(ok){ setPlay('ok'); setStep(20); toast('적합! 아이들이 물놀이터로 달려가요. 본관에 결과를 보고하세요.',3200); }
       else { setStep(21); toast('아직 부적합이에요. 투입량을 다시 맞추고 30분 뒤에 또 측정해요.',3200); } })};
   if(G.step===20&&dist(p,P.board)<4.5) return {label:'보고하기',fn:playReport};
+  if(G.step===24&&dist(p,XM.at)<7) return {label:XM.job+' 시작',fn:()=>focusPick(XM,()=>{ setStep(25); toast('측정 끝! 본관 게시판에 결과를 보고하세요.',2800); })};
+  if(G.step===25&&dist(p,P.board)<4.5) return {label:'보고하기',fn:xReport};
   if(G.step===0&&dist(p,P.npc)<4.2) return {label:'임무 고르기',fn:missionSelect};
   if((G.step===2||G.step===3)&&dist(p,P.bridge)<8) return {label:'물 채취하기',fn:()=>{ if(needItems(ITEMS)) return; if(dist(car.position,P.bridge)>20){ toast('채수 장비가 차에 있어요. 차를 다리까지 몰고 오세요.'); return; }
     focusSample(()=>{ iceBox.visible=true; ITEMS.forEach(i=>i.g.visible=false); setStep(4); say([[SENIOR,'수고했어요! 시료는 아이스박스에 잘 담겼어요.'],[SENIOR,'차를 타고 환경동으로 돌아와 시료를 접수하세요.']]); }); }};
@@ -1188,7 +1215,7 @@ $('#enter').addEventListener('click',()=>{ const v=nm.value.trim().slice(0,6);
   $('#start').style.display='none'; $('#hud').style.display='block'; setStep(0); G.lock=false;
   say([['안내',`${G.name} 연구원, 첫 출근을 환영해요! 왼쪽 아래 조이스틱으로 걷고, 화면을 좌우로 밀면 둘러볼 수 있어요.`]]);
 });
-window.__G=G; window.__dbg={player,car,car2,P}; window.__t={sampleGame,bottleGame,labGame,climbGame,haulGame,gaugeGame,filterGame,closeMini,focusSample,focusCatch,focusHaul,playTest,setPlay,playReport,doseGame,remeasure};
+window.__G=G; window.__dbg={player,car,car2,P}; window.__t={sampleGame,bottleGame,labGame,climbGame,haulGame,gaugeGame,filterGame,closeMini,focusSample,focusCatch,focusHaul,playTest,setPlay,playReport,doseGame,remeasure,focusPick,xReport,startMission,setStep,XMS};
 // 실제 청사 3D 모형(hq.glb). 못 불러오면 위에서 만든 상자 건물을 그대로 써요.
 const HQ_MODEL={ file:'hq.glb', width:64, x:10, z:-46.5, rotY:0 };
 let DOOR_LIMIT=34;   // 차를 실험동 입구에서 이 거리 안에 세워야 시료를 접수할 수 있어요
@@ -1236,6 +1263,31 @@ const FOC={};
   FOC.sampler=fb;
   new GLTFLoader().load('sampler.glb',gltf=>{ const m=gltf.scene, w=new THREE.Group(); let b=new THREE.Box3().setFromObject(m); const sz=b.getSize(new THREE.Vector3()); m.scale.setScalar(1.15/sz.y); b=new THREE.Box3().setFromObject(m); const ct=b.getCenter(new THREE.Vector3()); m.position.sub(ct);
     m.traverse(o=>{ if(o.isMesh&&o.material){ o.material.metalness=0.45; o.material.roughness=0.34; o.material.envMapIntensity=2.2; } }); w.add(m); FOC.sampler=w; },undefined,()=>{}); }
+// 측정값을 보고 알맞은 깃발 올리기 (미세먼지분석과, 산업폐수과, 생활환경과가 같이 써요)
+function focusPick(M,next){ const {s,c,r}=FOC; focusUI({hintTop:1}); const hint=t=>$('#fhint').textContent=t, grp=new THREE.Group(); s.add(grp); c.position.set(0,0.9,9); c.lookAt(0,0.9,0);
+  const base=new THREE.Mesh(new THREE.BoxGeometry(9,0.3,3),PBR(0xb9c1c6,{roughness:.9})); base.position.y=-0.75; grp.add(base);
+  const pole=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,3.4,10),PBR(0xdfe6ea,{metalness:.8,roughness:.3})); pole.position.set(0.6,1.1,0); grp.add(pole);
+  const flag=new THREE.Mesh(new THREE.BoxGeometry(0.75,0.48,0.02),PBR(0xffffff)); flag.position.set(1.0,-0.2,0); grp.add(flag);
+  const dev=new THREE.Mesh(new THREE.BoxGeometry(0.8,1.0,0.5),PBR(0xf4f7f8,{roughness:.4})); dev.position.set(-0.75,-0.1,0); grp.add(dev);
+  const cvs=document.createElement('canvas'); cvs.width=256; cvs.height=128; const tex=new THREE.CanvasTexture(cvs); tex.colorSpace=THREE.SRGBColorSpace; const disp=new THREE.Mesh(new THREE.PlaneGeometry(0.66,0.33),new THREE.MeshBasicMaterial({map:tex})); disp.position.set(-0.75,0.1,0.26); grp.add(disp);
+  const show=v=>{ const g=cvs.getContext('2d'); g.fillStyle='#17323a'; g.fillRect(0,0,256,128); g.fillStyle='#7ff0b8'; g.font='bold 80px monospace'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(v,128,68); tex.needsUpdate=true; };
+  const wk=fxWorker(grp,{hat:0xffc53d,scale:0.5}); wk.body.position.set(-0.05,-0.6,0.3); wk.body.rotation.y=0.3;
+  const dots=[]; for(let i=0;i<60;i++){ const m=new THREE.Mesh(new THREE.SphereGeometry(0.03,6,5),new THREE.MeshBasicMaterial({color:0x8a7a66,transparent:true,opacity:.7})); m.position.set((Math.random()-0.5)*3,-0.4+Math.random()*3.6,Math.random()*1.4); grp.add(m); dots.push(m); }
+  const O=M.opts, ob=$('#fopts'); ob.style.display='grid'; ob.innerHTML=O.map((g,i)=>`<button data-i="${i}" style="background:${g[1]}">${g[0]}</button>`).join('');
+  let round=0,stars=0,miss=0,val=0,want=0,fy=-0.2,ft=-0.2,t=0,alive=true,last=performance.now(),sadT=0,hopT=0,busy=false;
+  const off=()=>{ alive=false; ob.style.display='none'; ob.onclick=null; focusOff(grp); };
+  const nextRound=()=>{ want=Math.floor(Math.random()*O.length); const st=M.dec?0.1:1, lo=want?O[want-1][2]+st:M.lo, v=lo+Math.random()*(O[want][2]-lo); val=M.dec?v.toFixed(1):Math.round(v); show(val); ft=-0.2; flag.material.color.set(0xffffff); miss=0; busy=false; hint(M.ask(val)+` (${round+1}/5)`); };
+  ob.onclick=e=>{ const b=e.target.closest('button'); if(!b||busy) return; const i=+b.dataset.i;
+    if(i!==want){ miss++; sadT=1.1; sfx('no'); fPop('다시!','warn'); hint(M.help); return; }
+    busy=true; hopT=0.35; const got=miss===0?3:miss===1?2:1; stars+=got; flag.material.color.set(O[i][1]); ft=2.4; sfx(got===3?'ok':'good'); fPop('★'.repeat(got)+' '+O[i][0]+'!','good'); $('#fstar').textContent='★ '+stars;
+    setTimeout(()=>{ round++; if(round<5){ nextRound(); return; } G.xStars=stars; sfx('ok'); fConfetti(); fPop(stars>=13?'최고의 연구원!':'참 잘했어요!','good'); setTimeout(()=>{ off(); next(); },2400); },1500); };
+  $('#fclose').onclick=off; nextRound();
+  (function loop(now){ if(!alive) return; const dt=Math.min(0.05,Math.max(0,(now-last)/1000)); last=now; t+=dt; fy+=(ft-fy)*Math.min(1,dt*5); flag.position.y=fy;
+    const n=Math.round(60*want/(O.length-1)); dots.forEach((m,i)=>{ m.visible=i<n; m.position.x+=dt*0.25; if(m.position.x>1.6) m.position.x=-1.6; });
+    sadT=Math.max(0,sadT-dt); hopT=Math.max(0,hopT-dt); wk.face(sadT>0); wk.body.position.y=-0.6+Math.sin(hopT/0.35*Math.PI)*0.15; wk.who.armR.rotation.x=busy?-2.6:0; r.render(s,c); requestAnimationFrame(loop); })(last); }
+function xReport(){ const st=G.xStars||0, k=G.xk; G.done[k]=true;
+  openMini(`<div class="card"><h3>보고 완료!</h3><div class="stars" style="font-size:30px">★ ${st} / 15</div>${stampsHtml(k)}<p style="font-weight:800;color:#c8102e">도장 쾅! ${XM.name} · ${XM.job} 완료</p>
+    <div class="fact"><b>알고 계셨나요?</b><br>${XM.fact}</div><button class="go" id="ok">마을 둘러보기</button></div>`); $('#ok').addEventListener('click',()=>{ closeMini(); setStep(0); }); }
 // 효과음: 파일 없이 소리를 직접 만들어요
 let AC=null;
 function sfx(k){ try{ AC=AC||new (window.AudioContext||window.webkitAudioContext)(); const t=AC.currentTime, P={ok:[660,1320,.28,'sine'],good:[520,880,.22,'sine'],no:[240,150,.22,'triangle'],pop:[500,900,.08,'sine']}[k], o=AC.createOscillator(), g=AC.createGain();
