@@ -617,11 +617,11 @@ const flag2=new THREE.Group(); cyl(0.07,0.07,4,0x7c878d,0,2,0,flag2,8); box(1.6,
 const P={ npc:[-3,-8], bridge:[130,ROAD_Z], door:[19,-29.5], board:[8,-13], info:[-9,3.6], stack:[FX,FZ-5], boss:[5,-7], play:[PGX,PGZ+12.5] };
 // 측정값을 보고 알맞은 깃발을 올리는 세 과의 임무. opts는 [깃발 이름, 색, 이 값까지]예요.
 const XMS={
-  d:{name:'미세먼지분석과',job:'미세먼지 측정',ic:'📡',sub:'주민센터 옥상 측정소에서 초미세먼지를 재고 등급 깃발을 올려요',roof:1,at:XAT.d,go:'남쪽 주민센터 옆 계단으로 옥상에 올라가 미세먼지를 재세요',ask:v=>`초미세먼지 ${v}! 알맞은 등급 깃발을 올려요`,lo:3,
+  d:{name:'미세먼지분석과',job:'미세먼지 측정',ic:'📡',sub:'주민센터 옥상 측정소에서 먼지를 모아 미세먼지 신호등을 켜요',roof:1,at:XAT.d,go:'남쪽 주민센터 옆 계단으로 옥상에 올라가 미세먼지를 재세요',ask:v=>`초미세먼지 ${v}! 알맞은 등급 깃발을 올려요`,lo:3,
     opts:[['좋음','#3b82f6',15],['보통','#22c55e',35],['나쁨','#eab308',75],['매우 나쁨','#ef4444',130]],help:'좋음 15까지 · 보통 35까지 · 나쁨 75까지 · 그보다 높으면 매우 나쁨',fact:'대기환경측정소는 바람이 잘 통하는 건물 옥상에 있어요. 하루 24시간 미세먼지와 오존을 재서 알려 줘요. 나쁨이면 마스크를 쓰고 바깥 활동을 줄여요.'},
-  i:{name:'산업폐수과',job:'폐수 검사',ic:'🏭',sub:'공장 방류구에서 나오는 물의 pH를 재고 판정 깃발을 올려요',at:XAT.i,go:'다리를 건너 북쪽 공장 방류구로 가서 폐수를 검사하세요',ask:v=>`폐수의 pH가 ${v}! 알맞은 판정 깃발을 올려요`,lo:3,dec:1,
+  i:{name:'산업폐수과',job:'폐수 검사',ic:'🏭',sub:'공장 방류구 물에 시험지를 담가 pH 색을 맞춰요',at:XAT.i,go:'다리를 건너 북쪽 공장 방류구로 가서 폐수를 검사하세요',ask:v=>`폐수의 pH가 ${v}! 알맞은 판정 깃발을 올려요`,lo:3,dec:1,
     opts:[['산성이 강해요','#f97316',5.7],['기준 이내','#22c55e',8.6],['알칼리가 강해요','#8b5cf6',12]],help:'5.8보다 낮으면 산성 · 5.8부터 8.6까지 기준 이내 · 8.6보다 높으면 알칼리',fact:'공장에서 쓴 물은 깨끗하게 처리한 뒤에 내보내야 해요. 연구원은 방류구의 물을 떠서 기준을 지켰는지 검사해요.'},
-  l:{name:'생활환경과',job:'소음 측정',ic:'🔊',sub:'어린이집 앞에서 소음을 재고 알맞은 깃발을 올려요',at:XAT.l,go:'서쪽 끝 큰 벚꽃나무 옆 정원어린이집으로 가서 소음을 재세요',ask:v=>`소음이 ${v}데시벨! 알맞은 깃발을 올려요`,lo:30,
+  l:{name:'생활환경과',job:'소음 측정',ic:'🔊',sub:'어린이집 앞에서 소음계로 가장 시끄러운 곳을 찾아요',at:XAT.l,go:'서쪽 끝 큰 벚꽃나무 옆 정원어린이집으로 가서 소음을 재세요',ask:v=>`소음이 ${v}데시벨! 알맞은 깃발을 올려요`,lo:30,
     opts:[['조용해요','#3b82f6',45],['보통이에요','#22c55e',60],['시끄러워요','#eab308',75],['매우 시끄러워요','#ef4444',100]],help:'조용 45까지 · 보통 60까지 · 시끄러움 75까지 · 그보다 크면 매우 시끄러움',fact:'생활환경과는 소음뿐 아니라 실내 공기와 어린이 활동공간이 안전한지도 검사해요.'} };
 let XM=XMS.d;
 const doneCount=()=>Object.values(G.done).filter(Boolean).length, allDone=()=>doneCount()>=6;
@@ -1189,6 +1189,14 @@ const KID_TALK={
   ok:['와, 시원하다!','연구원님 고마워요!','물이 진짜 깨끗해요!','나 잡아 봐라~','분수 또 나온다!','꺄르르!','물놀이 최고!','연구원님도 같이 놀아요!','내일도 올 거예요!','깨끗한 물이라 안심이에요','앗, 차가워!','우리 동네 물놀이터 짱!'] };
 /* ───────── 메인 루프 ───────── */
 const lerpAng=(a,b,t)=>{ let d=(b-a)%(Math.PI*2); if(d>Math.PI) d-=Math.PI*2; if(d<-Math.PI) d+=Math.PI*2; return a+d*Math.min(1,t); };
+// 선배 연구원과 원장님은 광장 자기 자리 둘레를 천천히 돌아다녀요. 연구원이 다가오거나 대화 중이면 멈춰서 쳐다봐요.
+// P.npc, P.boss를 지금 서 있는 자리로 계속 바꿔 줘서 안내 화살표와 대화 버튼이 따라가요.
+const WALKERS=[{p:npc,key:'npc',hx:P.npc[0],hz:P.npc[1],tx:P.npc[0],tz:P.npc[1],wait:3},{p:boss,key:'boss',hx:P.boss[0],hz:P.boss[1],tx:P.boss[0],tz:P.boss[1],wait:6}];
+function strollers(dt){ for(const w of WALKERS){ const g=w.p.g, px=player.g.position.x-g.position.x, pz=player.g.position.z-g.position.z, near=G.lock||(!G.driving&&Math.hypot(px,pz)<6); let mv=false;
+    if(near) g.rotation.y=lerpAng(g.rotation.y,Math.atan2(px,pz),dt*6);
+    else { w.wait-=dt; if(w.wait<=0){ w.wait=4+Math.random()*6; const a=Math.random()*6.28, r=1.5+Math.random()*4, nx=w.hx+Math.cos(a)*r, nz=w.hz+Math.sin(a)*r; if(!blocked(nx,nz,1.2)){ w.tx=nx; w.tz=nz; } }
+      const dx=w.tx-g.position.x, dz=w.tz-g.position.z, d=Math.hypot(dx,dz); if(d>0.15){ mv=true; const sp=Math.min(d,1.3*dt); g.position.x+=dx/d*sp; g.position.z+=dz/d*sp; g.rotation.y=lerpAng(g.rotation.y,Math.atan2(dx,dz),dt*6); } }
+    P[w.key][0]=g.position.x; P[w.key][1]=g.position.z; animPerson(w.p,mv,dt); } }
 const camPos=new THREE.Vector3(0,6,16); let last=performance.now(),time=0,bridgeHint=false,camLook=0;
 function frame(now){
   const dt=Math.min(0.05,Math.max(0,(now-last)/1000)); last=now; time+=dt;
@@ -1201,7 +1209,7 @@ function frame(now){
     if(!stop(ent.position.x+dx,ent.position.z)) ent.position.x+=dx;
     if(!stop(ent.position.x,ent.position.z+dz)) ent.position.z+=dz;
     ent.rotation.y=lerpAng(ent.rotation.y,Math.atan2(mx,mz),dt*(G.driving?7:13)); }
-  animPerson(player,moving&&!G.driving,dt); animPerson(npc,false,dt); animPerson(boss,false,dt);
+  animPerson(player,moving&&!G.driving,dt); strollers(dt);
   // 장비 줍기
   const its=(G.step===2||G.step===3)?ITEMS:(G.step===10||G.step===11)?ITEMS_A:(G.step===18||G.step===19)?ITEMS_P:null;
   if(its) for(const [i,it] of its.entries()){ if(it.got) continue; it.g.rotation.y+=dt*1.5; it.g.position.y=1.3+Math.sin(time*3+i)*0.15;
