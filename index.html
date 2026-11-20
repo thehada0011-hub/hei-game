@@ -576,11 +576,22 @@ const SIGNT=sign('미세먼지분석과 · TMS 상황실',2.9,0.38,0,3.0,-4.93,0
   const tx=new THREE.CanvasTexture(cv); tx.colorSpace=THREE.SRGBColorSpace; const m=new THREE.Mesh(new THREE.PlaneGeometry(11,3.22),new THREE.MeshBasicMaterial({map:tx})); m.position.set(0,1.95,-21.68); LABT.add(m);
   for(const x of [-3.2,0,3.2]){ T(2.6,0.75,1.1,0xf4f5f3,x,0.38,-13.4); T(0.9,0.55,0.06,0x1b1f24,x,1.15,-13.6); T(0.82,0.47,0.02,0x3b82c4,x,1.15,-13.56); cyl(0.24,0.24,0.08,0x1b1b1b,x,0.55,-12.0,LABT); cyl(0.03,0.03,0.55,0x8d979d,x,0.27,-12.0,LABT,8); }
   T(3,0.9,0.8,0xe9eef2,0,0.45,-20.9); T(0.7,0.4,0.05,0x1b1f24,-0.8,1.1,-20.9); T(0.7,0.4,0.05,0x1b1f24,0.8,1.1,-20.9); }
+// ── 농산물검사소 검사실: 믹서와 가스 크로마토그래피 질량분석기(농약을 찾아내는 분석 장비) ──
+const LABG=new THREE.Group(); LABG.position.set(IX,0,IZ); scene.add(LABG); IN_SPOT.g=[1.5,-19.4]; IN_BLOCK.g=[];
+const SIGNG=sign('농산물검사소 · 검사실',2.9,0.38,0,3.0,-4.93,0,{bg:'#1d4fd0',fg:'#fff'},INB);
+{ const T=(w,h,d,c,x,y,z)=>box(w,h,d,c,x,y,z,LABG), Z=-21.3;
+  T(9.4,0.86,1.3,0xf4f5f3,1.3,0.43,Z); T(9.5,0.06,1.4,0xdfe3e6,1.3,0.89,Z); for(const x of [-2.2,4.8]){ T(0.9,0.7,1.1,0xffffff,x,0.37,Z+0.1); for(const y of [0.2,0.42,0.62]) T(0.5,0.03,0.03,0xb9bec4,x,y,Z+0.67); }
+  T(0.8,0.9,1.0,0xf4f7f8,0.3,1.37,Z); T(1.0,1.1,1.0,0xf4f7f8,1.3,1.47,Z); T(0.8,0.4,0.05,0x2b3036,1.3,1.62,Z+0.51); T(0.8,0.28,0.05,0xb9bec4,1.3,1.15,Z+0.51);     // 분석기 본체들
+  T(1.7,1.25,1.0,0xfafbfb,2.75,1.54,Z); T(0.5,1.6,0.5,0xf4f7f8,1.4,2.82,Z); T(0.12,1.5,0.3,0x2b3036,1.68,2.82,Z); T(1.2,0.08,0.5,0x3a3f45,0.7,1.86,Z+0.1);                   // 큰 본체, 자동 시료 주입기 기둥, 시료병 판
+  for(let i=0;i<6;i++) cyl(0.04,0.04,0.12,0x7a3b1c,0.25+i*0.18,1.95,Z+0.1,LABG,8); T(0.6,0.42,0.06,0x1b1f24,3.3,2.4,Z+0.35); T(0.52,0.34,0.02,0x3b82c4,3.3,2.4,Z+0.39);         // 시료병과 터치 화면
+  cyl(0.2,0.16,0.26,0x55636b,-1.2,1.05,Z+0.1,LABG); cyl(0.17,0.22,0.46,0xcfe6ee,-1.2,1.4,Z+0.1,LABG); T(0.5,0.1,0.4,0x2b2f36,-0.3,0.97,Z+0.1); for(const x of [-2.6,-2.3,4.3,4.6]) cyl(0.08,0.08,0.28,0x7a3b1c,x,1.06,Z+0.2,LABG,10);   // 믹서, 저울, 시약병
+  T(1.2,2.2,0.9,0xe9eef2,-6.2,1.1,Z); T(0.06,0.5,0.06,0xb9bec4,-5.75,1.4,Z+0.47); T(2.4,2,0.6,0xffffff,7.2,1,Z-0.2);                                                          // 시료 냉장고와 수납장
+  for(const x of [0.6,2.6]){ cyl(0.24,0.24,0.08,0x1b1b1b,x,0.62,-20.0,LABG); cyl(0.03,0.03,0.6,0x8d979d,x,0.3,-20.0,LABG,8); } }
 // 건물 안에서의 벽 판정: 바닥 구역 안에 온전히 들어 있어야 하고, 가구가 있는 자리는 못 지나가요
 function inBlocked(x,z,r){ const lx=x-IX, lz=z-IZ; if(!IN_OK.some(a=>lx-r>a[0]&&lx+r<a[1]&&lz-r>a[2]&&lz+r<a[3])) return true; return (IN_BLOCK[G.inside]||[]).some(a=>lx>a[0]-r&&lx<a[1]+r&&lz>a[2]-r&&lz<a[3]+r); }
 // 실험실 들어가기/나오기. done은 실험을 마치고 밖으로 나온 뒤 이어서 할 일이에요.
-function enterLab(kind,done){ G.inside=kind; G.labDone=done; G.outPos=[player.g.position.x,player.g.position.z,G.yaw]; LABW.visible=SIGNW.visible=kind==='w'; LABA.visible=SIGNA.visible=kind==='a'; LABT.visible=SIGNT.visible=kind==='t';
-  player.g.position.set(IX,0,IZ+19.5); player.g.rotation.y=Math.PI; G.yaw=0; camPos.set(IX,7,IZ+27); toast('복도를 지나 시험실로 들어가세요',2800); $('#qtx').textContent={w:'복도를 지나 시험실로! 용존산소 측정기 앞으로 가세요',a:'복도를 지나 시험실로! 저울실의 정밀 저울 앞으로 가세요',t:'복도를 지나 TMS 상황실로! 큰 상황판 앞으로 가세요'}[kind]; }
+function enterLab(kind,done){ G.inside=kind; G.labDone=done; G.outPos=[player.g.position.x,player.g.position.z,G.yaw]; LABW.visible=SIGNW.visible=kind==='w'; LABA.visible=SIGNA.visible=kind==='a'; LABT.visible=SIGNT.visible=kind==='t'; LABG.visible=SIGNG.visible=kind==='g';
+  player.g.position.set(IX,0,IZ+19.5); player.g.rotation.y=Math.PI; G.yaw=0; camPos.set(IX,7,IZ+27); toast('복도를 지나 시험실로 들어가세요',2800); $('#qtx').textContent={w:'복도를 지나 시험실로! 용존산소 측정기 앞으로 가세요',a:'복도를 지나 시험실로! 저울실의 정밀 저울 앞으로 가세요',t:'복도를 지나 TMS 상황실로! 큰 상황판 앞으로 가세요',g:'복도를 지나 검사실로! 분석기 앞으로 가세요'}[kind]; }
 function exitLab(){ if(!G.inside) return; const o=G.outPos||[P.door[0],P.door[1]+2,0]; G.inside=null; player.g.position.set(o[0],0,o[1]); G.yaw=o[2]; camPos.set(o[0],6,o[1]+10); $('#qtx').textContent=STEPS[G.step].t; }
 
 /* 충돌 */
@@ -723,8 +734,8 @@ function makeCar(text,col=0x3b82c4){ const c=new THREE.Group(); scene.add(c);
   cyl(0.05,0.05,1.4,0x7c878d,0.6,2.6,-1,c,6); return c; }
 const car2=makeCar('대기 측정차량'); car2.position.set(48.7,0,-27.5); car2.rotation.y=0;
 // 과마다 차량이 한 대씩 있어요. [차, 주차 자리 x, z, 과 이름, 이름표 색]
-const carD=makeCar('미세먼지 측정차량',0xeab308), carI=makeCar('폐수 채수차량',0xf97316), carL=makeCar('소음 측정차량',0x8b5cf6);
-const CARS=[[car,43.5,-27.5,'물환경조사과','#12a594'],[car2,48.7,-27.5,'대기환경과','#3b82c4'],[carD,38.5,-27.5,'미세먼지분석과','#b7791f'],[carI,43.5,-36.5,'산업폐수과','#e8590c'],[carL,48.7,-36.5,'생활환경과','#7c4dff']];
+const carD=makeCar('미세먼지 측정차량',0xeab308), carI=makeCar('폐수 채수차량',0xf97316), carL=makeCar('소음 측정차량',0x8b5cf6), carG=makeCar('농산물 수거차량',0x2f8f5b);
+const CARS=[[car,43.5,-27.5,'물환경조사과','#12a594'],[car2,48.7,-27.5,'대기환경과','#3b82c4'],[carD,38.5,-27.5,'미세먼지분석과','#b7791f'],[carI,43.5,-36.5,'산업폐수과','#e8590c'],[carL,48.7,-36.5,'생활환경과','#7c4dff'],[carG,38.5,-36.5,'농산물검사소','#2f8f5b']];
 for(const [c,x,z,name,col] of CARS){ c.position.set(x,0,z); c.rotation.y=0; const l=label(name,{bg:col,fg:'#fff'}); l.scale.set(4.2,0.85,1); l.position.y=3.8; l.userData.keep=true; c.add(l); }
 function blob(r,parent,sy=1){ const m=new THREE.Mesh(new THREE.CircleGeometry(r,20),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.2,depthWrite:false})); m.rotation.x=-Math.PI/2; m.scale.y=sy; m.position.y=0.07; parent.add(m); }
 
@@ -762,7 +773,7 @@ const arrow=new THREE.Mesh(arrowGeo,new THREE.MeshBasicMaterial({color:0xffc53d}
 const flag=new THREE.Group(); cyl(0.07,0.07,4,0x7c878d,0,2,0,flag,8); box(1.6,0.9,0.05,0x12a594,0.85,3.5,0,flag); flag.position.set(23,0,-9); flag.visible=false; scene.add(flag);
 
 const flag2=new THREE.Group(); cyl(0.07,0.07,4,0x7c878d,0,2,0,flag2,8); box(1.6,0.9,0.05,0x3b82c4,0.85,3.5,0,flag2); flag2.position.set(FX+4.5,0,FZ-5); flag2.visible=false; scene.add(flag2);
-const P={ npc:[-3,-8], bridge:[130,ROAD_Z], door:[19,-31], board:[8,-13], info:[-9,3.6], stack:[FX,FZ-5], boss:[5,-7], play:[PGX,PGZ+12.5], hq:[2,-31.2] };
+const P={ npc:[-3,-8], bridge:[130,ROAD_Z], door:[19,-31], board:[8,-13], info:[-9,3.6], stack:[FX,FZ-5], boss:[5,-7], play:[PGX,PGZ+12.5], hq:[2,-31.2], agri:[MK.bx,MK.bz-6.3] };
 // 측정값을 보고 알맞은 깃발을 올리는 세 과의 임무. opts는 [깃발 이름, 색, 이 값까지]예요.
 const XMS={
   d:{name:'미세먼지분석과',job:'측정소 수리',ic:'📡',sub:'고장 난 측정소를 고치고, TMS 상황실에서 주의보를 발령해요',items:[['공구함',0xe5484d,'🧰'],['청소 솔',0x3b82c4,'🧹'],['새 필터',0xffc53d,'🧻']],at:DSTN[0].at,go:'고장 난 측정소로 출동해서 수리하세요',lo:3,
@@ -770,16 +781,18 @@ const XMS={
   i:{name:'산업폐수과',job:'폐수 검사',ic:'🏭',sub:'공장 방류구에서 물을 떠 시험지로 pH를 검사해요',items:[['시험지',0xfff3c4,'🧪'],['비커',0x9fd8ff,'🥛'],['고무장갑',0xff8fa3,'🧤']],at:XAT.i,go:'다리를 건너 북쪽 공장 방류구로 가서 폐수를 검사하세요',ask:v=>`폐수의 pH가 ${v}! 알맞은 판정 깃발을 올려요`,lo:3,dec:1,
     opts:[['산성이 강해요','#f97316',5.7],['기준 이내','#22c55e',8.6],['알칼리가 강해요','#8b5cf6',12]],help:'5.8보다 낮으면 산성 · 5.8부터 8.6까지 기준 이내 · 8.6보다 높으면 알칼리',fact:'공장에서 쓴 물은 깨끗하게 처리한 뒤에 내보내야 해요. 연구원은 방류구의 물을 떠서 기준을 지켰는지 검사해요.'},
   l:{name:'생활환경과',job:'소음 측정',ic:'🔊',sub:'어린이집 앞에서 소음계로 방해 소리를 피해 소음을 정확히 재요',items:[['소음계',0x4a4f55,'🎙️'],['삼각대',0x8d979d,'📐'],['방풍망',0x6b7780,'⚫']],at:XAT.l,go:'서쪽 끝 큰 벚꽃나무 옆 정원어린이집으로 가서 소음을 재세요',ask:v=>`소음이 ${v}데시벨! 알맞은 깃발을 올려요`,lo:30,
-    opts:[['조용해요','#3b82f6',45],['보통이에요','#22c55e',60],['시끄러워요','#eab308',75],['매우 시끄러워요','#ef4444',100]],help:'조용 45까지 · 보통 60까지 · 시끄러움 75까지 · 그보다 크면 매우 시끄러움',fact:'생활환경과는 소음뿐 아니라 실내 공기와 어린이 활동공간이 안전한지도 검사해요.'} };
+    opts:[['조용해요','#3b82f6',45],['보통이에요','#22c55e',60],['시끄러워요','#eab308',75],['매우 시끄러워요','#ef4444',100]],help:'조용 45까지 · 보통 60까지 · 시끄러움 75까지 · 그보다 크면 매우 시끄러움',fact:'생활환경과는 소음뿐 아니라 실내 공기와 어린이 활동공간이 안전한지도 검사해요.'},
+  g:{name:'농산물검사소',job:'농약 검사',act:'농산물 수거',ic:'🥕',sub:'유통센터에서 농산물을 수거해 분석기로 농약을 검사해요',items:[['시료 봉투',0xffffff,'🛍️'],['아이스박스',0x3b82c4,'🧊'],['장갑',0xff8fa3,'🧤']],at:[MK.x-2,MK.z-9.6],go:'서쪽 산 앞 농산물 유통센터로 가서 검사할 농산물을 수거하세요',next:27,nextMsg:'수거 끝! 바로 옆 농산물검사소 검사실로 가세요.',lo:3,
+    opts:[],help:'',fact:'농산물검사소는 유통센터에 들어온 채소와 과일을 갈아서 농약 성분을 뽑아내고, 분석 장비로 검사해요. 기준을 넘으면 시장에 나가지 못하게 막아요.'} };
 let XM=XMS.d;
 const xStn=()=>G.xk==='d'?DSTN.find(s=>!s.ok):null, xAt=()=>{ const s=xStn(); return s?s.at:XM.at; };   // 미세먼지 임무는 아직 점검하지 않은 측정소가 목적지예요
-const XCAR_NEAR=34, xCar=()=>({d:carD,i:carI,l:carL})[G.xk]||car2, xCarName=()=>XM.name+' 차량';   // 이 세 임무도 장비를 실은 차를 현장 가까이 몰고 가야 해요
-const doneCount=()=>Object.values(G.done).filter(Boolean).length, allDone=()=>doneCount()>=6;
+const XCAR_NEAR=34, xCar=()=>({d:carD,i:carI,l:carL,g:carG})[G.xk]||car2, xCarName=()=>XM.name+' 차량';   // 이 세 임무도 장비를 실은 차를 현장 가까이 몰고 가야 해요
+const doneCount=()=>Object.values(G.done).filter(Boolean).length, allDone=()=>doneCount()>=7;
 
 /* ───────── 게임 상태 ───────── */
 const G={ name:'', step:0, driving:false, yaw:0, lock:true, waitLeft:0,
   score:{equip:0,depth:0,bottle:0,order:0,grade:0}, bod:0, receipt:'',
-  air:{equip:0,haul:0,gauge:0,filter:0,weigh:0,judge:0}, dust:0, done:{w:false,a:false,p:false,d:false,i:false,l:false}, xStars:0, cert:false, vy:0, pl:{equip:0,sample:0,cl:0,ph:0,judge:0}, playCase:null };
+  air:{equip:0,haul:0,gauge:0,filter:0,weigh:0,judge:0}, dust:0, done:{w:false,a:false,p:false,d:false,i:false,l:false,g:false}, xStars:0, cert:false, vy:0, pl:{equip:0,sample:0,cl:0,ph:0,judge:0}, playCase:null };
 const STEPS=[
   {t:'선배 연구원에게 가서 임무를 고르세요', at:()=>G.cert?null:allDone()?P.boss:P.npc},
   {t:'주차장에 세워 둔 물환경조사과 차량에 타세요', at:()=>[car.position.x,car.position.z]},
@@ -808,6 +821,7 @@ const STEPS=[
   {t:'', at:()=>{ const c=xCar(), a=xAt(), s=xStn(); if(!G.driving&&dist(c.position,a)>XCAR_NEAR) return [c.position.x,c.position.z]; return s&&s.roof&&player.g.position.y<0.3?[18.3,63.8]:a; }},   // 옥상 임무는 먼저 계단 아래로 안내해요
   {t:'본관 앞 게시판에 결과를 보고하세요', at:()=>P.board},
   {t:'본관 TMS 상황실로 가서 대기질 상황판을 지켜보세요', at:()=>P.hq},
+  {t:'농산물검사소 검사실로 가서 농약을 검사하세요', at:()=>P.agri},
 ];
 function setStep(n){ G.step=n; qtCache=null; const all=allDone(); $('#qno').textContent=n===0?(all?(G.cert?'완료':'임명장'):'임무 선택'):n<8?`수질 ${n}/7`:n<17?`대기 ${n-8}/7`:n>20?'물놀이터 재측정':`물놀이터 ${n-16}/4`;
   $('#qtx').textContent=n===0&&all?(G.cert?'명예 연구원이 되었어요! 마을을 자유롭게 둘러보세요':'도장을 모두 모았어요! 원장님께 가서 임명장을 받으세요'):n===0&&doneCount()>0?'선배 연구원에게 가서 다음 임무를 고르세요':STEPS[n].t;
@@ -1244,24 +1258,24 @@ function playReport(){ const s=G.pl, C=G.playCase, total=s.equip+s.sample+s.cl+s
     <button class="go" id="ok">마을 둘러보기</button></div>`);
   $('#ok').addEventListener('click',()=>{ closeMini(); setStep(0); }); }
 /* ───────── 도장과 임명장 ───────── */
-function stampsHtml(nw){ return `<div class="stamps">${[['w','<small>물환경조사과</small><br>하천 수질'],['p','<small>물환경조사과</small><br>물놀이터'],['a','<small>대기환경과</small><br>굴뚝 대기'],['d','<small>미세먼지분석과</small><br>미세먼지'],['i','<small>산업폐수과</small><br>폐수 검사'],['l','<small>생활환경과</small><br>소음 측정']].map(([k,t])=>`<div class="stamp ${G.done[k]?'on':''} ${k===nw?'new':''}"><span>${t}${G.done[k]?'<br>완료':''}</span></div>`).join('')}</div>`; }
+function stampsHtml(nw){ return `<div class="stamps">${[['w','<small>물환경조사과</small><br>하천 수질'],['p','<small>물환경조사과</small><br>물놀이터'],['a','<small>대기환경과</small><br>굴뚝 대기'],['d','<small>미세먼지분석과</small><br>미세먼지'],['i','<small>산업폐수과</small><br>폐수 검사'],['l','<small>생활환경과</small><br>소음 측정'],['g','<small>농산물검사소</small><br>농약 검사']].map(([k,t])=>`<div class="stamp ${G.done[k]?'on':''} ${k===nw?'new':''}"><span>${t}${G.done[k]?'<br>완료':''}</span></div>`).join('')}</div>`; }
 function stampBook(){ if(G.lock) return; const n=doneCount();
-  openMini(`<div class="card"><h3>연구 도장판</h3><p>임무를 끝낼 때마다 도장을 받아요.<br>모두 모으면 원장님이 임명장을 주세요. (${n}/6)</p>${stampsHtml()}<p style="font-weight:700">🪧 마을에서 읽은 팻말 ${SIGNS.filter(x=>x.read).length} / ${SIGNS.length}<br>🐾 인사한 동물 친구 ${ANIMALS.filter(x=>x.met).length} / ${ANIMALS.length}</p><button class="go" id="ok">닫기</button></div>`); $('#ok').addEventListener('click',closeMini); }
+  openMini(`<div class="card"><h3>연구 도장판</h3><p>임무를 끝낼 때마다 도장을 받아요.<br>모두 모으면 원장님이 임명장을 주세요. (${n}/7)</p>${stampsHtml()}<p style="font-weight:700">🪧 마을에서 읽은 팻말 ${SIGNS.filter(x=>x.read).length} / ${SIGNS.length}<br>🐾 인사한 동물 친구 ${ANIMALS.filter(x=>x.met).length} / ${ANIMALS.length}</p><button class="go" id="ok">닫기</button></div>`); $('#ok').addEventListener('click',closeMini); }
 $('#stampBtn').addEventListener('click',stampBook);
 function bossTalk(){ const n=doneCount();
-  if(n<6){ say([['원장님',`반가워요, {n} 연구원! 임무 도장 6개를 모두 모아 오면 임명장을 줄게요. 지금은 ${n}/6개예요.`]]); return; }
+  if(n<7){ say([['원장님',`반가워요, {n} 연구원! 임무 도장 7개를 모두 모아 오면 임명장을 줄게요. 지금은 ${n}/7개예요.`]]); return; }
   if(G.cert){ certCard(); return; }
-  say([['원장님','{n} 연구원, 여섯 가지 임무를 모두 해냈군요. 정말 수고했어요!'],['원장님','시민의 건강과 깨끗한 환경을 지키는 일에 함께해 줘서 고마워요. 명예 연구원으로 임명합니다.']],certCard); }
+  say([['원장님','{n} 연구원, 일곱 가지 임무를 모두 해냈군요. 정말 수고했어요!'],['원장님','시민의 건강과 깨끗한 환경을 지키는 일에 함께해 줘서 고마워요. 명예 연구원으로 임명합니다.']],certCard); }
 function certCard(){ G.cert=true; setStep(G.step); const cv=document.createElement('canvas'); cv.width=900; cv.height=1200; const g=cv.getContext('2d');
   g.fillStyle='#fffaf0'; g.fillRect(0,0,900,1200); g.strokeStyle='#b8943f'; g.lineWidth=10; g.strokeRect(30,30,840,1140); g.strokeStyle='#12a594'; g.lineWidth=3; g.strokeRect(52,52,796,1096);
   g.textAlign='center'; g.fillStyle='#17323a'; g.font=`bold 96px ${FONT}`; g.fillText('임 명 장',450,230);
   g.font=`bold 40px ${FONT}`; g.fillStyle='#0b7d70'; g.fillText('명예 연구원',450,315);
   g.fillStyle='#17323a'; g.font=`bold 68px ${FONT}`; g.fillText(G.name,450,455); g.fillRect(250,478,400,3);
-  g.font=`32px ${FONT}`; ['위 사람은 환경 분야 다섯 과의 임무를 훌륭히 마치고','시민의 건강과 깨끗한 환경을 지키는 일에','함께하였으므로 명예 연구원으로 임명합니다.'].forEach((l,i)=>g.fillText(l,450,575+i*56));
+  g.font=`32px ${FONT}`; ['위 사람은 일곱 가지 검사 임무를 훌륭히 마치고','시민의 건강과 깨끗한 환경을 지키는 일에','함께하였으므로 명예 연구원으로 임명합니다.'].forEach((l,i)=>g.fillText(l,450,575+i*56));
   const seal=(x,y,t,u)=>{ g.save(); g.translate(x,y); g.scale(0.72,0.72); g.rotate(-0.2); g.strokeStyle='#c8102e'; g.fillStyle='#c8102e'; g.lineWidth=6; g.beginPath(); g.arc(0,0,74,0,7); g.stroke(); g.lineWidth=2; g.beginPath(); g.arc(0,0,63,0,7); g.stroke();
     g.font=`bold 19px ${FONT}`; g.fillText(t,0,-18); g.font=`bold 22px ${FONT}`; g.fillText(u,0,10); g.font=`bold 16px ${FONT}`; g.fillText('완료',0,36); g.restore(); };
-  seal(280,790,'물환경조사과','하천 수질'); seal(450,790,'물환경조사과','물놀이터'); seal(620,790,'대기환경과','굴뚝 대기');
-  seal(280,908,'미세먼지분석과','미세먼지'); seal(450,908,'산업폐수과','폐수 검사'); seal(620,908,'생활환경과','소음 측정');
+  seal(210,790,'물환경조사과','하천 수질'); seal(370,790,'물환경조사과','물놀이터'); seal(530,790,'대기환경과','굴뚝 대기'); seal(690,790,'미세먼지분석과','미세먼지');
+  seal(290,908,'산업폐수과','폐수 검사'); seal(450,908,'생활환경과','소음 측정'); seal(610,908,'농산물검사소','농약 검사');
   const d=new Date(); g.fillStyle='#17323a'; g.font=`30px ${FONT}`; g.fillText(`${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`,450,1005);
   g.font=`bold 46px ${FONT}`; g.fillText(CONFIG.ORG+'장',450,1080);
   g.font=`20px ${FONT}`; g.fillStyle='#8a8f94'; g.fillText('홍보 게임 「나는야 보건환경연구원」 기념 임명장',450,1128);
@@ -1315,14 +1329,15 @@ function getAction(){
   if(G.step===20&&dist(p,P.board)<4.5) return {label:'보고하기',fn:playReport};
   if(G.step===24&&G.xk==='d'){ const st=xStn(); if(st&&dist(p,st.at)<(st.roof?4:4.6)&&(!st.roof||player.g.position.y>6)) return {label:'측정소 수리',fn:()=>{ if(needItems(ITEMS_X)) return; if(dist(xCar().position,st.at)>XCAR_NEAR){ toast('수리 도구가 차에 있어요. '+xCarName()+'을 측정소 가까이 몰고 오세요.',3000); return; }
       focusInlet(st.name,()=>{ st.ok=true; st.bad=false; stnT=0; const left=DSTN.filter(s=>!s.ok).length; if(left){ qtCache=null; $('#qtx').textContent='남은 측정소 '+left+'곳. 노란 점선을 따라 다음 측정소로 가세요'; toast(st.name+' 점검 끝! 남은 측정소 '+left+'곳',2600); } else { setStep(26); toast('수리 끝! 측정값이 다시 들어와요. 본관 TMS 상황실로 가세요!',3200); } }); }}; }
+  if(G.step===27&&dist(p,P.agri)<5) return {label:'검사실 들어가기',fn:()=>enterLab('g',()=>{ setStep(25); toast('검사 끝! 본관 게시판에 결과를 보고하세요.',2800); })};
   if(G.step===26&&dist(p,P.hq)<5) return {label:'TMS 상황실 들어가기',fn:()=>enterLab('t',()=>{ setStep(25); toast('주의보 발령 완료! 본관 게시판에 보고하세요.',2800); })};
-  if(G.step===24&&G.xk!=='d'&&dist(p,XM.at)<7) return {label:XM.job+' 시작',fn:()=>{ if(needItems(ITEMS_X)) return; if(dist(xCar().position,XM.at)>XCAR_NEAR){ toast('측정 장비가 차에 있어요. 주차장의 '+xCarName()+'을 타고 오세요.',3000); return; } xGame(G.xk)(XM,()=>{ setStep(25); toast('측정 끝! 본관 게시판에 결과를 보고하세요.',2800); }); }};
+  if(G.step===24&&G.xk!=='d'&&dist(p,XM.at)<7) return {label:XM.act||XM.job+' 시작',fn:()=>{ if(needItems(ITEMS_X)) return; if(dist(xCar().position,XM.at)>XCAR_NEAR){ toast('측정 장비가 차에 있어요. 주차장의 '+xCarName()+'을 타고 오세요.',3000); return; } xGame(G.xk)(XM,()=>{ setStep(XM.next||25); toast(XM.nextMsg||'측정 끝! 본관 게시판에 결과를 보고하세요.',2800); }); }};
   if(G.step===25&&dist(p,P.board)<4.5) return {label:'보고하기',fn:xReport};
   if(G.step===0&&dist(p,P.npc)<4.2) return {label:'임무 고르기',fn:missionSelect};
   if((G.step===2||G.step===3)&&dist(p,P.bridge)<8) return {label:'물 채취하기',fn:()=>{ if(needItems(ITEMS)) return; if(dist(car.position,P.bridge)>20){ toast('채수 장비가 차에 있어요. 차를 다리까지 몰고 오세요.'); return; }
     focusSample(()=>{ iceBox.visible=true; ITEMS.forEach(i=>i.g.visible=false); setStep(4); say([[SENIOR,'수고했어요! 시료는 아이스박스에 잘 담겼어요.'],[SENIOR,'차를 타고 환경동으로 돌아와 시료를 접수하세요.']]); }); }};
   if(G.inside){ const lx=p.x-IX, lz=p.z-IZ, sp=IN_SPOT[G.inside], fin=()=>{ const d=G.labDone; exitLab(); d&&d(); };   // 건물 안: 장비 앞에서 실험, 홀에서 나가기
-    if(Math.hypot(lx-sp[0],lz-sp[1])<2.8) return G.inside==='w'?{label:'BOD 실험 시작',fn:()=>focusBOD(fin)}:G.inside==='t'?{label:'상황판 지켜보기',fn:()=>focusTMS(fin)}:{label:'필터 무게 재기',fn:()=>focusWeigh(fin)};
+    if(Math.hypot(lx-sp[0],lz-sp[1])<2.8) return G.inside==='w'?{label:'BOD 실험 시작',fn:()=>focusBOD(fin)}:G.inside==='t'?{label:'상황판 지켜보기',fn:()=>focusTMS(fin)}:G.inside==='g'?{label:'농약 검사 시작',fn:()=>focusGC(fin)}:{label:'필터 무게 재기',fn:()=>focusWeigh(fin)};
     if(lz>20.2) return {label:'밖으로 나가기',fn:exitLab}; return null; }
   if(G.step===4&&dist(p,P.door)<5) return {label:'실험실 들어가기',fn:()=>{ if(dist(car.position,P.door)>DOOR_LIMIT){ toast('시료가 차에 있어요. 차를 환경동 앞 도로에 세워 주세요.'); return; }
     enterLab('w',()=>{ iceBox.visible=false; G.waitLeft=CONFIG.WAIT_SEC; setStep(5); say([[SENIOR,`배양을 시작했어요. 실제로는 5일을 기다리지만 게임에서는 ${CONFIG.WAIT_SEC}초면 돼요.`],[SENIOR,'기다리는 동안 마을을 둘러보세요. 광장의 ‘연구원 이야기’ 안내판도 읽어 보고요.']]); }); }};
@@ -1546,7 +1561,7 @@ $('#enter').addEventListener('click',()=>{ const v=nm.value.trim().slice(0,6);
   $('#start').style.display='none'; $('#hud').style.display='block'; setStep(0); G.lock=false;
   say([['안내',`${G.name} 연구원, 첫 출근을 환영해요! 왼쪽 아래 조이스틱으로 걷고, 화면을 좌우로 밀면 둘러볼 수 있어요.`]]);
 });
-window.__G=G; window.__dbg={player,car,car2,carD,carI,carL,P,marker}; window.__t={sampleGame,bottleGame,labGame,climbGame,haulGame,gaugeGame,filterGame,closeMini,focusSample,focusCatch,focusHaul,playTest,setPlay,playReport,doseGame,remeasure,focusDust,focusStrip,focusNoise,xReport,startMission,setStep,focusBOD,focusWeigh,enterLab,exitLab,focusInlet,focusTMS,DSTN,focusClimb,focusGauge,XMS,ITEMS,ITEMS_A,ITEMS_P,ITEMS_X,FISH,CAMP};
+window.__G=G; window.__dbg={player,car,car2,carD,carI,carL,carG,P,marker}; window.__t={sampleGame,bottleGame,labGame,climbGame,haulGame,gaugeGame,filterGame,closeMini,focusSample,focusCatch,focusHaul,playTest,setPlay,playReport,doseGame,remeasure,focusDust,focusStrip,focusNoise,xReport,startMission,setStep,focusBOD,focusWeigh,enterLab,exitLab,focusInlet,focusTMS,focusVeg,focusGC,DSTN,focusClimb,focusGauge,XMS,ITEMS,ITEMS_A,ITEMS_P,ITEMS_X,FISH,CAMP};
 const DOOR_LIMIT=52;   // 차를 실험동 입구에서 이 거리 안에 세워야 시료를 접수할 수 있어요
 flag.position.set(24,0,-25);
 // 차량 3D 모형. 못 불러오면 상자로 만든 차량을 그대로 써요. rotY로 앞머리 방향을 맞춰요.
@@ -1555,7 +1570,7 @@ function loadCar(file,grp,len,rotY,tint){ new GLTFLoader().load(file,gltf=>{ con
   m.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; if(o.material){ o.material.metalness=0; o.material.roughness=0.9; if(tint) o.material.color.multiply(new THREE.Color(tint)); } } });
   for(const o of [...grp.children]) if(!o.userData.keep) o.visible=false; if(grp===car) car.remove(iceBox); grp.add(m); grp.userData.model=m; },undefined,()=>{}); }
 loadCar('car_water.glb',car,4.7,Math.PI/2); loadCar('car_air.glb',car2,5.4,Math.PI/2);
-loadCar('car_air.glb',carD,5.4,Math.PI/2); loadCar('car_water.glb',carI,4.7,Math.PI/2); loadCar('car_air.glb',carL,5.4,Math.PI/2);   // 모형은 같고, 차 위의 과 이름표로 구분해요
+loadCar('car_air.glb',carD,5.4,Math.PI/2); loadCar('car_water.glb',carI,4.7,Math.PI/2); loadCar('car_air.glb',carL,5.4,Math.PI/2); loadCar('car_water.glb',carG,4.7,Math.PI/2);   // 모형은 같고, 차 위의 과 이름표로 구분해요
 /* ───────── 초점 모드 (산사 방식): 걷던 마을이 흐려지고, 그 앞에 실물 같은 장비 하나만 떠요 ───────── */
 const FOC={};
 { const cv=document.createElement('canvas'); cv.id='fx'; document.body.appendChild(cv);
@@ -1888,7 +1903,63 @@ function focusTMS(done){ focusUI({hintTop:1,go:'주의보 발령',star:'9시'});
   (function loop(now){ if(!alive) return; const dt=Math.min(0.05,Math.max(0,(now-last)/1000)); last=now; t+=dt; st.t=t; tk+=dt; if(!issued&&tk>1.9){ tk=0; tick(); }
     drawTMS(g2,1024,574,st); tex.needsUpdate=true; w1.who.armR.rotation.x=-2.3+Math.sin(t*2)*0.15; r.render(s,c); requestAnimationFrame(loop); })(last); }
 
-function xGame(k){ return {d:focusDust,i:focusStrip,l:focusNoise}[k]; }
+// 농산물검사소 ①: 유통센터에서 검사할 농산물 수거. 쪽지에 적힌 농산물이 담긴 상자를 눌러 시료 봉투에 담아요.
+function focusVeg(M,next){ focusUI({hintTop:1,star:'수거 0/3'}); const S=xStage(0xd6d0c2,0.8), {grp,add,rod,cv,r,s,c,hint}=S, sp=Math.min(1.5,(S.hw-0.55)*2/3), kk=Math.min(1,sp/1.3);
+  add(9.6,0.35,2.4,0x4f8a6b,0,3.9,-0.9); for(const x of [-1.2,1.2]) rod(0.14,0.14,4.6,0xdfe3e3,x*Math.min(3.4,S.hw),1.6,-1.2); add(9.6,3.2,0.2,0xe9eef0,0,1.0,-2.0,{roughness:1});
+  const ALL=[['상추',0x5fae5a],['당근',0xf08a24],['사과',0xe5484d],['가지',0x8e5bd0],['참외',0xf2c531]], pick=shuffle(ALL.map((_,i)=>i)).slice(0,4), want=shuffle(pick.slice()).slice(0,3);
+  const crates=pick.map((id,i)=>{ const g=new THREE.Group(), x=(i-1.5)*sp; g.position.set(x,-0.6,0.3); g.scale.setScalar(kk); grp.add(g); const B=(w,h,d,col,px,py,pz)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),PBR(col,{roughness:.9})); m.position.set(px,py,pz); g.add(m); return m; };
+    B(1.15,0.6,0.9,0x9a6b3a,0,0.3,0); B(1.2,0.08,0.95,0x7a5330,0,0.6,0); for(let j=0;j<6;j++){ const m=new THREE.Mesh(new THREE.SphereGeometry(0.19,10,8),PBR(ALL[id][1],{roughness:.7})); m.position.set(-0.36+(j%3)*0.36,0.74+(j>2?0.06:0),-0.18+Math.floor(j/3)*0.36); g.add(m); }
+    const tag=xScreen(g,0.9,0.3,'#ffffff'); tag.position.set(0,0.3,0.46); tag.userData.show(ALL[id][0],'#17323a',64); return {g,x,id}; });
+  const note=xScreen(grp,2.0,0.95,'#fff8d6'); note.position.set(0,2.6,-0.4);
+  const wk=fxWorker(grp,{scale:0.5}); wk.body.position.set(sp*0.5,-0.6,-0.9); wk.body.rotation.y=0;   // 연구원은 상자 뒤에 서서 봉투를 들고 있어요
+  const bag=add(0.45,0.55,0.25,0xf4f7f8,sp*0.5+0.42,0.25,-0.75), fly=new THREE.Mesh(new THREE.SphereGeometry(0.2,10,8),PBR(0xffffff)); fly.visible=false; grp.add(fly);
+  let round=0,miss=0,t=0,alive=true,last=performance.now(),sadT=0,hopT=0,fk=1,fx0=0;
+  const off=()=>{ alive=false; focusOff(grp); };
+  const ask=()=>{ const v=ALL[want[round]]; note.userData.show(v[0],'#17323a',58,'오늘 검사할 농산물','#8a6a00'); hint(`쪽지에 적힌 ${v[0]} 상자를 눌러 시료 봉투에 담아요 (${round+1}/3)`); };
+  cv.onpointerdown=e=>{ if(round>=3||fk<1) return; const x=S.px(e); let b=crates[0]; for(const cr of crates) if(Math.abs(cr.x-x)<Math.abs(b.x-x)) b=cr; if(Math.abs(b.x-x)>sp*0.55) return;
+    if(b.id!==want[round]){ miss++; sadT=1; sfx('no'); fPop('그건 '+ALL[b.id][0]+'예요','warn'); return; }
+    hopT=0.3; sfx('pop'); fPop(ALL[b.id][0]+' 수거!','good'); fly.material.color.setHex(ALL[b.id][1]); fly.visible=true; fk=0; fx0=b.x; round++; $('#fstar').textContent=`수거 ${round}/3`;
+    if(round<3) setTimeout(()=>{ if(alive) ask(); },600); else { G.vegs=want.map(i=>ALL[i]); G.vegMiss=miss; hint('세 가지를 모두 담았어요. 식지 않게 아이스박스에 넣어 검사실로 가져가요'); sfx('ok'); setTimeout(()=>{ if(alive){ off(); next(); } },2200); } };
+  $('#fclose').onclick=off; ask();
+  (function loop(now){ if(!alive) return; const dt=Math.min(0.05,Math.max(0,(now-last)/1000)); last=now; t+=dt;
+    if(fk<1){ fk=Math.min(1,fk+dt*2.2); fly.position.set(fx0+(bag.position.x-fx0)*fk,0.3+Math.sin(fk*Math.PI)*1.2+0.1*fk,0.3+(-0.75-0.3)*fk); if(fk>=1) fly.visible=false; }
+    sadT=Math.max(0,sadT-dt); hopT=Math.max(0,hopT-dt); wk.face(sadT>0); wk.body.position.y=-0.6+Math.sin(hopT/0.3*Math.PI)*0.12; wk.who.armR.rotation.x=-0.9; r.render(s,c); requestAnimationFrame(loop); })(last); }
+// 농산물검사소 ②: 검사실. 시료를 믹서로 갈아 성분을 뽑고, 분석기가 그린 그래프에서 기준선을 넘은 봉우리가 있는지 판정해요.
+function focusGC(done){ const VG=G.vegs&&G.vegs.length===3?G.vegs:[['상추',0x5fae5a],['당근',0xf08a24],['사과',0xe5484d]];
+  focusUI({hintTop:1,go:'꾹 눌러 갈기',star:'검사 0/3'}); const S=xStage(0xe3e7ea,0.75), {grp,add,rod,r,s,c,hint}=S, go=$('#fgo'), ob=$('#fopts'), k=Math.min(1,(S.hw-0.2)/2.7), X=v=>v*k;
+  add(9.6,4.6,0.2,0xeef1f1,0,1.7,-1.5,{roughness:1});
+  rod(0.36,0.42,0.4,0x55636b,X(-2.0),-0.4,0.5); const jar=new THREE.Mesh(new THREE.CylinderGeometry(0.34,0.28,0.85,20,1,true),new THREE.MeshPhysicalMaterial({color:0xd6f1ff,transparent:true,opacity:.4,roughness:.05,side:THREE.DoubleSide,depthWrite:false})); jar.position.set(X(-2.0),0.22,0.5); grp.add(jar);   // 믹서
+  const mash=rod(0.28,0.24,0.45,0xffffff,X(-2.0),0.05,0.5,{roughness:.9}), chunks=[...Array(6)].map((_,i)=>{ const m=new THREE.Mesh(new THREE.SphereGeometry(0.12,8,6),PBR(0xffffff)); grp.add(m); return m; });
+  add(0.7,0.8,0.9,0xf4f7f8,X(-0.7),-0.2,-0.3); add(0.9,1.0,0.9,0xf4f7f8,X(0.2),-0.1,-0.3); add(0.7,0.36,0.05,0x2b3036,X(0.2),0.1,0.17); add(1.5,1.12,0.9,0xfafbfb,X(1.5),-0.04,-0.3);   // 분석기
+  add(0.4,1.3,0.4,0xf4f7f8,X(0.3),1.05,-0.3); add(0.1,1.2,0.25,0x2b3036,X(0.55),1.05,-0.3); add(1.0,0.07,0.45,0x3a3f45,X(-0.4),0.3,-0.2);
+  const vial=rod(0.07,0.07,0.22,0xc98a3a,X(-2.0),-0.3,0.9,{roughness:.3}); vial.visible=false; const vT=new THREE.Vector3();
+  const Wd=Math.min(3.3,S.hw*2-0.5), cvs=document.createElement('canvas'); cvs.width=640; cvs.height=320; const g2=cvs.getContext('2d'), tex=new THREE.CanvasTexture(cvs); tex.colorSpace=THREE.SRGBColorSpace;
+  add(Wd+0.16,Wd*0.5+0.16,0.08,0x1b1f24,Math.min(X(0.9),S.hw-Wd/2-0.2),2.5,-1.3); const mon=new THREE.Mesh(new THREE.PlaneGeometry(Wd,Wd*0.5),new THREE.MeshBasicMaterial({map:tex})); mon.position.set(Math.min(X(0.9),S.hw-Wd/2-0.2),2.5,-1.25); grp.add(mon);
+  const wk=fxWorker(grp,{scale:0.5}); wk.body.position.set(X(-2.75),-0.6,0.2); wk.body.rotation.y=0.6;
+  const LIM=0.66, order=shuffle([true,false,Math.random()<0.5]); let idx=0,phase='blend',bl=0,pt=0,rp=0,peaks=[],bad=false,miss=0,hold=false,t=0,alive=true,last=performance.now(),sadT=0,hopT=0; const badNames=[];
+  const draw=()=>{ const W=640,H=320,x0=46,y0=H-40,w=W-66,hh=H-86; g2.fillStyle='#0f1720'; g2.fillRect(0,0,W,H); g2.fillStyle='#e9eef2'; g2.textAlign='left'; g2.textBaseline='middle'; g2.font='bold 24px '+FONT; g2.fillText(VG[Math.min(2,idx)][0]+' · 농약 성분 그래프',16,24);
+    g2.strokeStyle='#3a4652'; g2.lineWidth=2; g2.beginPath(); g2.moveTo(x0,y0-hh); g2.lineTo(x0,y0); g2.lineTo(x0+w,y0); g2.stroke();
+    g2.strokeStyle='#ff5a5a'; g2.setLineDash([10,7]); g2.beginPath(); g2.moveTo(x0,y0-hh*LIM); g2.lineTo(x0+w,y0-hh*LIM); g2.stroke(); g2.setLineDash([]); g2.fillStyle='#ff7b7b'; g2.textAlign='right'; g2.font='bold 20px '+FONT; g2.fillText('기준선',x0+w,y0-hh*LIM-14);
+    if(rp>0){ g2.strokeStyle='#7ff0b8'; g2.lineWidth=3; g2.beginPath(); for(let i=0;i<=200*rp;i++){ const u=i/200; let v=0.03+Math.sin(u*40)*0.008; for(const p of peaks) v+=p.h*Math.exp(-((u-p.x)**2)/0.0009); const px=x0+w*u, py=y0-hh*Math.min(1.02,v); i?g2.lineTo(px,py):g2.moveTo(px,py); } g2.stroke(); }
+    else { g2.fillStyle='#55636b'; g2.textAlign='center'; g2.font='22px '+FONT; g2.fillText('시료를 기다리는 중…',x0+w/2,y0-hh/2); } tex.needsUpdate=true; };
+  const clean=()=>{ alive=false; ob.style.display='none'; ob.onclick=null; go.onpointerdown=go.onpointerup=go.onpointerleave=go.onpointercancel=null; }, off=()=>{ clean(); focusOff(grp); };
+  const start=()=>{ const v=VG[idx]; bad=order[idx]; peaks=[0.16,0.37,0.58,0.8].map(x=>({x:x+(Math.random()-0.5)*0.05,h:0.14+Math.random()*0.36})); if(bad) peaks[Math.floor(Math.random()*4)].h=0.78+Math.random()*0.16;
+    phase='blend'; bl=0; rp=0; pt=0; mash.material.color.setHex(v[1]); mash.scale.y=0.25; chunks.forEach((m,i)=>{ m.visible=true; m.material.color.setHex(v[1]); m.position.set(X(-2.0)+Math.cos(i*1.05)*0.14,0.05+i*0.09,0.5+Math.sin(i*1.05)*0.14); }); vial.visible=false; ob.style.display='none'; go.textContent='꾹 눌러 갈기'; go.style.display='block'; hint(`${v[0]} 시료를 믹서에 넣었어요. 버튼을 꾹 눌러 곱게 갈아요 (${idx+1}/3)`); draw(); };
+  go.onpointerdown=e=>{ e.preventDefault(); if(phase==='blend') hold=true; }; go.onpointerup=go.onpointerleave=go.onpointercancel=()=>{ hold=false; };
+  ob.innerHTML='<button data-b="0" style="background:#22c55e">적합 (기준 이내)</button><button data-b="1" style="background:#ef4444">부적합 (기준 초과)</button>';
+  ob.onclick=e=>{ const b=e.target.closest('button'); if(!b||phase!=='judge') return; const say=b.dataset.b==='1';
+    if(say!==bad){ miss++; sadT=1.1; sfx('no'); fPop('다시 봐요','warn'); hint(bad?'잘 봐요. 빨간 기준선 위로 솟은 봉우리가 있어요':'잘 봐요. 모든 봉우리가 빨간 기준선 아래에 있어요'); return; }
+    phase='next'; hopT=0.35; ob.style.display='none'; const v=VG[idx]; if(bad) badNames.push(v[0]); sfx(bad?'good':'ok'); fPop(bad?'부적합! 출하 정지':'적합!','good'); hint(bad?`${v[0]}에서 기준을 넘는 농약이 나왔어요. 시장에 나가지 못하게 막아요`:`${v[0]}: 기준 이내예요. 안심하고 먹을 수 있어요`); idx++; $('#fstar').textContent=`검사 ${idx}/3`;
+    setTimeout(()=>{ if(!alive) return; if(idx<3){ start(); return; } hint(badNames.length?`검사 끝! 출하를 막은 농산물: ${badNames.join(', ')}`:'검사 끝! 세 가지 모두 안전했어요'); xFinish(Math.max(6,15-((G.vegMiss||0)+miss)*2),grp,done,clean); },2300); };
+  $('#fclose').onclick=off; start();
+  (function loop(now){ if(!alive) return; const dt=Math.min(0.05,Math.max(0,(now-last)/1000)); last=now; t+=dt; pt+=dt;
+    if(phase==='blend'){ if(hold){ bl=Math.min(1,bl+dt/1.7); jar.rotation.y+=dt*20; } mash.scale.y=0.25+bl*0.75; mash.position.y=-0.17+0.225*mash.scale.y; chunks.forEach((m,i)=>{ m.visible=bl<(i+1)/6.5; if(hold) m.position.y=0.0+Math.abs(Math.sin(t*14+i))*0.4; });
+      if(bl>=1){ phase='extract'; pt=0; hold=false; go.style.display='none'; sfx('pop'); hint('갈아 낸 즙에서 농약 성분만 뽑아 작은 병에 담아요'); vial.visible=true; vial.position.set(X(-2.0),-0.3,0.95); } }
+    if(phase==='extract'){ vT.set(X(-0.4)+(idx-1)*0.2,0.45,-0.2); if(pt>0.7) vial.position.lerp(vT,Math.min(1,dt*4)); if(pt>1.9){ phase='run'; pt=0; hint('분석기가 성분을 하나씩 갈라서 그래프로 그려요'); } }
+    if(phase==='run'){ rp=Math.min(1,pt/2.6); draw(); if(rp>=1){ phase='judge'; ob.style.display='grid'; hint('빨간 기준선을 넘은 봉우리가 있나요? 적합인지 부적합인지 골라요'); } }
+    sadT=Math.max(0,sadT-dt); hopT=Math.max(0,hopT-dt); wk.face(sadT>0); wk.body.position.y=-0.6+Math.sin(hopT/0.35*Math.PI)*0.15; wk.who.armR.rotation.x=phase==='blend'&&hold?-1.3:0; r.render(s,c); requestAnimationFrame(loop); })(last); }
+
+function xGame(k){ return {d:focusDust,i:focusStrip,l:focusNoise,g:focusVeg}[k]; }
 function xReport(){ const st=G.xStars||0, k=G.xk; G.done[k]=true; let extra='';
   if(k==='d'&&G.dust){ const o=XMS.d.opts[G.dust.k]; setDust(String(G.dust.v),o[1],G.dust.k>=2?'주의보 발령':o[0]); G.airK=G.dust.k; G.alertLeft=G.airK>=2?90:0; setMasks(G.airK>=2); WALKERS.forEach(w=>w.told=false);
     extra=(G.airK>=2?'<p style="font-weight:700">📢 주의보 발령 중! 모두 마스크를 썼어요. 조금 뒤에 해제돼요.</p>':G.airK===0?'<p style="font-weight:700">🌤️ 공기가 좋아요! 원장님께 가 보세요.</p>':'')+`<p style="font-weight:700">마을 미세먼지 신호등에 <b style="color:${o[1]}">초미세 ${G.dust.v} · ${o[0]}</b>이 켜졌어요!</p>`; }
