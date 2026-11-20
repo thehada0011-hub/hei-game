@@ -132,6 +132,7 @@ input{font:inherit;user-select:text;-webkit-user-select:text}
 #jump{position:absolute;right:18px;bottom:calc(34px + env(safe-area-inset-bottom));width:64px;height:64px;border-radius:50%;background:rgba(255,253,247,.95);font-size:28px;font-weight:800;box-shadow:0 4px 12px rgba(0,40,50,.22)}
 .stamps{display:flex;justify-content:center;gap:12px;margin:14px 0}
 .stamp{width:88px;height:88px;border-radius:50%;border:3px dashed #c9d3d7;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:800;font-size:14px;color:#b7c3c7;line-height:1.25}
+.stamp small{font-size:10px;letter-spacing:-.03em}
 .stamp.on{border:5px double #c8102e;color:#c8102e;transform:rotate(-12deg);background:rgba(200,16,46,.06)}
 .stamp.new{animation:stampIn .6s}
 @keyframes stampIn{0%{transform:scale(2.6) rotate(-12deg);opacity:0}60%{transform:scale(.9) rotate(-12deg);opacity:1}100%{transform:scale(1) rotate(-12deg)}}
@@ -182,7 +183,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 const CONFIG = {
   ORG: '전남광주 보건환경연구원',   // 기관 정식 명칭
   ENV_BUILDING: '환경동',
-  DEPT_WATER: '수질연구과',          // 실제 과 이름으로 바꾸세요
+  DEPT_WATER: '물환경조사과',          // 실제 과 이름으로 바꾸세요
   WAIT_SEC: 30,                      // 분석 결과 기다리는 시간(초)
 };
 const BAD_WORDS = ['시발','씨발','병신','좆','개새','fuck','shit'];
@@ -677,7 +678,7 @@ function reportGame(grade){
   openMini(`<div class="card"><h3>보고 완료!</h3><div class="stars">${'★'.repeat(stars)}<span style="opacity:.2">${'★'.repeat(3-stars)}</span></div>
     <div class="rows"><div><span>장비 챙기기</span><b>${s.equip} / 30</b></div><div><span>다리 위 채수</span><b>${s.depth} / 20</b></div><div><span>병에 나눠 담기</span><b>${s.bottle} / 20</b></div>
     <div><span>실험 순서</span><b>${s.order} / 15</b></div><div><span>등급 판정</span><b>${s.grade} / 15</b></div><div><span>합계</span><b>${total}점</b></div></div>
-    ${(G.done.w=true,stampsHtml('w'))}<p style="font-weight:800;color:#c8102e">도장 쾅! 수질연구과 임무 완료<br><small style="color:#3c5960">하천수 BOD ${G.bod.toFixed(1)} mg/L · ${grade}</small></p>
+    ${(G.done.w=true,stampsHtml('w'))}<p style="font-weight:800;color:#c8102e">도장 쾅! 물환경조사과 · 하천 수질 검사 완료<br><small style="color:#3c5960">하천수 BOD ${G.bod.toFixed(1)} mg/L · ${grade}</small></p>
     <div class="fact"><b>알고 계셨나요?</b><br>실제 BOD 검사는 20℃에서 5일 동안 배양해야 결과가 나와요. 연구원은 이렇게 강물의 건강을 꾸준히 살펴요.</div>
     <button class="go" id="ok">마을 둘러보기</button></div>`);
   $('#ok').addEventListener('click',()=>{ closeMini(); flag.visible=true; G.done.w=true; setStep(0); toast('환경동 앞에 완료 깃발이 꽂혔어요!'); });
@@ -850,7 +851,7 @@ function airReport(){
   openMini(`<div class="card"><h3>보고 완료!</h3><div class="stars">${'★'.repeat(stars)}<span style="opacity:.2">${'★'.repeat(3-stars)}</span></div>
     <div class="rows"><div><span>안전장비 챙기기</span><b>${s.equip} / 15</b></div><div><span>장비 끌어올리기</span><b>${s.haul} / 25</b></div><div><span>굴뚝 시료 채취</span><b>${s.gauge} / 25</b></div>
     <div><span>필터 회수</span><b>${s.filter} / 10</b></div><div><span>무게 재기</span><b>${s.weigh} / 10</b></div><div><span>기준 판정</span><b>${s.judge} / 15</b></div><div><span>합계</span><b>${total}점</b></div></div>
-    ${(G.done.a=true,stampsHtml('a'))}<p style="font-weight:800;color:#c8102e">도장 쾅! 대기연구과 임무 완료<br><small style="color:#3c5960">굴뚝 먼지 ${G.dust} mg/Sm³ (${over?'기준 초과':'기준 이내'})</small></p>
+    ${(G.done.a=true,stampsHtml('a'))}<p style="font-weight:800;color:#c8102e">도장 쾅! 대기환경과 · 굴뚝 대기 검사 완료<br><small style="color:#3c5960">굴뚝 먼지 ${G.dust} mg/Sm³ (${over?'기준 초과':'기준 이내'})</small></p>
     <div class="fact"><b>알고 계셨나요?</b><br>굴뚝 측정은 연구원이 무거운 장비를 직접 올려 연기가 밖으로 나오기 전 농도를 재요. 그래야 공장이 기준을 지키는지 정확히 알 수 있어요.</div>
     <button class="go" id="ok">마을 둘러보기</button></div>`);
   $('#ok').addEventListener('click',()=>{ closeMini(); flag2.visible=true; G.done.a=true; setStep(0); toast('공장 굴뚝 앞에 완료 깃발이 꽂혔어요!'); });
@@ -945,12 +946,12 @@ function playReport(){ const s=G.pl, C=G.playCase, total=s.equip+s.sample+s.cl+s
   openMini(`<div class="card"><h3>보고 완료!</h3><div class="stars">${'★'.repeat(stars)}<span style="opacity:.2">${'★'.repeat(3-stars)}</span></div>
     <div class="rows"><div><span>검사 장비 챙기기</span><b>${s.equip} / 15</b></div><div><span>물 뜨기</span><b>${s.sample} / 15</b></div><div><span>잔류염소 측정</span><b>${s.cl} / 20</b></div>
     <div><span>pH 측정</span><b>${s.ph} / 20</b></div><div><span>수질 판정</span><b>${s.judge} / 30</b></div><div><span>합계</span><b>${total}점</b></div></div>
-    ${(G.done.p=true,stampsHtml('p'))}<p style="font-weight:800;color:#c8102e">도장 쾅! 물놀이터 검사 임무 완료<br><small style="color:#3c5960">결과: ${C.ok?'적합 · 아이들이 신나게 놀고 있어요':'부적합 · 물을 갈고 소독한 뒤 다시 검사해요'}</small></p>
+    ${(G.done.p=true,stampsHtml('p'))}<p style="font-weight:800;color:#c8102e">도장 쾅! 물환경조사과 · 물놀이터 수질 검사 완료<br><small style="color:#3c5960">결과: ${C.ok?'적합 · 아이들이 신나게 놀고 있어요':'부적합 · 물을 갈고 소독한 뒤 다시 검사해요'}</small></p>
     <div class="fact"><b>알고 계셨나요?</b><br>물놀이형 수경시설은 물이 아이들 입과 눈에 닿기 쉬워서, 운영 기간에는 정기적으로 수질 검사를 받아요. 기준을 넘으면 운영을 멈추고 물을 갈아야 해요.</div>
     <button class="go" id="ok">마을 둘러보기</button></div>`);
   $('#ok').addEventListener('click',()=>{ closeMini(); setStep(0); }); }
 /* ───────── 도장과 임명장 ───────── */
-function stampsHtml(nw){ return `<div class="stamps">${[['w','수질<br>연구과'],['a','대기<br>연구과'],['p','물놀이터<br>검사']].map(([k,t])=>`<div class="stamp ${G.done[k]?'on':''} ${k===nw?'new':''}"><span>${t}${G.done[k]?'<br>완료':''}</span></div>`).join('')}</div>`; }
+function stampsHtml(nw){ return `<div class="stamps">${[['w','<small>물환경조사과</small><br>하천 수질'],['p','<small>물환경조사과</small><br>물놀이터'],['a','<small>대기환경과</small><br>굴뚝 대기']].map(([k,t])=>`<div class="stamp ${G.done[k]?'on':''} ${k===nw?'new':''}"><span>${t}${G.done[k]?'<br>완료':''}</span></div>`).join('')}</div>`; }
 function stampBook(){ if(G.lock) return; const n=doneCount();
   openMini(`<div class="card"><h3>연구 도장판</h3><p>임무를 끝낼 때마다 도장을 받아요.<br>모두 모으면 원장님이 임명장을 주세요. (${n}/3)</p>${stampsHtml()}<p style="font-weight:700">🪧 마을에서 읽은 팻말 ${SIGNS.filter(x=>x.read).length} / ${SIGNS.length}<br>🐾 인사한 동물 친구 ${ANIMALS.filter(x=>x.met).length} / ${ANIMALS.length}</p><button class="go" id="ok">닫기</button></div>`); $('#ok').addEventListener('click',closeMini); }
 $('#stampBtn').addEventListener('click',stampBook);
@@ -963,9 +964,10 @@ function certCard(){ G.cert=true; setStep(G.step); const cv=document.createEleme
   g.textAlign='center'; g.fillStyle='#17323a'; g.font=`bold 96px ${FONT}`; g.fillText('임 명 장',450,230);
   g.font=`bold 40px ${FONT}`; g.fillStyle='#0b7d70'; g.fillText('명예 연구원',450,315);
   g.fillStyle='#17323a'; g.font=`bold 68px ${FONT}`; g.fillText(G.name,450,455); g.fillRect(250,478,400,3);
-  g.font=`32px ${FONT}`; ['위 사람은 수질, 대기, 물놀이터 검사 임무를 훌륭히 마치고','시민의 건강과 깨끗한 환경을 지키는 일에','함께하였으므로 명예 연구원으로 임명합니다.'].forEach((l,i)=>g.fillText(l,450,575+i*56));
-  const seal=(x,t)=>{ g.save(); g.translate(x,845); g.rotate(-0.2); g.strokeStyle='#c8102e'; g.fillStyle='#c8102e'; g.lineWidth=6; g.beginPath(); g.arc(0,0,74,0,7); g.stroke(); g.lineWidth=2; g.beginPath(); g.arc(0,0,63,0,7); g.stroke();
-    g.font=`bold 22px ${FONT}`; g.fillText(t,0,-8); g.fillText("임무 완료",0,22); g.restore(); }; seal(250,'수질연구과'); seal(450,'대기연구과'); seal(650,'물놀이터 검사');
+  g.font=`32px ${FONT}`; ['위 사람은 물환경조사과와 대기환경과 임무를 훌륭히 마치고','시민의 건강과 깨끗한 환경을 지키는 일에','함께하였으므로 명예 연구원으로 임명합니다.'].forEach((l,i)=>g.fillText(l,450,575+i*56));
+  const seal=(x,t,u)=>{ g.save(); g.translate(x,845); g.rotate(-0.2); g.strokeStyle='#c8102e'; g.fillStyle='#c8102e'; g.lineWidth=6; g.beginPath(); g.arc(0,0,74,0,7); g.stroke(); g.lineWidth=2; g.beginPath(); g.arc(0,0,63,0,7); g.stroke();
+    g.font=`bold 19px ${FONT}`; g.fillText(t,0,-18); g.font=`bold 22px ${FONT}`; g.fillText(u,0,10); g.font=`bold 16px ${FONT}`; g.fillText('완료',0,36); g.restore(); };
+  seal(250,'물환경조사과','하천 수질'); seal(450,'물환경조사과','물놀이터'); seal(650,'대기환경과','굴뚝 대기');
   const d=new Date(); g.fillStyle='#17323a'; g.font=`30px ${FONT}`; g.fillText(`${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`,450,1005);
   g.font=`bold 46px ${FONT}`; g.fillText(CONFIG.ORG+'장',450,1080);
   g.font=`20px ${FONT}`; g.fillStyle='#8a8f94'; g.fillText('홍보 게임 「나는야 보건환경연구원」 기념 임명장',450,1128);
