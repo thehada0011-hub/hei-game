@@ -1284,14 +1284,23 @@ function focusCatch(next){ const {s,c,r,cv}=FOC; focusUI({star:'물 0/8'}); cons
 }
 // 굴뚝 장비 끌어올리기: 당기기를 연타하고, 숨이 차거나 강풍이 불면 밧줄을 고정해요
 function focusHaul(next){ const {s,c,r,cv}=FOC; focusUI({bot:1,go:'당기기!',sub:1,meter:1}); const hint=t=>$('#fhint').textContent=t; hint('당기기를 연타해 장비를 올려요. 숨이 차면 밧줄을 고정!');
-  const grp=new THREE.Group(); s.add(grp); c.position.set(0,1.0,9); c.lookAt(0,1.0,0);
-  const BOT=-0.95, TOPY=1.75, RX=-0.45;
+  const grp=new THREE.Group(); s.add(grp); c.position.set(0,1.3,9); c.lookAt(0,1.3,0);
+  const BOT=-0.45, TOPY=1.75, RX=-0.45;
   const chim=new THREE.Mesh(new THREE.CylinderGeometry(0.75,0.82,9,28),PBR(0xb9c1c6,{roughness:.9})); chim.position.set(0.95,0,-0.4); grp.add(chim);
   for(const y of [-2.6,-0.6,1.4,3.4]){ const b=new THREE.Mesh(new THREE.CylinderGeometry(0.775,0.8,0.42,28),PBR(0xb8323a,{roughness:.9})); b.position.set(0.95,y,-0.4); grp.add(b); }
   const plat=new THREE.Mesh(new THREE.BoxGeometry(1.9,0.1,1.2),PBR(0x5d6b71,{metalness:.6,roughness:.5})); plat.position.set(0.25,TOPY+0.2,0.1); grp.add(plat);
   for(const x of [-0.65,0.1]){ const p=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,0.6,8),PBR(0x5d6b71,{metalness:.6})); p.position.set(x,TOPY+0.55,0.65); grp.add(p); } { const rail=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,0.9,8),PBR(0x5d6b71,{metalness:.6})); rail.rotation.z=Math.PI/2; rail.position.set(-0.27,TOPY+0.85,0.65); grp.add(rail); }
   const arm=new THREE.Mesh(new THREE.BoxGeometry(0.9,0.07,0.07),PBR(0x3d4a50,{metalness:.7})); arm.position.set(RX+0.4,TOPY+1.0,0.3); grp.add(arm);
   const pul=new THREE.Mesh(new THREE.TorusGeometry(0.11,0.04,10,20),PBR(0xcfd6da,{metalness:.9,roughness:.25})); pul.position.set(RX,TOPY+0.92,0.3); grp.add(pul);
+  // 발판 위에서 밧줄을 당기는 연구원. 당길 때는 힘든 표정, 쉴 때는 평소 표정이에요.
+  const who=makePerson(); scene.remove(who.g); const body=new THREE.Group(); body.add(who.g); body.scale.setScalar(0.42); body.position.set(0.32,TOPY+0.25,0.45); body.rotation.y=-0.95; grp.add(body);
+  const put=(geo,m,x,y,z)=>{ const o=new THREE.Mesh(geo,m); o.position.set(x,y,z); who.g.add(o); return o; }, dark=PBR(0x2b2622);
+  put(new THREE.SphereGeometry(0.4,16,10,0,Math.PI*2,0,Math.PI*0.5),PBR(0xffc53d),0,1.98,0);
+  const browL=put(new THREE.BoxGeometry(0.12,0.03,0.02),dark,-0.13,1.95,0.34), browR=put(new THREE.BoxGeometry(0.12,0.03,0.02),dark,0.13,1.95,0.34);
+  const smile=put(new THREE.BoxGeometry(0.13,0.03,0.02),PBR(0x8a3a3a),0,1.75,0.35), gasp=put(new THREE.SphereGeometry(0.065,10,8),PBR(0x5a1f1f),0,1.74,0.33);
+  const sweat=[put(new THREE.SphereGeometry(0.045,8,6),new THREE.MeshBasicMaterial({color:0x8fd8ff}),0.3,1.95,0.22),put(new THREE.SphereGeometry(0.04,8,6),new THREE.MeshBasicMaterial({color:0x8fd8ff}),-0.3,1.88,0.2)];
+  const cheeks=[put(new THREE.SphereGeometry(0.06,8,6),PBR(0xff9a9a),0.2,1.79,0.3),put(new THREE.SphereGeometry(0.06,8,6),PBR(0xff9a9a),-0.2,1.79,0.3)];
+  const rope2=new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.02,1,8),PBR(0x6f5536,{roughness:1})); grp.add(rope2);
   const rope=new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.02,1,8),PBR(0x6f5536,{roughness:1})); grp.add(rope);
   const mk=[()=>{ const g=new THREE.Group(), b=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.46,0.3),PBR(0xf26a12,{roughness:.9})); g.add(b); const pk=new THREE.Mesh(new THREE.BoxGeometry(0.3,0.18,0.06),PBR(0xffb27a,{roughness:.9})); pk.position.set(0,-0.08,0.17); g.add(pk); return g; },
     ()=>{ const g=new THREE.Group(), p=new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,1.5,14),PBR(0xdfe6ea,{metalness:.9,roughness:.25})); p.rotation.z=Math.PI/2; p.position.y=-0.2; g.add(p); const y=new THREE.Mesh(new THREE.CylinderGeometry(0.055,0.055,0.16,14),PBR(0xffc53d)); y.rotation.z=Math.PI/2; y.position.set(-0.4,-0.2,0); g.add(y); return g; },
@@ -1299,12 +1308,12 @@ function focusHaul(next){ const {s,c,r,cv}=FOC; focusUI({bot:1,go:'당기기!',s
       const n=new THREE.Mesh(new THREE.BoxGeometry(0.02,0.1,0.02),PBR(0xe5484d)); n.position.set(-0.16,0.07,0.23); n.rotation.z=-0.5; g.add(n); const l1=new THREE.Mesh(new THREE.BoxGeometry(0.16,0.06,0.02),PBR(0x7dffb0,{emissive:0x2a8f5a})); l1.position.set(0.17,0.09,0.21); g.add(l1); return g; }];
   const NAME=['필터 가방','채취관','펌프 상자'], WT=[1,1.4,2]; let load=mk[0](); grp.add(load);
   const wind=[]; for(let i=0;i<7;i++){ const m=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.015,0.015),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0})); m.position.set(-3+i,BOT+0.4+i*0.6,1); grp.add(m); wind.push(m); }
-  let li=0,h=0,st=1,locked=false,t=0,bumps=0,stars=0,alive=true,last=performance.now(),ended=false,gPrev=0,busy=false;
+  let li=0,h=0,st=1,locked=false,t=0,bumps=0,stars=0,alive=true,last=performance.now(),ended=false,gPrev=0,busy=false,pulse=0;
   const gust=()=>{ const k=t%5.5; return k>3.2?(k>3.9?2:1):0; }, setLock=v=>{ locked=v; const b=$('#fsub'); b.textContent=v?'밧줄 풀기':'밧줄 고정'; b.classList.toggle('on',v); };
   $('#fsub').onclick=()=>{ if(!ended) setLock(!locked); }; $('#fclose').onclick=()=>{ if(!ended){ alive=false; focusOff(grp); } };
   $('#fgo').onclick=()=>{ if(ended||busy) return; if(locked) setLock(false);
     if(st<0.12){ sfx('no'); hint('숨이 차요! 밧줄을 고정하고 잠깐 쉬어요'); return; }
-    st=Math.max(0,st-0.07*Math.sqrt(WT[li]));
+    st=Math.max(0,st-0.07*Math.sqrt(WT[li])); pulse=0.4;
     if(gust()===2){ bumps++; h=Math.max(0,h-0.07); sfx('no'); fPop('쿵!','warn'); hint('강풍이 불 땐 당기지 말고 밧줄을 고정해요'); return; }
     h+=0.1/WT[li]; sfx('pop'); if(h<1) return;
     const got=bumps===0?3:bumps===1?2:1; stars+=got; bumps=0; busy=true; sfx(got===3?'ok':'good'); fPop('★'.repeat(got)+' '+NAME[li]+' 도착!','good'); document.querySelectorAll('#fbot i')[li].className='full'; $('#fstar').textContent='★ '+stars;
@@ -1317,6 +1326,10 @@ function focusHaul(next){ const {s,c,r,cv}=FOC; focusUI({bot:1,go:'당기기!',s
     load.position.set(x,y,0.3); load.rotation.z=-ang*0.8; load.rotation.y=Math.sin(t*0.8)*0.25; rope.scale.y=Math.hypot(x-RX,len); rope.rotation.z=-ang; rope.position.set((x+RX)/2,(top+y+0.3)/2,0.3); pul.rotation.z=-h*20;
     wind.forEach((m,i)=>{ m.material.opacity=gs===2?0.85:gs===1?0.35:0; m.position.x+=dt*(gs===2?9:3.5); if(m.position.x>3.2) m.position.x=-3.2; });
     const mb=$('#fmeter b'); mb.style.width=st*100+'%'; mb.style.background=st<0.25?'#ff8a80':'#7dffb0';
+    pulse=Math.max(0,pulse-dt); const pk=pulse/0.4, tired=!locked&&!ended&&(pulse>0||st<0.35);
+    who.armL.rotation.x=who.armR.rotation.x=locked||ended?0:-1.75+pk*0.75; who.g.rotation.x=locked||ended?0:-(0.06+pk*0.3); body.position.y=TOPY+0.25+(tired?Math.sin(t*14)*0.006:0);
+    browL.rotation.z=tired?-0.5:0; browR.rotation.z=tired?0.5:0; smile.visible=!tired; gasp.visible=tired; cheeks.forEach(m=>m.visible=tired); sweat.forEach((m,i)=>{ m.visible=tired; m.position.y=(i?1.88:1.95)-((t*0.5+i*0.4)%0.3); });
+    { const hx=body.position.x-0.3-pk*0.03, hy=body.position.y+0.62-pk*0.06, px=RX+0.05, py=TOPY+0.9, d=Math.hypot(hx-px,hy-py); rope2.visible=!locked&&!ended; rope2.scale.y=d; rope2.position.set((hx+px)/2,(hy+py)/2,0.36); rope2.rotation.z=Math.atan2(hx-px,py-hy); }
     r.render(s,c); requestAnimationFrame(loop); })(last);
 }
 // 다리 위에서 물 긷기: 화면을 위아래로 쓸어 밧줄을 풀고 감아요
