@@ -16,7 +16,21 @@ html,body{margin:0;height:100%;overflow:hidden;position:fixed;inset:0;background
 #focus{position:absolute;inset:0;z-index:26;display:none;pointer-events:none;color:#fff}
 #focus>*{pointer-events:auto}
 .pill{background:rgba(22,32,38,.5);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.28);border-radius:999px;color:#fff;font-weight:600;font-size:14px}
-#fhint{position:absolute;top:calc(20px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);padding:11px 18px;width:max-content;max-width:88%;text-align:center;line-height:1.35;word-break:keep-all;pointer-events:none}
+#fclose{position:absolute;left:14px;top:calc(16px + env(safe-area-inset-top));padding:10px 15px;font-size:14px}
+#fstar{position:absolute;right:14px;top:calc(16px + env(safe-area-inset-top));padding:9px 15px;font-size:17px;font-weight:800;color:#ffd84d}
+#fbot{position:absolute;left:50%;top:calc(16px + env(safe-area-inset-top));transform:translateX(-50%);display:flex;gap:9px;padding:8px 16px}
+#fbot i{display:block;width:15px;height:25px;border-radius:4px 4px 6px 6px;border:2px solid rgba(255,255,255,.6)}
+#fbot i.cur{border-color:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.28)}
+#fbot i.full{background:#4fb3ff;border-color:#fff}
+#fgo{position:absolute;left:50%;bottom:calc(30px + env(safe-area-inset-bottom));transform:translateX(-50%);min-width:220px;padding:20px 26px;border-radius:999px;background:var(--teal);color:#fff;font-weight:800;font-size:21px;box-shadow:0 7px 0 var(--teal-d),0 12px 22px rgba(0,60,60,.35)}
+#fgo:active{transform:translateX(-50%) translateY(4px);box-shadow:0 3px 0 var(--teal-d)}
+#fpop{position:absolute;left:0;right:0;top:34%;text-align:center;font-size:36px;font-weight:900;color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.25),0 0 18px rgba(0,0,0,.4);opacity:0;pointer-events:none!important}
+#fpop.show{animation:fpop 1.6s ease-out}
+#fpop.good{color:#ffe45c}#fpop.warn{color:#ffc2b8}
+@keyframes fpop{0%{opacity:0;transform:scale(.4)}18%{opacity:1;transform:scale(1.15)}30%{transform:scale(1)}80%{opacity:1}100%{opacity:0;transform:translateY(-24px)}}
+.confet{position:absolute;top:-14px;width:10px;height:14px;border-radius:2px;pointer-events:none!important;animation:confet 2.4s linear forwards}
+@keyframes confet{to{transform:translateY(105vh) rotate(720deg)}}
+#fhint{position:absolute;top:calc(70px + env(safe-area-inset-top));font-size:16px;left:50%;transform:translateX(-50%);padding:11px 18px;width:max-content;max-width:88%;text-align:center;line-height:1.35;word-break:keep-all;pointer-events:none}
 #fbar{position:absolute;bottom:calc(26px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:flex;gap:4px;padding:6px}
 #fbar button{background:none;color:#fff;font-weight:600;font-size:15px;padding:11px 20px;border-radius:999px;white-space:nowrap}
 #fbar button.on{background:rgba(255,255,255,.18)}
@@ -174,9 +188,13 @@ input{font:inherit;user-select:text;-webkit-user-select:text}
 </div>
 
 <div id="focus">
+  <button class="pill" id="fclose">나가기</button>
+  <div class="pill" id="fbot"><i></i><i></i><i></i></div>
+  <div class="pill" id="fstar">★ 0</div>
   <div class="pill" id="fhint"></div>
-  <div class="pill" id="fdepth"><i></i><b></b><span id="fd1">수면</span><span id="fd2">적정 깊이</span><span id="fd3">강바닥</span></div>
-  <div class="pill" id="fbar"><button id="fclose">닫기</button><button id="fgo" class="on">물 뜨기</button></div>
+  <div class="pill" id="fdepth"><i></i><b></b><span id="fd1">수면</span><span id="fd2">여기!</span><span id="fd3">강바닥</span></div>
+  <div id="fpop"></div>
+  <button id="fgo">물 뜨기!</button>
 </div>
 <div id="dialog"><span class="who" id="dwho"></span><div class="txt" id="dtxt"></div><div class="nx">다음 ▶</div></div>
 <div id="mini"></div>
@@ -1239,15 +1257,19 @@ const FOC={};
   FOC.sampler=fb;
   new GLTFLoader().load('sampler.glb',gltf=>{ const m=gltf.scene, w=new THREE.Group(); let b=new THREE.Box3().setFromObject(m); const sz=b.getSize(new THREE.Vector3()); m.scale.setScalar(1.15/sz.y); b=new THREE.Box3().setFromObject(m); const ct=b.getCenter(new THREE.Vector3()); m.position.sub(ct);
     m.traverse(o=>{ if(o.isMesh&&o.material){ o.material.metalness=0.45; o.material.roughness=0.34; o.material.envMapIntensity=2.2; } }); w.add(m); FOC.sampler=w; },undefined,()=>{}); }
+// 효과음: 파일 없이 소리를 직접 만들어요
+let AC=null;
+function sfx(k){ try{ AC=AC||new (window.AudioContext||window.webkitAudioContext)(); const t=AC.currentTime, P={ok:[660,1320,.28,'sine'],good:[520,880,.22,'sine'],no:[240,150,.22,'triangle'],pop:[500,900,.08,'sine']}[k], o=AC.createOscillator(), g=AC.createGain();
+  o.type=P[3]; o.frequency.setValueAtTime(P[0],t); o.frequency.exponentialRampToValueAtTime(P[1],t+P[2]); g.gain.setValueAtTime(0.16,t); g.gain.exponentialRampToValueAtTime(0.001,t+P[2]+0.08); o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t+P[2]+0.1); }catch(e){} }
 // 다리 위에서 물 긷기: 화면을 위아래로 쓸어 밧줄을 풀고 감아요
 function focusSample(done){ const {s,c,r,cv}=FOC, H=2*9*Math.tan(17.5*Math.PI/180);   // H: 화면에 보이는 세로 길이
   G.lock=true; $('#hud').style.display='none'; canvas.classList.add('blur'); cv.style.display='block'; $('#focus').style.display='block';
   const hint=t=>$('#fhint').textContent=t; hint('화면을 위아래로 쓸어 채수기를 내리세요');
-  const SURF=0.35, Z1=SURF-0.75, Z2=SURF-1.75, BED=-2.4, TOP=3.5, HALF=0.58, YTOP=1.3, YBOT=BED+0.55, clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const SURF=0.35, BED=-2.4, TOP=3.5, HALF=0.58, YTOP=1.3, YBOT=BED+0.55, clamp=(v,a,b)=>Math.max(a,Math.min(b,v)); let Z1=SURF-0.75, Z2=SURF-1.75;
   const grp=new THREE.Group(); s.add(grp);
   const water=new THREE.Mesh(new THREE.BoxGeometry(8,4,2.6),new THREE.MeshBasicMaterial({color:0x1e9bff,transparent:true,opacity:.3,depthWrite:false})); water.position.y=SURF-2; grp.add(water);
   const surf=new THREE.Mesh(new THREE.PlaneGeometry(8,2.6),new THREE.MeshBasicMaterial({color:0xe8f7ff,transparent:true,opacity:.34,side:THREE.DoubleSide,depthWrite:false})); surf.rotation.x=-Math.PI/2; surf.position.y=SURF; grp.add(surf);
-  const zone=new THREE.Mesh(new THREE.BoxGeometry(8,Z1-Z2,2.4),new THREE.MeshBasicMaterial({color:0x7dffb0,transparent:true,opacity:.14,depthWrite:false})); zone.position.y=(Z1+Z2)/2; grp.add(zone);
+  const zone=new THREE.Mesh(new THREE.BoxGeometry(8,1,2.4),new THREE.MeshBasicMaterial({color:0x7dffb0,transparent:true,opacity:.2,depthWrite:false})); grp.add(zone);
   const bed=new THREE.Mesh(new THREE.BoxGeometry(8,1.4,2.6),new THREE.MeshStandardMaterial({color:0xb89a6a,roughness:1})); bed.position.y=BED-0.7; grp.add(bed);
   for(let i=0;i<9;i++){ const p=new THREE.Mesh(new THREE.SphereGeometry(0.16+((i*7)%5)*0.04,10,8),new THREE.MeshStandardMaterial({color:i%2?0x8b8f8c:0xb3a58a,roughness:.9})); p.position.set(-3+i*0.75,BED+0.05,((i*5)%7)*0.25-0.7); p.scale.y=0.6; grp.add(p); }
   const rope=new THREE.Mesh(new THREE.CylinderGeometry(0.022,0.022,1,8),new THREE.MeshStandardMaterial({color:0x6f5536,roughness:1})); grp.add(rope);
@@ -1256,26 +1278,44 @@ function focusSample(done){ const {s,c,r,cv}=FOC, H=2*9*Math.tan(17.5*Math.PI/18
   const ring=x=>{ const m=new THREE.Mesh(new THREE.RingGeometry(0.42,0.5,32),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.8,side:THREE.DoubleSide,depthWrite:false})); m.rotation.x=-Math.PI/2; m.position.set(x,SURF+0.01,0.3); grp.add(m); fx.push({m,k:0,ring:true}); };
   const bubble=(x,y)=>{ const m=new THREE.Mesh(new THREE.SphereGeometry(0.035+Math.random()*0.04,8,6),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.75,depthWrite:false})); m.position.set(x+(Math.random()-0.5)*0.6,y,0.5+Math.random()*0.4); grp.add(m); fx.push({m,k:0}); };
   // 오른쪽 깊이 표시
-  const pos=y=>clamp((YTOP-y)/(YTOP-YBOT),0,1)*100; { const z=$('#fdepth i'); z.style.top=pos(Z1+0.1)+'%'; z.style.height=(pos(Z2-0.1)-pos(Z1+0.1))+'%'; $('#fd1').style.top=pos(SURF)+'%'; $('#fd2').style.top=(pos(Z1)+pos(Z2))/2+'%'; $('#fd3').style.top='100%'; }
-  let L=TOP-YTOP-HALF, Lt=L, th=0, thv=0, t=0, alive=true, last=performance.now(), was=false, tries=0, ok=false, drag=null, acc=0;
+  const pos=y=>clamp((YTOP-y)/(YTOP-YBOT),0,1)*100; $('#fd1').style.top=pos(SURF)+'%'; $('#fd3').style.top='100%';
+  // 병 3개를 채워요. 병마다 초록 구간의 위치가 달라지고 뒤로 갈수록 좁아져요.
+  const ROUNDS=[[SURF-1.25,1.0],[SURF-0.95,0.8],[SURF-1.6,0.66]];
+  function setZone(i){ const [cy,h]=ROUNDS[i]; Z1=cy+h/2; Z2=cy-h/2; zone.scale.y=h; zone.position.y=cy; const z=$('#fdepth i'); z.style.top=pos(Z1)+'%'; z.style.height=(pos(Z2)-pos(Z1))+'%'; $('#fd2').style.top=pos(cy)+'%';
+    document.querySelectorAll('#fbot i').forEach((b,k)=>b.className=k<i?'full':k===i?'cur':''); }
+  // 물고기: 채수기 앞을 지나갈 때 뜨면 안 돼요
+  const fish=[0,1].map(i=>{ const f=new THREE.Group(), fm=new THREE.MeshStandardMaterial({color:[0xff9a3c,0x6ec6ff][i],roughness:.5});
+    const b=new THREE.Mesh(new THREE.SphereGeometry(0.22,12,10),fm); b.scale.set(1.6,1,0.7); f.add(b); const tl=new THREE.Mesh(new THREE.ConeGeometry(0.17,0.28,4),fm); tl.rotation.z=-Math.PI/2; tl.position.x=-0.44; tl.scale.z=0.4; f.add(tl);
+    const e=new THREE.Mesh(new THREE.SphereGeometry(0.035,8,6),new THREE.MeshBasicMaterial({color:0x111111})); e.position.set(0.2,0.05,0.15); f.add(e); f.position.z=0.5; f.scale.setScalar(0.75); grp.add(f); return {f,dir:i?-1:1,x:i?3.6:-3.6,sp:0.95+i*0.55,ph:i*2.2}; });
+  const pop=(txt,cls)=>{ const p=$('#fpop'); p.textContent=txt; p.className=''; void p.offsetWidth; p.className=cls+' show'; };
+  const confetti=()=>{ const C=['#ffd84d','#ff8fa3','#6ec6ff','#95d98b','#fff']; for(let i=0;i<40;i++){ const d=document.createElement('div'); d.className='confet'; d.style.left=Math.random()*100+'%'; d.style.background=C[i%5]; d.style.animationDelay=Math.random()*0.6+'s'; $('#focus').appendChild(d); setTimeout(()=>d.remove(),3200); } };
+  let L=TOP-YTOP-HALF, Lt=L, th=0, thv=0, t=0, alive=true, last=performance.now(), was=false, tries=0, ok=false, drag=null, acc=0, round=0, stars=0, busy=false;
+  setZone(0); $('#fstar').textContent='★ 0'; $('#fpop').className='';
   cv.onpointerdown=e=>{ drag={y:e.clientY,L:Lt,x:e.clientX}; try{ cv.setPointerCapture(e.pointerId); }catch(_){} };
-  cv.onpointermove=e=>{ if(!drag||ok) return; Lt=clamp(drag.L+(e.clientY-drag.y)*H/innerHeight,TOP-YTOP-HALF,TOP-YBOT-HALF); thv+=(e.clientX-drag.x)*0.0015; drag.x=e.clientX; };
+  cv.onpointermove=e=>{ if(!drag||ok||busy) return; Lt=clamp(drag.L+(e.clientY-drag.y)*H/innerHeight,TOP-YTOP-HALF,TOP-YBOT-HALF); thv+=(e.clientX-drag.x)*0.0015; drag.x=e.clientX; };
   cv.onpointerup=cv.onpointercancel=()=>{ drag=null; };
   function end(success){ alive=false; holder.remove(FOC.sampler); s.remove(grp); cv.style.display='none'; cv.onpointerdown=cv.onpointermove=cv.onpointerup=cv.onpointercancel=null; $('#focus').style.display='none'; canvas.classList.remove('blur'); $('#hud').style.display='block'; G.lock=false; if(success) done(); }
-  $('#fclose').onclick=()=>{ if(!ok) end(false); };
-  $('#fgo').onclick=()=>{ if(ok) return; const y=TOP-L-HALF;
-    if(y>SURF-0.25){ hint('아직 물에 닿지 않았어요. 더 내려 보세요'); return; }
-    if(y>Z1+0.1){ tries++; hint('수면 가까이는 떠다니는 것이 섞여요. 조금 더 깊이 내려요'); return; }
-    if(y<Z2-0.1){ tries++; hint(y<BED+0.9?'강바닥 흙이 섞여요. 조금 올려 주세요':'조금 깊어요. 살짝 올려 주세요'); return; }
-    ok=true; G.score.depth=Math.max(8,20-tries*4); G.score.bottle=20; hint('딱 좋아요. 강 한가운데 흐르는 물을 떴어요'); for(let i=0;i<16;i++) bubble(holder.position.x,y+Math.random()*0.5);
-    setTimeout(()=>{ Lt=TOP-YTOP-HALF-0.4; },1300); setTimeout(()=>end(true),3200); };
+  $('#fclose').onclick=()=>{ if(!ok&&!busy) end(false); };
+  $('#fgo').onclick=()=>{ if(ok||busy) return; const y=TOP-L-HALF, cy=(Z1+Z2)/2, hh=(Z1-Z2)/2;
+    if(y>SURF-0.25){ sfx('no'); hint('아직 물에 닿지 않았어요. 더 내려 보세요'); return; }
+    if(fish.some(q=>Math.abs(q.f.position.x-holder.position.x)<0.8&&Math.abs(q.f.position.y-y)<0.6)){ sfx('no'); tries++; pop('앗, 물고기!','warn'); hint('물고기가 지나가요. 비켜 갈 때까지 기다렸다가 떠요'); return; }
+    if(y>Z1){ sfx('no'); tries++; hint('조금 더 깊이! 초록 구간까지 내려요'); return; }
+    if(y<Z2){ sfx('no'); tries++; hint(y<BED+0.9?'강바닥 흙이 섞여요. 초록 구간까지 올려요':'너무 깊어요! 초록 구간까지 올려요'); return; }
+    const perfect=Math.abs(y-cy)<hh*0.45, got=Math.max(1,(perfect?3:2)-Math.min(1,tries)); stars+=got; tries=0; busy=true; drag=null;
+    sfx(perfect?'ok':'good'); pop('★'.repeat(got)+(got===3?' 완벽해요!':got===2?' 좋아요!':' 성공!'),'good'); for(let i=0;i<16;i++) bubble(holder.position.x,y+Math.random()*0.5);
+    document.querySelectorAll('#fbot i')[round].className='full'; $('#fstar').textContent='★ '+stars;
+    setTimeout(()=>{ Lt=TOP-YTOP-HALF; },700);
+    setTimeout(()=>{ round++; if(round<3){ setZone(round); busy=false; hint(`${round+1}번째 병이에요. 초록 구간이 옮겨 갔어요!`); return; }
+      ok=true; G.score.depth=Math.round(20*stars/9); G.score.bottle=Math.round(20*stars/9); sfx('ok'); confetti(); pop(stars>=8?'최고의 연구원!':stars>=6?'참 잘했어요!':'잘했어요!','good');
+      hint('병 3개를 모두 채웠어요. 아이스박스에 담아요'); setTimeout(()=>end(true),2800); },1900); };
   (function loop(now){ if(!alive) return; const dt=Math.min(0.05,Math.max(0,(now-last)/1000)); last=now; t+=dt;
-    L+=(Lt-L)*Math.min(1,dt*(ok?2.2:10)); const y=TOP-L-HALF, sub=y-HALF*0.6<SURF;
+    L+=(Lt-L)*Math.min(1,dt*(ok||busy?2.6:10)); const y=TOP-L-HALF, sub=y-HALF*0.6<SURF;
     thv+=(-7*th-(sub?4:1.2)*thv)*dt+Math.sin(t*1.3)*0.03*dt; th=clamp(th+thv*dt,-0.35,0.35);
     rope.scale.y=L; rope.rotation.z=th; rope.position.set(Math.sin(th)*L/2,TOP-Math.cos(th)*L/2,0);
     holder.position.set(Math.sin(th)*(L+HALF),TOP-Math.cos(th)*(L+HALF),0); holder.rotation.z=th; holder.rotation.y=Math.sin(t*0.6)*0.3+0.4;
     if(sub!==was){ was=sub; ring(holder.position.x); ring(holder.position.x); fx[fx.length-1].k=-0.25; }
     if(sub&&!ok){ acc+=dt*(drag?9:2); while(acc>1){ acc--; bubble(holder.position.x,y+0.3); } }
+    for(const q of fish){ q.x+=q.dir*q.sp*dt; if(q.x>3.7){ q.x=3.7; q.dir=-1; } if(q.x<-3.7){ q.x=-3.7; q.dir=1; } q.f.position.x=q.x; q.f.position.y=(Z1+Z2)/2+Math.sin(t*0.9+q.ph)*0.38; q.f.rotation.y=q.dir<0?Math.PI:0; q.f.rotation.z=Math.sin(t*6+q.ph)*0.08; }
     for(let i=fx.length-1;i>=0;i--){ const f=fx[i]; f.k+=dt*(f.ring?0.9:0.7); if(f.k<0) continue;
       if(f.ring){ f.m.scale.setScalar(1+f.k*3); f.m.material.opacity=0.8*(1-f.k); } else { f.m.position.y+=dt*1.3; f.m.material.opacity=0.75*(1-f.k); if(f.m.position.y>SURF) f.k=1; }
       if(f.k>=1){ grp.remove(f.m); fx.splice(i,1); } }
