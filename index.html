@@ -323,10 +323,10 @@ box(0.18,1.7,0.18,0x7a5b3a,-8,0.85,-83.5); box(3,1.1,0.14,0xc9a26b,-8,1.95,-83.5
 const water=flat(22,220,0x4fa8e0,130,-1.1,0); water.material=texMat(TEX.water,2,18,{transparent:true,opacity:.92});
 flat(22,220,0x8a7a5c,130,-2.2,0);                       // 강바닥
 box(1,2.4,220,0x8fb07a,119.6,-1.2,0); box(1,2.4,220,0x8fb07a,140.4,-1.2,0);  // 강둑
-// 징검다리: 다리보다 북쪽에서 강을 걸어서 건너는 돌다리예요. 사람만 건널 수 있어요.
-const STONE_Z=-62;
-for(let i=0;i<9;i++){ const x=121.2+i*2.2, r=0.95+(i*37%10)/50, m=new THREE.Mesh(new THREE.CylinderGeometry(r,r*1.18,1.5,7),new THREE.MeshLambertMaterial({color:i%2?0xa3a8a3:0x8f958f,flatShading:true})); m.position.set(x,-0.74,STONE_Z+Math.sin(i*1.7)*0.18); m.rotation.y=i*0.9; m.receiveShadow=true; scene.add(m); }
-for(const x of [119.3,140.7]){ box(1.6,0.12,2.4,0xcfc7b4,x,0.05,STONE_Z); }
+// 징검다리: 큰 다리의 북쪽과 남쪽에 하나씩, 강을 걸어서 건너는 돌다리예요. 사람만 건널 수 있어요.
+const STONES=[-62,72];
+for(const sz of STONES){ for(let i=0;i<9;i++){ const x=121.2+i*2.2, r=0.95+((i*37+Math.abs(sz))%10)/50, m=new THREE.Mesh(new THREE.CylinderGeometry(r,r*1.18,1.5,7),new THREE.MeshLambertMaterial({color:i%2?0xa3a8a3:0x8f958f,flatShading:true})); m.position.set(x,-0.74,sz+Math.sin(i*1.7+sz)*0.18); m.rotation.y=i*0.9+sz; m.receiveShadow=true; scene.add(m); }
+  for(const x of [119.3,140.7]) box(1.6,0.12,2.4,0xcfc7b4,x,0.05,sz); }
 // 도로
 flat(200,ROAD_W,0x59646b,20,0.08,ROAD_Z).material=texMat(TEX.road,50,2); flat(40,ROAD_W,0x59646b,160,0.08,ROAD_Z).material=texMat(TEX.road,10,2);
 for(let x=-76;x<180;x+=7){ if(x>118&&x<142) continue; flat(3,0.25,0xf4f4f4,x,0.12,ROAD_Z); }
@@ -570,7 +570,7 @@ function blocked(x,z,r){
   if(x<-300) return inBlocked(x,z,r);   // 건물 안
   if(x<-100+r||x>190-r||z<-89.5+r||z>90-r) return true;
   for(const w of WALLS) if(x>w[0]-r&&x<w[1]+r&&z>w[2]-r&&z<w[3]+r) return true;
-  if(x>RIVER_X1-r&&x<RIVER_X2+r){ const half=ROAD_W/2-0.25-r; if(Math.abs(z-ROAD_Z)>half&&!(r<0.8&&Math.abs(z-STONE_Z)<1.35-r)) return true; }   // 강은 다리와 징검다리(사람만)로만 건너요
+  if(x>RIVER_X1-r&&x<RIVER_X2+r){ const half=ROAD_W/2-0.25-r; if(Math.abs(z-ROAD_Z)>half&&!(r<0.8&&STONES.some(s=>Math.abs(z-s)<1.35-r))) return true; }   // 강은 다리와 징검다리(사람만)로만 건너요
   return false;
 }
 // 걸어 다니는 연구원용: 주민센터 둘레에서는 바닥 높이 차이로 막아요. 계단은 오를 수 있고, 옥상 가장자리와 벽은 못 지나가요.
