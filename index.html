@@ -1306,11 +1306,12 @@ function frame(now){
   // 카메라
   const tall=innerHeight>innerWidth, cd=(G.driving?13:8.5)*(tall?1.35:1), ch=(G.driving?6.5:4.6)*(tall?1.3:1);
   const py=G.driving?0:floorAt(player.g.position.x,player.g.position.z);   // 계단과 옥상에서는 카메라도 같이 올라가요
-  // 의자에 앉으면 카메라가 어깨 너머로 다가가 풍경을 한 번 쭉 훑어 보여 줘요 (12초 동안 왼쪽 끝에서 오른쪽 끝까지 갔다가 가운데로)
-  const sitting=!!G.sit&&!G.driving; if(nameTag) nameTag.visible=!sitting; if(sitting){ G.sitT+=dt; if(G.sitT<12){ const k=G.sitT/12; G.yaw=G.sit.ry+Math.PI+Math.sin(k*Math.PI*2)*1.05*Math.min(1,G.sitT/1.2); } } sitK+=((sitting?1:0)-sitK)*Math.min(1,dt*2.5);
-  const cd2=cd*(1-0.66*sitK), ch2=ch*(1-0.56*sitK);   // 벚나무 가지에 가리지 않게 머리 바로 뒤, 낮은 자리에서 봐요
+  // 의자에 앉으면 카메라가 앞쪽으로 돌아가 쉬는 모습과 풍경을 14초 동안 좌우로 한 번 보여 줘요
+  const sitting=!!G.sit&&!G.driving; if(sitting){ G.sitT+=dt; if(G.sitT<14){ const k=G.sitT/14; G.yaw=G.sit.ry+Math.sin(k*Math.PI*2)*0.95*Math.min(1,G.sitT/1.5); } }   // 카메라가 연구원 앞쪽으로 돌아가서 얼굴과 뒤 풍경을 비추며 좌우로 천천히 돌아요
+  sitK+=((sitting?1:0)-sitK)*Math.min(1,dt*2.5);
+  const cd2=cd*(1-0.22*sitK), ch2=ch*(1-0.4*sitK);   // 벚나무 가지에 가리지 않게 머리 바로 뒤, 낮은 자리에서 봐요
   const want=new THREE.Vector3(ent.position.x+Math.sin(G.yaw)*cd2,ch2+py,ent.position.z+Math.cos(G.yaw)*cd2);
-  camPos.lerp(want,1-Math.exp(-9*dt)); camera.position.copy(camPos); camLook+=(py-camLook)*(1-Math.exp(-9*dt)); camera.lookAt(ent.position.x-Math.sin(G.yaw)*9*sitK,1.7+camLook+0.5*sitK,ent.position.z-Math.cos(G.yaw)*9*sitK);
+  camPos.lerp(want,1-Math.exp(-9*dt)); camera.position.copy(camPos); camLook+=(py-camLook)*(1-Math.exp(-9*dt)); camera.lookAt(ent.position.x,1.7+camLook+0.3*sitK,ent.position.z);
   renderer.render(scene,camera); requestAnimationFrame(frame);
 }
 
