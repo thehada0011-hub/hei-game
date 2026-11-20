@@ -9,7 +9,21 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
 html,body{margin:0;height:100%;overflow:hidden;position:fixed;inset:0;background:#bfe6f5;touch-action:none;
   font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;color:var(--ink)}
-#c{position:absolute;inset:0;width:100%;height:100%;display:block}
+#c{position:absolute;inset:0;width:100%;height:100%;display:block;transition:filter .45s,transform .45s}
+/* 초점 모드: 마을은 흐려지고 손에 든 장비만 또렷하게 */
+#c.blur{filter:blur(9px) brightness(.88);transform:scale(1.05)}
+#fx{position:absolute;inset:0;width:100%;height:100%;z-index:25;display:none;touch-action:none}
+#focus{position:absolute;inset:0;z-index:26;display:none;pointer-events:none;color:#fff}
+#focus>*{pointer-events:auto}
+.pill{background:rgba(22,32,38,.5);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.28);border-radius:999px;color:#fff;font-weight:600;font-size:14px}
+#fhint{position:absolute;top:calc(20px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);padding:11px 18px;width:max-content;max-width:88%;text-align:center;line-height:1.35;word-break:keep-all;pointer-events:none}
+#fbar{position:absolute;bottom:calc(26px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:flex;gap:4px;padding:6px}
+#fbar button{background:none;color:#fff;font-weight:600;font-size:15px;padding:11px 20px;border-radius:999px;white-space:nowrap}
+#fbar button.on{background:rgba(255,255,255,.18)}
+#fdepth{position:absolute;right:18px;top:27%;height:46%;width:12px;pointer-events:none}
+#fdepth i{position:absolute;left:1px;right:1px;border-radius:999px;background:rgba(125,255,176,.75)}
+#fdepth b{position:absolute;left:50%;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+#fdepth span{position:absolute;right:20px;font-size:11px;font-weight:600;white-space:nowrap;opacity:.9;transform:translateY(-50%);text-shadow:0 1px 3px rgba(0,0,0,.6)}
 button{font:inherit;color:inherit;border:0;cursor:pointer}
 input{font:inherit;user-select:text;-webkit-user-select:text}
 
@@ -159,6 +173,11 @@ input{font:inherit;user-select:text;-webkit-user-select:text}
   <div id="toast"></div>
 </div>
 
+<div id="focus">
+  <div class="pill" id="fhint"></div>
+  <div class="pill" id="fdepth"><i></i><b></b><span id="fd1">수면</span><span id="fd2">적정 깊이</span><span id="fd3">강바닥</span></div>
+  <div class="pill" id="fbar"><button id="fclose">닫기</button><button id="fgo" class="on">물 뜨기</button></div>
+</div>
 <div id="dialog"><span class="who" id="dwho"></span><div class="txt" id="dtxt"></div><div class="nx">다음 ▶</div></div>
 <div id="mini"></div>
 
@@ -178,6 +197,7 @@ input{font:inherit;user-select:text;-webkit-user-select:text}
 <script type="module">
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 /* ───────── 바꾸기 쉬운 설정 ───────── */
 const CONFIG = {
@@ -1068,7 +1088,7 @@ function getAction(){
   if(G.step===20&&dist(p,P.board)<4.5) return {label:'보고하기',fn:playReport};
   if(G.step===0&&dist(p,P.npc)<4.2) return {label:'임무 고르기',fn:missionSelect};
   if((G.step===2||G.step===3)&&dist(p,P.bridge)<8) return {label:'물 채취하기',fn:()=>{ if(needItems(ITEMS)) return; if(dist(car.position,P.bridge)>20){ toast('채수 장비가 차에 있어요. 차를 다리까지 몰고 오세요.'); return; }
-    sampleGame(()=>{ iceBox.visible=true; ITEMS.forEach(i=>i.g.visible=false); setStep(4); say([[SENIOR,'수고했어요! 시료는 아이스박스에 잘 담겼어요.'],[SENIOR,'차를 타고 환경동으로 돌아와 시료를 접수하세요.']]); }); }};
+    focusSample(()=>{ iceBox.visible=true; ITEMS.forEach(i=>i.g.visible=false); setStep(4); say([[SENIOR,'수고했어요! 시료는 아이스박스에 잘 담겼어요.'],[SENIOR,'차를 타고 환경동으로 돌아와 시료를 접수하세요.']]); }); }};
   if(G.step===4&&dist(p,P.door)<5) return {label:'실험실 들어가기',fn:()=>{ if(dist(car.position,P.door)>DOOR_LIMIT){ toast('시료가 차에 있어요. 차를 환경동 앞 도로에 세워 주세요.'); return; }
     labGame(()=>{ iceBox.visible=false; G.waitLeft=CONFIG.WAIT_SEC; setStep(5); say([[SENIOR,`배양을 시작했어요. 실제로는 5일을 기다리지만 게임에서는 ${CONFIG.WAIT_SEC}초면 돼요.`],[SENIOR,'기다리는 동안 마을을 둘러보세요. 광장의 ‘연구원 이야기’ 안내판도 읽어 보고요.']]); }); }};
   if(G.step===6&&dist(p,P.door)<5) return {label:'결과 확인하기',fn:()=>resultGame(g=>{ G.grade=g; setStep(7); toast('결과지를 들고 본관 게시판으로!'); })};
@@ -1171,7 +1191,7 @@ $('#enter').addEventListener('click',()=>{ const v=nm.value.trim().slice(0,6);
   $('#start').style.display='none'; $('#hud').style.display='block'; setStep(0); G.lock=false;
   say([['안내',`${G.name} 연구원, 첫 출근을 환영해요! 왼쪽 아래 조이스틱으로 걷고, 화면을 좌우로 밀면 둘러볼 수 있어요.`]]);
 });
-window.__G=G; window.__dbg={player,car,car2,P}; window.__t={sampleGame,bottleGame,labGame,climbGame,haulGame,gaugeGame,filterGame,closeMini,playTest,setPlay,playReport,doseGame,remeasure};
+window.__G=G; window.__dbg={player,car,car2,P}; window.__t={sampleGame,bottleGame,labGame,climbGame,haulGame,gaugeGame,filterGame,closeMini,focusSample,playTest,setPlay,playReport,doseGame,remeasure};
 // 실제 청사 3D 모형(hq.glb). 못 불러오면 위에서 만든 상자 건물을 그대로 써요.
 const HQ_MODEL={ file:'hq.glb', width:64, x:10, z:-46.5, rotY:0 };
 let DOOR_LIMIT=34;   // 차를 실험동 입구에서 이 거리 안에 세워야 시료를 접수할 수 있어요
@@ -1204,6 +1224,64 @@ function loadCar(file,grp,len,rotY){ new GLTFLoader().load(file,gltf=>{ const m=
   m.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; if(o.material){ o.material.metalness=0; o.material.roughness=0.9; } } });
   for(const o of [...grp.children]) o.visible=false; if(grp===car) car.remove(iceBox); grp.add(m); grp.userData.model=m; },undefined,()=>{}); }
 loadCar('car_water.glb',car,4.7,Math.PI/2); loadCar('car_air.glb',car2,5.4,Math.PI/2);
+/* ───────── 초점 모드 (산사 방식): 걷던 마을이 흐려지고, 그 앞에 실물 같은 장비 하나만 떠요 ───────── */
+const FOC={};
+{ const cv=document.createElement('canvas'); cv.id='fx'; document.body.appendChild(cv);
+  const r=new THREE.WebGLRenderer({canvas:cv,alpha:true,antialias:true}); r.setPixelRatio(Math.min(devicePixelRatio,2)); r.toneMapping=THREE.ACESFilmicToneMapping; r.toneMappingExposure=1.1;
+  const s=new THREE.Scene(), c=new THREE.PerspectiveCamera(35,1,0.1,100); c.position.set(0,0,9);
+  s.environment=new THREE.PMREMGenerator(r).fromScene(new RoomEnvironment(),0.04).texture;
+  s.add(new THREE.HemisphereLight(0xffffff,0xa9b6c2,2.2)); const k=new THREE.DirectionalLight(0xfff2dd,3); k.position.set(2,4,6); s.add(k); const k2=new THREE.DirectionalLight(0xdcebff,1.6); k2.position.set(-3,1,5); s.add(k2);
+  Object.assign(FOC,{cv,r,s,c});
+  const fxSize=()=>{ r.setSize(innerWidth,innerHeight,false); c.aspect=innerWidth/innerHeight; c.updateProjectionMatrix(); }; addEventListener('resize',fxSize); fxSize();
+  // 채수기 모형. 못 불러오면 금속 원통으로 대신해요.
+  const fb=new THREE.Group(), steel=new THREE.MeshStandardMaterial({color:0xcfd6da,metalness:.9,roughness:.28});
+  fb.add(new THREE.Mesh(new THREE.CylinderGeometry(0.34,0.34,0.8,24),steel)); { const b=new THREE.Mesh(new THREE.CylinderGeometry(0.4,0.4,0.16,24),steel); b.position.y=-0.46; fb.add(b); const h=new THREE.Mesh(new THREE.TorusGeometry(0.3,0.03,8,24,Math.PI),steel); h.position.y=0.4; fb.add(h); }
+  FOC.sampler=fb;
+  new GLTFLoader().load('sampler.glb',gltf=>{ const m=gltf.scene, w=new THREE.Group(); let b=new THREE.Box3().setFromObject(m); const sz=b.getSize(new THREE.Vector3()); m.scale.setScalar(1.15/sz.y); b=new THREE.Box3().setFromObject(m); const ct=b.getCenter(new THREE.Vector3()); m.position.sub(ct);
+    m.traverse(o=>{ if(o.isMesh&&o.material){ o.material.metalness=0.45; o.material.roughness=0.34; o.material.envMapIntensity=2.2; } }); w.add(m); FOC.sampler=w; },undefined,()=>{}); }
+// 다리 위에서 물 긷기: 화면을 위아래로 쓸어 밧줄을 풀고 감아요
+function focusSample(done){ const {s,c,r,cv}=FOC, H=2*9*Math.tan(17.5*Math.PI/180);   // H: 화면에 보이는 세로 길이
+  G.lock=true; $('#hud').style.display='none'; canvas.classList.add('blur'); cv.style.display='block'; $('#focus').style.display='block';
+  const hint=t=>$('#fhint').textContent=t; hint('화면을 위아래로 쓸어 채수기를 내리세요');
+  const SURF=0.35, Z1=SURF-0.75, Z2=SURF-1.75, BED=-2.4, TOP=3.5, HALF=0.58, YTOP=1.3, YBOT=BED+0.55, clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const grp=new THREE.Group(); s.add(grp);
+  const water=new THREE.Mesh(new THREE.BoxGeometry(8,4,2.6),new THREE.MeshBasicMaterial({color:0x1e9bff,transparent:true,opacity:.3,depthWrite:false})); water.position.y=SURF-2; grp.add(water);
+  const surf=new THREE.Mesh(new THREE.PlaneGeometry(8,2.6),new THREE.MeshBasicMaterial({color:0xe8f7ff,transparent:true,opacity:.34,side:THREE.DoubleSide,depthWrite:false})); surf.rotation.x=-Math.PI/2; surf.position.y=SURF; grp.add(surf);
+  const zone=new THREE.Mesh(new THREE.BoxGeometry(8,Z1-Z2,2.4),new THREE.MeshBasicMaterial({color:0x7dffb0,transparent:true,opacity:.14,depthWrite:false})); zone.position.y=(Z1+Z2)/2; grp.add(zone);
+  const bed=new THREE.Mesh(new THREE.BoxGeometry(8,1.4,2.6),new THREE.MeshStandardMaterial({color:0xb89a6a,roughness:1})); bed.position.y=BED-0.7; grp.add(bed);
+  for(let i=0;i<9;i++){ const p=new THREE.Mesh(new THREE.SphereGeometry(0.16+((i*7)%5)*0.04,10,8),new THREE.MeshStandardMaterial({color:i%2?0x8b8f8c:0xb3a58a,roughness:.9})); p.position.set(-3+i*0.75,BED+0.05,((i*5)%7)*0.25-0.7); p.scale.y=0.6; grp.add(p); }
+  const rope=new THREE.Mesh(new THREE.CylinderGeometry(0.022,0.022,1,8),new THREE.MeshStandardMaterial({color:0x6f5536,roughness:1})); grp.add(rope);
+  const holder=new THREE.Group(); holder.add(FOC.sampler); grp.add(holder);
+  const fx=[];   // 물결 고리와 공기 방울
+  const ring=x=>{ const m=new THREE.Mesh(new THREE.RingGeometry(0.42,0.5,32),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.8,side:THREE.DoubleSide,depthWrite:false})); m.rotation.x=-Math.PI/2; m.position.set(x,SURF+0.01,0.3); grp.add(m); fx.push({m,k:0,ring:true}); };
+  const bubble=(x,y)=>{ const m=new THREE.Mesh(new THREE.SphereGeometry(0.035+Math.random()*0.04,8,6),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.75,depthWrite:false})); m.position.set(x+(Math.random()-0.5)*0.6,y,0.5+Math.random()*0.4); grp.add(m); fx.push({m,k:0}); };
+  // 오른쪽 깊이 표시
+  const pos=y=>clamp((YTOP-y)/(YTOP-YBOT),0,1)*100; { const z=$('#fdepth i'); z.style.top=pos(Z1+0.1)+'%'; z.style.height=(pos(Z2-0.1)-pos(Z1+0.1))+'%'; $('#fd1').style.top=pos(SURF)+'%'; $('#fd2').style.top=(pos(Z1)+pos(Z2))/2+'%'; $('#fd3').style.top='100%'; }
+  let L=TOP-YTOP-HALF, Lt=L, th=0, thv=0, t=0, alive=true, last=performance.now(), was=false, tries=0, ok=false, drag=null, acc=0;
+  cv.onpointerdown=e=>{ drag={y:e.clientY,L:Lt,x:e.clientX}; try{ cv.setPointerCapture(e.pointerId); }catch(_){} };
+  cv.onpointermove=e=>{ if(!drag||ok) return; Lt=clamp(drag.L+(e.clientY-drag.y)*H/innerHeight,TOP-YTOP-HALF,TOP-YBOT-HALF); thv+=(e.clientX-drag.x)*0.0015; drag.x=e.clientX; };
+  cv.onpointerup=cv.onpointercancel=()=>{ drag=null; };
+  function end(success){ alive=false; holder.remove(FOC.sampler); s.remove(grp); cv.style.display='none'; cv.onpointerdown=cv.onpointermove=cv.onpointerup=cv.onpointercancel=null; $('#focus').style.display='none'; canvas.classList.remove('blur'); $('#hud').style.display='block'; G.lock=false; if(success) done(); }
+  $('#fclose').onclick=()=>{ if(!ok) end(false); };
+  $('#fgo').onclick=()=>{ if(ok) return; const y=TOP-L-HALF;
+    if(y>SURF-0.25){ hint('아직 물에 닿지 않았어요. 더 내려 보세요'); return; }
+    if(y>Z1+0.1){ tries++; hint('수면 가까이는 떠다니는 것이 섞여요. 조금 더 깊이 내려요'); return; }
+    if(y<Z2-0.1){ tries++; hint(y<BED+0.9?'강바닥 흙이 섞여요. 조금 올려 주세요':'조금 깊어요. 살짝 올려 주세요'); return; }
+    ok=true; G.score.depth=Math.max(8,20-tries*4); G.score.bottle=20; hint('딱 좋아요. 강 한가운데 흐르는 물을 떴어요'); for(let i=0;i<16;i++) bubble(holder.position.x,y+Math.random()*0.5);
+    setTimeout(()=>{ Lt=TOP-YTOP-HALF-0.4; },1300); setTimeout(()=>end(true),3200); };
+  (function loop(now){ if(!alive) return; const dt=Math.min(0.05,Math.max(0,(now-last)/1000)); last=now; t+=dt;
+    L+=(Lt-L)*Math.min(1,dt*(ok?2.2:10)); const y=TOP-L-HALF, sub=y-HALF*0.6<SURF;
+    thv+=(-7*th-(sub?4:1.2)*thv)*dt+Math.sin(t*1.3)*0.03*dt; th=clamp(th+thv*dt,-0.35,0.35);
+    rope.scale.y=L; rope.rotation.z=th; rope.position.set(Math.sin(th)*L/2,TOP-Math.cos(th)*L/2,0);
+    holder.position.set(Math.sin(th)*(L+HALF),TOP-Math.cos(th)*(L+HALF),0); holder.rotation.z=th; holder.rotation.y=Math.sin(t*0.6)*0.3+0.4;
+    if(sub!==was){ was=sub; ring(holder.position.x); ring(holder.position.x); fx[fx.length-1].k=-0.25; }
+    if(sub&&!ok){ acc+=dt*(drag?9:2); while(acc>1){ acc--; bubble(holder.position.x,y+0.3); } }
+    for(let i=fx.length-1;i>=0;i--){ const f=fx[i]; f.k+=dt*(f.ring?0.9:0.7); if(f.k<0) continue;
+      if(f.ring){ f.m.scale.setScalar(1+f.k*3); f.m.material.opacity=0.8*(1-f.k); } else { f.m.position.y+=dt*1.3; f.m.material.opacity=0.75*(1-f.k); if(f.m.position.y>SURF) f.k=1; }
+      if(f.k>=1){ grp.remove(f.m); fx.splice(i,1); } }
+    surf.position.y=SURF+Math.sin(t*2)*0.012; $('#fdepth b').style.top=pos(y)+'%';
+    r.render(s,c); requestAnimationFrame(loop); })(last);
+}
 // 그림자: 입체물은 그림자를 만들고, 모든 면은 그림자를 받아요
 scene.traverse(o=>{ if(!o.isMesh||o.isInstancedMesh) return; const m=Array.isArray(o.material)?o.material[0]:o.material; if(m.isMeshBasicMaterial) return;
   const t=o.geometry.type; o.castShadow=t!=='PlaneGeometry'&&t!=='CircleGeometry'&&!m.transparent; o.receiveShadow=true; });
