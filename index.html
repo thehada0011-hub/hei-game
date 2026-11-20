@@ -436,10 +436,10 @@ const PETALS_R=Array.from({length:56},(_,i)=>{ const m=box(0.14,0.02,0.1,i%2?0xf
   box(5,7.6,13,0xb9bec4,-101.5,3.8,ROAD_Z); box(5.4,0.6,13.6,0x9aa09c,-101.5,7.9,ROAD_Z); box(0.3,5.6,9,0x14181b,-98.95,2.8,ROAD_Z);          // 터널 입구: 콘크리트 벽과 어두운 구멍
   for(const z of [ROAD_Z-6.2,ROAD_Z+6.2]) box(4,3.2,1.2,0xa8aeab,-97.5,1.6,z); panel2('터널',2.6,0.8,-98.7,6.9,ROAD_Z,{bg:'#2f6f4f',fg:'#fff'});
   for(const z of [ROAD_Z-2.2,ROAD_Z+2.2]) box(0.2,0.2,0.2,0xffe38a,-98.75,5.2,z); }
-// 농산물 유통센터 (서남쪽 빈터). 농산물검사소의 사무실과 검사실은 유통센터 건물 안에 있어요.
-const MK={x:-52,z:52,bx:-35.3,bz:52,rows:[-3.4,0,3.4],trucks:[[-58,41.5]]};   // 오른쪽 짐 내리는 자리는 터널에서 오는 트럭이 써요
+// 농산물 유통센터 (서쪽 산 바로 앞, 터널 옆). 농산물검사소의 사무실과 검사실은 유통센터 건물 안에 있어요.
+const MK={x:-84,z:52,bx:-67.3,bz:52,rows:[-3.4,0,3.4],trucks:[[-90,41.5]]};   // 오른쪽 짐 내리는 자리는 터널에서 오는 트럭이 써요
 { const mx=MK.x, mz=MK.z, VEG=[0x5fae5a,0xf08a24,0xe5484d,0x8e5bd0,0xf2c531,0x7fbf4a];
-  flat(46,38,0xd6d0c2,-45,0.07,55);                                                                                           // 시장 마당
+  flat(46,38,0xd6d0c2,-77,0.07,55);                                                                                           // 시장 마당
   box(23,0.4,13,0x4f8a6b,mx,5.4,mz); box(23.4,0.15,13.4,0xe9eef0,mx,5.68,mz); for(const x of [-10.5,-3.5,3.5,10.5]) for(const z of [-5.8,5.8]) cyl(0.25,0.25,5.2,0xdfe3e3,mx+x,2.6,mz+z,scene,10);   // 경매장 지붕과 기둥
   panel2('농산물 유통센터',9,1.1,mx,6.6,mz-6.6,{bg:'#2f6f4f',fg:'#fff'});
   MK.rows.forEach((dz,r)=>{ for(let i=0;i<6;i++){ const x=mx-8.5+i*3.4, z=mz+dz; box(1.5,0.55,1.1,0x9a6b3a,x,0.3,z); box(1.3,0.28,0.9,VEG[(i+r*2)%6],x,0.7,z); if((i+r)%2){ box(1.5,0.5,1.1,0xa9743f,x,1.1,z); box(1.3,0.25,0.9,VEG[(i+r*2+3)%6],x,1.48,z); } } });   // 채소·과일 상자
@@ -451,7 +451,7 @@ const MK={x:-52,z:52,bx:-35.3,bz:52,rows:[-3.4,0,3.4],trucks:[[-58,41.5]]};   //
   flat(5,6.5,0xeadfc8,bx,0.08,bz-7.4).material=texMat(TEX.slab,1.25,1.6); }
 // 큰길에서 각 건물로 이어지는 도로. ROADS는 나무를 심지 않을 자리로도 써요.
 const ROADS=[ [19,25,19,59],[6,27,59,64.6],        // 주민센터
-  [-50,-44,19,36.4],                               // 농산물 유통센터
+  [-82,-76,19,36.4],                               // 농산물 유통센터
   [44,50,-24,11],                                  // 주차장과 본관
   [-80,-74,-52.5,11],[-92,-80,-22.6,-17.4],[-74,-60,-52.5,-47.5],   // 서쪽: 어린이집, 물놀이터
   [147,153,-37,11],[143,166,-39.6,-37] ];          // 강 건너 공장
@@ -605,14 +605,14 @@ const SIGNS=[
   {x:66,z:25,e:'🌬️',t:'맑은 공기',d:'미세먼지와 오존을 하루 24시간 측정해서 알려 줘요. 공장 굴뚝에서 나오는 연기도 직접 올라가 검사해요.'},
   {x:100,z:6,e:'💧',t:'깨끗한 물',d:'강과 호수, 수돗물, 약수터 물이 안전한지 검사해요. 물놀이장 물도 깨끗한지 확인해요.'},
   {x:-36,z:27,e:'🌱',t:'건강한 땅',d:'놀이터와 공원의 흙에 중금속 같은 해로운 물질이 없는지 살펴요. 아이들이 뛰노는 땅을 지켜요.'},
-  {x:-74,z:24,e:'🐄',t:'동물 건강',d:'가축 전염병을 검사하고 축산물이 안전한지 확인해요. 사람과 동물의 건강은 이어져 있기 때문이에요.'},
-  {x:-39,z:40.5,e:'🥕',t:'농산물검사소',d:'농산물 유통센터 안에 사무실과 검사실이 있어요. 들어온 채소와 과일에 농약이 남아 있지 않은지 분석 장비로 검사하고, 기준을 넘으면 팔리지 않게 막아요.'},
+  {x:-68,z:24,e:'🐄',t:'동물 건강',d:'가축 전염병을 검사하고 축산물이 안전한지 확인해요. 사람과 동물의 건강은 이어져 있기 때문이에요.'},
+  {x:-71,z:40.5,e:'🥕',t:'농산물검사소',d:'농산물 유통센터 안에 사무실과 검사실이 있어요. 들어온 채소와 과일에 농약이 남아 있지 않은지 분석 장비로 검사하고, 기준을 넘으면 팔리지 않게 막아요.'},
 ].map(s=>{ box(0.18,1.7,0.18,0x7a5b3a,s.x,0.85,s.z); box(2.5,1.25,0.14,0xc9a26b,s.x,1.95,s.z);
   for(const r of [0,Math.PI]) sign(s.e+' '+s.t,2.3,1.05,s.x,1.95,s.z+(r?-0.12:0.12),r,{bg:'#fff7e0',fg:'#5b3a12'}); return {...s,read:false}; });
 // 나무
 { let seed=7; const rnd=()=>{ seed=(seed*16807)%2147483647; return seed/2147483647; };
   const spots=[]; while(spots.length<120){ const x=-95+rnd()*280, z=-85+rnd()*170;
-    if(Math.hypot(x+86,z-76)<11||(x>-70&&x<-20&&z>33&&z<76)||ROADS.some(r=>x>r[0]-3.5&&x<r[1]+3.5&&z>r[2]-3.5&&z<r[3]+3.5)||Math.hypot(x+83,z+28)<7||Object.values(XAT).some(a=>Math.hypot(x-a[0],z-a[1])<11)||Math.abs(z-ROAD_Z)<8||Math.hypot(x,z+3)<16||(x>-42&&x<62&&z>-13&&z<8)||(z<-82)||(z>82)||(x>-44&&x<60&&z<-14&&z>-82)||SIGNS.some(s=>Math.hypot(x-s.x,z-s.z)<5)||Math.hypot(x-FX,z-FZ)<16||Math.hypot(x-PGX,z-PGZ-6)<25||(x>FX-2&&x<FX+12&&z>18&&z<50)||blocked(x,z,4)||(x>114&&x<146)||(Math.abs(x)<5&&z>0&&z<14)||(x>4&&x<32&&z>-12&&z<-4)) continue;
+    if(Math.hypot(x-80.6,z+69)<11||(x>-101&&x<-52&&z>33&&z<76)||ROADS.some(r=>x>r[0]-3.5&&x<r[1]+3.5&&z>r[2]-3.5&&z<r[3]+3.5)||Math.hypot(x+83,z+28)<7||Object.values(XAT).some(a=>Math.hypot(x-a[0],z-a[1])<11)||Math.abs(z-ROAD_Z)<8||Math.hypot(x,z+3)<16||(x>-42&&x<62&&z>-13&&z<8)||(z<-82)||(z>82)||(x>-44&&x<60&&z<-14&&z>-82)||SIGNS.some(s=>Math.hypot(x-s.x,z-s.z)<5)||Math.hypot(x-FX,z-FZ)<16||Math.hypot(x-PGX,z-PGZ-6)<25||(x>FX-2&&x<FX+12&&z>18&&z<50)||blocked(x,z,4)||(x>114&&x<146)||(Math.abs(x)<5&&z>0&&z<14)||(x>4&&x<32&&z>-12&&z<-4)) continue;
     spots.push([x,z,0.85+rnd()*0.9,rnd()]); }
   // 줄기와 잎 뭉치를 한꺼번에 그려서 휴대폰에서도 가볍게 (단풍 든 나무와 소나무)
   const d=new THREE.Object3D(), col=new THREE.Color(), PAL=[0x4f9d58,0x5fae62,0x3f8a4f,0x7fb857,0xd9a43a,0xd8742f,0xc9492f,0xe0b84a];
@@ -628,7 +628,7 @@ const SIGNS=[
   // 풀숲과 꽃
   const bush=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshLambertMaterial({flatShading:true}),170); let bi=0;
   const FL=[0x5fae62,0x4f9d58,0x7fb857,0xf2a7c3,0xf6d55c,0xffffff];
-  while(bi<170){ const x=-95+rnd()*280, z=-85+rnd()*170; if(Math.hypot(x+86,z-76)<8||(x>-69&&x<-21&&z>35&&z<75)||ROADS.some(r=>x>r[0]-1.5&&x<r[1]+1.5&&z>r[2]-1.5&&z<r[3]+1.5)||Object.values(XAT).some(a=>Math.hypot(x-a[0],z-a[1])<7)||Math.abs(z-ROAD_Z)<5||blocked(x,z,2)||(x>114&&x<146)||(x>-44&&x<60&&z<-12&&z>-82)||(z<-84)||(z>84)||Math.hypot(x-PGX,z-PGZ-3)<16||(x>FX-2&&x<FX+12&&z>18&&z<50)||SIGNS.some(s=>Math.hypot(x-s.x,z-s.z)<3)||Math.hypot(x,z+3)<12||(x>36&&x<61&&z>-12&&z<6)) continue;
+  while(bi<170){ const x=-95+rnd()*280, z=-85+rnd()*170; if(Math.hypot(x-80.6,z+69)<8||(x>-101&&x<-53&&z>35&&z<75)||ROADS.some(r=>x>r[0]-1.5&&x<r[1]+1.5&&z>r[2]-1.5&&z<r[3]+1.5)||Object.values(XAT).some(a=>Math.hypot(x-a[0],z-a[1])<7)||Math.abs(z-ROAD_Z)<5||blocked(x,z,2)||(x>114&&x<146)||(x>-44&&x<60&&z<-12&&z>-82)||(z<-84)||(z>84)||Math.hypot(x-PGX,z-PGZ-3)<16||(x>FX-2&&x<FX+12&&z>18&&z<50)||SIGNS.some(s=>Math.hypot(x-s.x,z-s.z)<3)||Math.hypot(x,z+3)<12||(x>36&&x<61&&z>-12&&z<6)) continue;
     const fl=rnd()<0.3, s=fl?0.18+rnd()*0.12:0.5+rnd()*0.6; d.position.set(x,s*0.5,z); d.scale.set(s,s*0.7,s); d.rotation.set(0,rnd()*6,0); d.updateMatrix(); bush.setMatrixAt(bi,d.matrix);
     col.setHex(fl?FL[3+Math.floor(rnd()*3)]:FL[Math.floor(rnd()*3)]); bush.setColorAt(bi,col); bi++; }
   bush.castShadow=true; bush.receiveShadow=true; scene.add(bush); }
@@ -1353,19 +1353,19 @@ const TRK={ g:new THREE.Group(), crates:[], stack:[], seg:0, k:0, wait:3, state:
   box(2.2,1.3,1.7,0x2f8f5b,0,1.2,2.1,g); box(2.0,0.6,0.06,0x2a3f55,0,1.55,2.96,g); box(2.2,0.25,4.2,0x55636b,0,0.6,-0.9,g); for(const x of [-1.05,1.05]) box(0.1,0.7,4.2,0x8fb07a,x,1.05,-0.9,g); box(2.2,0.7,0.1,0x8fb07a,0,1.05,-3.0,g);
   for(const dx of [-1.1,1.1]) for(const dz of [-2.2,1.9]){ const w=cyl(0.42,0.42,0.3,0x2b2b2b,dx,0.42,dz,g,12); w.rotation.z=Math.PI/2; } for(const x of [-0.7,0.7]) box(0.35,0.2,0.06,0xffe38a,x,0.85,2.97,g);
   for(let i=0;i<6;i++){ const c=new THREE.Group(); c.position.set(i%2?0.5:-0.5,0.98+(i>3?0.62:0),0.2-(i%4>1?1.5:0)-(i>3?0.7:0)); g.add(c); box(0.9,0.5,1.2,0x9a6b3a,0,0,0,c); const top=box(0.78,0.2,1.05,VEG[i],0,0.3,0,c); TRK.crates.push({c,top}); }
-  for(let i=0;i<6;i++){ const c=new THREE.Group(); c.position.set(-50.3+(i%2)*1.05,0.3+Math.floor(i/2)*0.62,44.6); c.visible=false; scene.add(c); box(0.9,0.5,1.2,0x9a6b3a,0,0,0,c); const top=box(0.78,0.2,1.05,VEG[i],0,0.3,0,c); TRK.stack.push({c,top}); }
-  TRK.man=makePerson({coat:0x2f8f5b,pants:0x55636b}); TRK.man.g.position.set(-49.6,0,42.4); TRK.man.g.rotation.y=1.2;
-  TRK.veg=VEG; TRK.path=[[-104,17],[-50,17],[-48.5,19],[-48.5,37],[-47,42.6],[-47,42.6],[-44.4,45.2],[-42.6,42.5],[-45.5,37.5],[-45.5,19],[-47.5,13],[-104,13]]; TRK.stop=4; }
+  for(let i=0;i<6;i++){ const c=new THREE.Group(); c.position.set(-82.3+(i%2)*1.05,0.3+Math.floor(i/2)*0.62,44.6); c.visible=false; scene.add(c); box(0.9,0.5,1.2,0x9a6b3a,0,0,0,c); const top=box(0.78,0.2,1.05,VEG[i],0,0.3,0,c); TRK.stack.push({c,top}); }
+  TRK.man=makePerson({coat:0x2f8f5b,pants:0x55636b}); TRK.man.g.position.set(-81.6,0,42.4); TRK.man.g.rotation.y=1.2;
+  TRK.veg=VEG; TRK.path=[[-104,17],[-82,17],[-80.5,19],[-80.5,37],[-79,42.6],[-79,42.6],[-76.4,45.2],[-74.6,42.5],[-77.5,37.5],[-77.5,19],[-79.5,13],[-104,13]]; TRK.stop=4; }
 function truckTick(dt){ const T=TRK, g=T.g, P2=T.path;
   if(T.state==='wait'){ T.wait-=dt; if(T.wait<=0){ T.state='go'; T.seg=0; T.k=0; g.position.set(P2[0][0],0,P2[0][1]); g.rotation.y=Math.PI/2; const o=Math.floor(Math.random()*6); T.crates.forEach((c,i)=>{ c.c.visible=true; c.top.material=mat(T.veg[(i+o)%6]); }); T.stack.forEach((c,i)=>{ c.c.visible=false; c.top.material=mat(T.veg[(i+o)%6]); }); } return; }
   if(T.state==='unload'){ T.un+=dt; const n=Math.min(6,Math.floor(T.un/0.9)); T.crates.forEach((c,i)=>{ c.c.visible=i<6-n; }); T.stack.forEach((c,i)=>{ c.c.visible=i<n; }); T.man.armL.rotation.x=T.man.armR.rotation.x=-1.3+Math.sin(T.un*7)*0.4;
-    if(T.un>0.4&&!T.said&&!G.driving&&Math.hypot(player.g.position.x+47,player.g.position.z-42)<22){ T.said=true; bubble(T.man.g,['싱싱한 채소가 도착했어요!','오늘 들어온 과일이에요. 검사 부탁해요!','조심조심, 상자 내려요~'][Math.floor(Math.random()*3)]); }
+    if(T.un>0.4&&!T.said&&!G.driving&&Math.hypot(player.g.position.x+79,player.g.position.z-42)<22){ T.said=true; bubble(T.man.g,['싱싱한 채소가 도착했어요!','오늘 들어온 과일이에요. 검사 부탁해요!','조심조심, 상자 내려요~'][Math.floor(Math.random()*3)]); }
     if(T.un>6.6){ T.state='go'; T.seg=T.stop+1; T.k=0; T.said=false; } return; }
-  const a=P2[T.seg], b=P2[T.seg+1], len=Math.hypot(b[0]-a[0],b[1]-a[1])||0.01; T.k+=dt*(len>20?10:5)/len;
+  const a=P2[T.seg], b=P2[T.seg+1], len=Math.hypot(b[0]-a[0],b[1]-a[1])||0.01; T.k+=dt*(len>15?8:5)/len;
   if(T.k>=1){ T.seg++; T.k=0; if(T.seg===T.stop){ T.state='unload'; T.un=0; g.position.set(b[0],0,b[1]); return; } if(T.seg>=P2.length-1){ T.state='wait'; T.wait=5+Math.random()*6; g.visible=false; return; } return; }
   const x=a[0]+(b[0]-a[0])*T.k, z=a[1]+(b[1]-a[1])*T.k; g.position.set(x,0,z); g.rotation.y=lerpAng(g.rotation.y,Math.atan2(b[0]-a[0],b[1]-a[1]),dt*4); g.visible=x>-99.2; }
-// 서남쪽 구석의 작은 캠핑장: 텐트 두 동, 모닥불, 불 앞에 앉은 가족. 모닥불은 일렁이고 연기가 올라가요.
-const CAMP={x:-86,z:76,flames:[],smoke:[],people:[],talk:3};
+// 동북쪽 강가의 작은 캠핑장: 텐트 두 동, 모닥불, 불 앞에 앉은 가족. 모닥불은 일렁이고 연기가 올라가요.
+const CAMP={x:80.6,z:-69,flames:[],smoke:[],people:[],talk:3};
 // 가족마다 하는 말이 달라요. 아이들(시아, 시우)이 더 자주, 더 여러 가지로 말해요.
 const CAMP_SAY={
   아빠:['불멍 최고!','불은 꼭 끄고 갈 거예요','캠핑 오길 잘했다!','장작 하나 더 넣을까?','연구원님 덕분에 공기가 맑아요'],
