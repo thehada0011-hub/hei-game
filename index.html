@@ -365,7 +365,7 @@ flat(6,16,0xeadfc8,19,0.08,-21).material=texMat(TEX.slab,1.5,4); flat(14,4,0xead
 { const l=label('환경 실험동 입구 (시료 접수)',{bg:'rgba(18,165,148,.95)',fg:'#fff'}); l.scale.set(6.4,1.1,1); l.position.set(19,4.6,-31.5); scene.add(l); }
 // 주차장
 flat(24,16,0x6a747a,44,0.08,-32).material=texMat(TEX.road,6,4); for(let i=0;i<8;i++){ flat(0.15,4.2,0xf4f4f4,34.4+i*2.6,0.12,-37); flat(0.15,4.2,0xf4f4f4,34.4+i*2.6,0.12,-27); }
-const PARKED=[[35.7,-37,0xffffff],[40.9,-37,0x2f3b46],[48.7,-37,0xdfe3e3],[38.3,-27,0x9aa5aa]];   // 43.5와 48.7 자리는 임무 차량 두 대가 써요
+const PARKED=[[35.7,-37,0xffffff],[35.7,-27,0x2f3b46],[53.4,-37.5,0x9aa5aa]];   // 43.5와 48.7 자리는 임무 차량 두 대가 써요
 for(const [x,z,c] of PARKED){ box(1.8,0.7,3.8,c,x,0.65,z); box(1.6,0.6,2,0x2a3f55,x,1.3,z-0.2); }
 box(2.4,2.4,8,0xffffff,53.4,1.5,-29); box(2.42,0.5,8.02,0x2e9e6b,53.4,1.1,-29); box(2.42,0.7,7,0x2a3f55,53.4,2.1,-29);   // 버스
 // 정원 정자
@@ -573,14 +573,18 @@ sign('수질 채수차량',2.6,0.42,0.962,0.98,0,Math.PI/2,{bg:'#ffffff',fg:'#0b
 sign('수질 채수차량',2.6,0.42,-0.962,0.98,0,-Math.PI/2,{bg:'#ffffff',fg:'#0b7d70'},car);
 const iceBox=box(1.1,0.6,0.8,0x3b82c4,0,2.3,-0.4,car); iceBox.visible=false;
 car.position.set(43.5,0,-27.5); car.rotation.y=0;
-function makeCar(text){ const c=new THREE.Group(); scene.add(c);
-  box(1.9,0.8,4,0xffffff,0,0.85,0,c); box(1.92,0.2,4.02,0x3b82c4,0,0.72,0,c);
+function makeCar(text,col=0x3b82c4){ const c=new THREE.Group(); scene.add(c);
+  box(1.9,0.8,4,0xffffff,0,0.85,0,c); box(1.92,0.2,4.02,col,0,0.72,0,c);
   box(1.75,0.8,2.3,0xffffff,0,1.6,-0.35,c); box(1.77,0.45,2.0,0x2a3f55,0,1.65,-0.35,c); box(1.5,0.45,0.06,0x2a3f55,0,1.65,0.79,c);
   for(const x of [-0.95,0.95]) for(const z of [-1.3,1.3]){ const w=cyl(0.42,0.42,0.3,0x2b2b2b,x,0.42,z,c,12); w.rotation.z=Math.PI/2; }
   for(const x of [-0.6,0.6]) box(0.4,0.2,0.06,0xffe38a,x,0.95,2.01,c);
   sign(text,2.6,0.42,0.962,0.98,0,Math.PI/2,{bg:'#ffffff',fg:'#1f5f99'},c); sign(text,2.6,0.42,-0.962,0.98,0,-Math.PI/2,{bg:'#ffffff',fg:'#1f5f99'},c);
   cyl(0.05,0.05,1.4,0x7c878d,0.6,2.6,-1,c,6); return c; }
 const car2=makeCar('대기 측정차량'); car2.position.set(48.7,0,-27.5); car2.rotation.y=0;
+// 과마다 차량이 한 대씩 있어요. [차, 주차 자리 x, z, 과 이름, 이름표 색]
+const carD=makeCar('미세먼지 측정차량',0xeab308), carI=makeCar('폐수 채수차량',0xf97316), carL=makeCar('소음 측정차량',0x8b5cf6);
+const CARS=[[car,43.5,-27.5,'물환경조사과','#12a594'],[car2,48.7,-27.5,'대기환경과','#3b82c4'],[carD,38.5,-27.5,'미세먼지분석과','#b7791f'],[carI,43.5,-36.5,'산업폐수과','#e8590c'],[carL,48.7,-36.5,'생활환경과','#7c4dff']];
+for(const [c,x,z,name,col] of CARS){ c.position.set(x,0,z); c.rotation.y=0; const l=label(name,{bg:col,fg:'#fff'}); l.scale.set(4.2,0.85,1); l.position.y=3.8; l.userData.keep=true; c.add(l); }
 function blob(r,parent,sy=1){ const m=new THREE.Mesh(new THREE.CircleGeometry(r,20),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.2,depthWrite:false})); m.rotation.x=-Math.PI/2; m.scale.y=sy; m.position.y=0.07; parent.add(m); }
 
 /* ───────── 줍는 장비 ───────── */
@@ -624,7 +628,7 @@ const XMS={
   l:{name:'생활환경과',job:'소음 측정',ic:'🔊',sub:'어린이집 앞에서 소음계로 가장 시끄러운 곳을 찾아요',car:'a',at:XAT.l,go:'서쪽 끝 큰 벚꽃나무 옆 정원어린이집으로 가서 소음을 재세요',ask:v=>`소음이 ${v}데시벨! 알맞은 깃발을 올려요`,lo:30,
     opts:[['조용해요','#3b82f6',45],['보통이에요','#22c55e',60],['시끄러워요','#eab308',75],['매우 시끄러워요','#ef4444',100]],help:'조용 45까지 · 보통 60까지 · 시끄러움 75까지 · 그보다 크면 매우 시끄러움',fact:'생활환경과는 소음뿐 아니라 실내 공기와 어린이 활동공간이 안전한지도 검사해요.'} };
 let XM=XMS.d;
-const XCAR_NEAR=34, xCar=()=>XM.car==='w'?car:car2, xCarName=()=>XM.car==='w'?'초록 줄 채수차량':'파란 줄 측정차량';   // 이 세 임무도 장비를 실은 차를 현장 가까이 몰고 가야 해요
+const XCAR_NEAR=34, xCar=()=>({d:carD,i:carI,l:carL})[G.xk]||car2, xCarName=()=>XM.name+' 차량';   // 이 세 임무도 장비를 실은 차를 현장 가까이 몰고 가야 해요
 const doneCount=()=>Object.values(G.done).filter(Boolean).length, allDone=()=>doneCount()>=6;
 
 /* ───────── 게임 상태 ───────── */
@@ -633,7 +637,7 @@ const G={ name:'', step:0, driving:false, yaw:0, lock:true, waitLeft:0,
   air:{equip:0,haul:0,gauge:0,filter:0,weigh:0,judge:0}, dust:0, done:{w:false,a:false,p:false,d:false,i:false,l:false}, xStars:0, cert:false, vy:0, pl:{equip:0,sample:0,cl:0,ph:0,judge:0}, playCase:null };
 const STEPS=[
   {t:'선배 연구원에게 가서 임무를 고르세요', at:()=>G.cert?null:allDone()?P.boss:P.npc},
-  {t:'주차장에 세워 둔 수질 채수차량에 타세요', at:()=>[car.position.x,car.position.z]},
+  {t:'주차장에 세워 둔 물환경조사과 차량에 타세요', at:()=>[car.position.x,car.position.z]},
   {t:'차를 몰고 동쪽 강의 다리로! 다리 근처에 흩어진 장비 3개를 찾으세요', at:()=>P.bridge},
   {t:'다리 위에서 강물을 채취하세요', at:()=>P.bridge},
   {t:'차를 타고 환경동으로 돌아가 시료를 접수하세요', at:()=>P.door},
@@ -641,7 +645,7 @@ const STEPS=[
   {t:'분석 끝! 환경동에서 결과를 확인하세요', at:()=>P.door},
   {t:'본관 앞 게시판에 결과를 보고하세요', at:()=>P.board},
   {t:'수질 임무 완료! 선배 연구원에게 다음 임무를 받으세요', at:()=>P.npc},
-  {t:'주차장에 세워 둔 대기 측정차량에 타세요', at:()=>[car2.position.x,car2.position.z]},
+  {t:'주차장에 세워 둔 대기환경과 차량에 타세요', at:()=>[car2.position.x,car2.position.z]},
   {t:'차를 몰고 동남쪽 공장 굴뚝으로! 공장 근처에 흩어진 안전장비 3개를 찾으세요', at:()=>P.stack},
   {t:'굴뚝 아래에서 측정을 시작하세요', at:()=>P.stack},
   {t:'차를 타고 환경동으로 돌아가 필터를 접수하세요', at:()=>P.door},
@@ -1133,14 +1137,14 @@ function missionSelect(){ const d=G.done, tag=x=>x?'<span class="dn">완료 ✓<
 function scatter(list,ok){ const used=[]; for(const it of list){ let x,z,n=0; do{ [x,z]=ok(); n++; } while(n<300&&(blocked(x,z,2)||used.some(u=>Math.hypot(u[0]-x,u[1]-z)<6)));
     used.push([x,z]); it.x=x; it.z=z; it.g.position.x=x; it.g.position.z=z; it.got=false; it.g.visible=false; } }
 function startMission(k){
-  if(!G.driving){ car.position.set(43.5,0,-27.5); car.rotation.y=0; car2.position.set(48.7,0,-27.5); car2.rotation.y=0; }   // 출장은 늘 주차장에서 출발해요
+  if(!G.driving) for(const [c,x,z] of CARS){ c.position.set(x,0,z); c.rotation.y=0; }   // 출장은 늘 주차장에서 출발해요
   if(XMS[k]){ XM=XMS[k]; G.xk=k; say([[SENIOR,`${XM.name} 임무예요, {n} 연구원! ${XM.sub}.`],[SENIOR,'주차장의 '+xCarName()+'을 타고 출장을 나가요. '+XM.go+'.']],()=>setStep(24)); return; }
   if(k==='w'){ scatter(ITEMS,()=>[86+Math.random()*31,-14+Math.random()*44]); G.score={equip:0,depth:0,bottle:0,order:0,grade:0}; bridgeHint=false; iceBox.visible=false;
-    say([[SENIOR,'수질 임무예요, {n} 연구원! 강물이 깨끗한지 검사해 달라는 의뢰가 들어왔어요.'],[SENIOR,'주차장의 초록 줄 채수차량을 타고 동쪽 강의 다리로 가세요. 장비 3개가 다리 근처 어딘가에 흩어져 있으니 꼭 찾아서 챙기고요!']],()=>setStep(1)); }
+    say([[SENIOR,'수질 임무예요, {n} 연구원! 강물이 깨끗한지 검사해 달라는 의뢰가 들어왔어요.'],[SENIOR,'주차장의 물환경조사과 차량을 타고 동쪽 강의 다리로 가세요. 장비 3개가 다리 근처 어딘가에 흩어져 있으니 꼭 찾아서 챙기고요!']],()=>setStep(1)); }
   else if(k==='p'){ scatter(ITEMS_P,()=>{ const a=Math.random()*6.28, r=13+Math.random()*14; return [PGX+Math.cos(a)*r,Math.max(-82,PGZ+Math.sin(a)*r)]; }); G.pl={equip:0,sample:0,cl:0,ph:0,judge:0}; setPlay('wait');
-    say([[SENIOR,'물놀이터 검사 임무예요, {n} 연구원! 아이들이 뛰어노는 물놀이터의 물이 안전한지 검사해야 해요.'],[SENIOR,'주차장의 초록 줄 채수차량을 타고 북서쪽 벚꽃길 옆 물놀이터로 가세요. 아이들이 검사 결과를 기다리고 있어요!']],()=>setStep(17)); }
+    say([[SENIOR,'물놀이터 검사 임무예요, {n} 연구원! 아이들이 뛰어노는 물놀이터의 물이 안전한지 검사해야 해요.'],[SENIOR,'주차장의 물환경조사과 차량을 타고 북서쪽 벚꽃길 옆 물놀이터로 가세요. 아이들이 검사 결과를 기다리고 있어요!']],()=>setStep(17)); }
   else { scatter(ITEMS_A,()=>{ const a=Math.random()*6.28, r=9+Math.random()*17; return [Math.min(116,FX+Math.cos(a)*r),Math.max(24,FZ+Math.sin(a)*r)]; }); G.air={equip:0,haul:0,gauge:0,filter:0,weigh:0,judge:0};
-    say([[SENIOR,'대기 임무예요, {n} 연구원! 공장 굴뚝에서 나오는 연기에 먼지가 얼마나 있는지 검사해야 해요.'],[SENIOR,'주차장의 파란 줄 측정차량을 타고 도로 건너 동남쪽 공장으로 가세요. 안전장비 3개가 공장 근처에 흩어져 있으니 꼭 찾아서 챙기고요!']],()=>setStep(9)); }
+    say([[SENIOR,'대기 임무예요, {n} 연구원! 공장 굴뚝에서 나오는 연기에 먼지가 얼마나 있는지 검사해야 해요.'],[SENIOR,'주차장의 대기환경과 차량을 타고 도로 건너 동남쪽 공장으로 가세요. 안전장비 3개가 공장 근처에 흩어져 있으니 꼭 찾아서 챙기고요!']],()=>setStep(9)); }
 }
 // 장비를 다 찾지 못했으면 측정을 시작할 수 없어요
 function needItems(list){ const n=list.filter(i=>!i.got); if(!n.length) return false; toast(`아직 못 찾은 장비: ${n.map(i=>i.n).join(', ')}. 노란 점선을 따라가 먼저 찾으세요.`,3000); return true; }
@@ -1172,6 +1176,7 @@ function getAction(){
     airLab(()=>{ G.waitLeft=CONFIG.WAIT_SEC; setStep(13); say([[SENIOR,'분석 장비가 돌아가고 있어요. 결과가 나올 때까지 잠깐 쉬어요.']]); }); }};
   if(G.step===14&&dist(p,P.door)<5) return {label:'결과 확인하기',fn:()=>airResult(()=>{ setStep(15); toast('결과지를 들고 본관 게시판으로!'); })};
   if(G.step===15&&dist(p,P.board)<4.5) return {label:'보고하기',fn:airReport};
+  for(const c of [carD,carI,carL]) if(dist(p,[c.position.x,c.position.z])<4.6) return {label:'차에 타기',fn:()=>board(c)};
   if(dist(p,[car2.position.x,car2.position.z])<4.6) return {label:'차에 타기',fn:()=>board(car2)};
   if(dist(p,[car.position.x,car.position.z])<4.6) return {label:'차에 타기',fn:()=>board(car)};
   if(G.sit) return {label:'일어나기',fn:()=>{ G.sit=null; }};
@@ -1291,15 +1296,16 @@ $('#enter').addEventListener('click',()=>{ const v=nm.value.trim().slice(0,6);
   $('#start').style.display='none'; $('#hud').style.display='block'; setStep(0); G.lock=false;
   say([['안내',`${G.name} 연구원, 첫 출근을 환영해요! 왼쪽 아래 조이스틱으로 걷고, 화면을 좌우로 밀면 둘러볼 수 있어요.`]]);
 });
-window.__G=G; window.__dbg={player,car,car2,P}; window.__t={sampleGame,bottleGame,labGame,climbGame,haulGame,gaugeGame,filterGame,closeMini,focusSample,focusCatch,focusHaul,playTest,setPlay,playReport,doseGame,remeasure,focusDust,focusStrip,focusNoise,xReport,startMission,setStep,XMS};
+window.__G=G; window.__dbg={player,car,car2,carD,carI,carL,P}; window.__t={sampleGame,bottleGame,labGame,climbGame,haulGame,gaugeGame,filterGame,closeMini,focusSample,focusCatch,focusHaul,playTest,setPlay,playReport,doseGame,remeasure,focusDust,focusStrip,focusNoise,xReport,startMission,setStep,XMS};
 const DOOR_LIMIT=52;   // 차를 실험동 입구에서 이 거리 안에 세워야 시료를 접수할 수 있어요
 flag.position.set(24,0,-25);
 // 차량 3D 모형. 못 불러오면 상자로 만든 차량을 그대로 써요. rotY로 앞머리 방향을 맞춰요.
-function loadCar(file,grp,len,rotY){ new GLTFLoader().load(file,gltf=>{ const m=gltf.scene; m.rotation.y=rotY; let b=new THREE.Box3().setFromObject(m), sz=b.getSize(new THREE.Vector3());
+function loadCar(file,grp,len,rotY,tint){ new GLTFLoader().load(file,gltf=>{ const m=gltf.scene; m.rotation.y=rotY; let b=new THREE.Box3().setFromObject(m), sz=b.getSize(new THREE.Vector3());
   m.scale.setScalar(len/Math.max(sz.x,sz.z)); b=new THREE.Box3().setFromObject(m); const c=b.getCenter(new THREE.Vector3()); m.position.set(-c.x,-b.min.y,-c.z);
-  m.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; if(o.material){ o.material.metalness=0; o.material.roughness=0.9; } } });
-  for(const o of [...grp.children]) o.visible=false; if(grp===car) car.remove(iceBox); grp.add(m); grp.userData.model=m; },undefined,()=>{}); }
+  m.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; if(o.material){ o.material.metalness=0; o.material.roughness=0.9; if(tint) o.material.color.multiply(new THREE.Color(tint)); } } });
+  for(const o of [...grp.children]) if(!o.userData.keep) o.visible=false; if(grp===car) car.remove(iceBox); grp.add(m); grp.userData.model=m; },undefined,()=>{}); }
 loadCar('car_water.glb',car,4.7,Math.PI/2); loadCar('car_air.glb',car2,5.4,Math.PI/2);
+loadCar('car_air.glb',carD,5.4,Math.PI/2,0xffe9a0); loadCar('car_water.glb',carI,4.7,Math.PI/2,0xffc79a); loadCar('car_air.glb',carL,5.4,Math.PI/2,0xd9c4ff);   // 같은 모형에 과마다 다른 색을 입혀요
 /* ───────── 초점 모드 (산사 방식): 걷던 마을이 흐려지고, 그 앞에 실물 같은 장비 하나만 떠요 ───────── */
 const FOC={};
 { const cv=document.createElement('canvas'); cv.id='fx'; document.body.appendChild(cv);
