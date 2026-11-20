@@ -847,15 +847,19 @@ let camId=null,camX=0;
 canvas.addEventListener('pointerdown',e=>{ camId=e.pointerId; camX=e.clientX; canvas.setPointerCapture(e.pointerId); });
 canvas.addEventListener('pointermove',e=>{ if(e.pointerId!==camId) return; G.yaw-=(e.clientX-camX)*0.006; camX=e.clientX; });
 const camEnd=e=>{ if(e.pointerId===camId) camId=null; }; canvas.addEventListener('pointerup',camEnd); canvas.addEventListener('pointercancel',camEnd);
-const keys={}; addEventListener('keydown',e=>{ if(e.target.tagName==='INPUT') return; keys[e.code]=true; if(e.code==='KeyE'&&curAct&&!G.lock) curAct.fn(); if(e.code==='Space') $('#jump').click(); });
+const keys={}; addEventListener('keydown',e=>{ if(e.target.tagName==='INPUT') return; keys[e.code]=true; if(e.code==='KeyE'&&curAct&&!G.lock) curAct.fn(); if(e.code==='Space') doJump(); });
 addEventListener('keyup',e=>{ keys[e.code]=false; });
 function doWave(){ if(G.driving||G.lock) return; player.wave=1.4; const p=player.g.position;
   if(dist(p,P.npc)<7) setTimeout(()=>{ npc.wave=1.4; bubble(npc.g,`안녕하세요, ${G.name} 연구원!`); },400);
   if(dist(p,P.boss)<7) setTimeout(()=>{ boss.wave=1.4; bubble(boss.g,'반가워요! 오늘도 수고가 많아요.'); },400);
   for(const a of ANIMALS) if(dist(p,[a.g.position.x,a.g.position.z])<5.5){ a.hop=1.2; bubble(a.g,a.msg,a.fly?1.2:2.4);
     if(!a.met){ a.met=true; toast(`${a.name} 친구와 인사했어요! (${ANIMALS.filter(x=>x.met).length}/${ANIMALS.length})`); } } }
-$('#wave').addEventListener('click',doWave);
-$('#jump').addEventListener('click',()=>{ if(!G.driving&&!G.lock&&player.g.position.y<=0.01) G.vy=8; });
+// 버튼은 '누르는 순간'에 반응해요. 휴대폰은 다른 손가락이 조이스틱을 잡고 있으면 click을 만들어 주지 않아서, 걸으면서 누를 수 없었어요.
+function doJump(){ if(!G.driving&&!G.lock&&player.g.position.y<=0.01) G.vy=8; }
+let noClickUntil=0;   // 누른 직후 뒤따라오는 click이 새로 뜬 화면의 버튼을 잘못 누르지 않게 잠깐 막아요
+document.addEventListener('click',e=>{ if(performance.now()<noClickUntil){ e.stopPropagation(); e.preventDefault(); } },true);
+function press(el,fn){ el.style.touchAction='none'; el.addEventListener('pointerdown',e=>{ e.preventDefault(); e.stopPropagation(); noClickUntil=performance.now()+450; fn(); }); }
+press($('#wave'),doWave); press($('#jump'),doJump); press($('#act'),()=>{ if(curAct&&!G.lock) curAct.fn(); });
 $('#tskip').addEventListener('click',()=>{ if(G.step===5||G.step===13) G.waitLeft=0; });
 
 /* ───────── 행동 버튼 ───────── */
@@ -934,7 +938,7 @@ function getAction(){
   if(dist(p,P.info)<3.6) return {label:'안내판 읽기',fn:()=>{ const f=FACTS[factI++%FACTS.length]; openMini(`<div class="card"><h3>연구원 이야기</h3><div class="fact">${f}</div><button class="go" id="ok">닫기</button></div>`); $('#ok').addEventListener('click',closeMini); }};
   return null;
 }
-let curAct=null; const actEl=$('#act'); actEl.addEventListener('click',()=>{ if(curAct&&!G.lock) curAct.fn(); });
+let curAct=null; const actEl=$('#act');
 
 /* ───────── 메인 루프 ───────── */
 const lerpAng=(a,b,t)=>{ let d=(b-a)%(Math.PI*2); if(d>Math.PI) d-=Math.PI*2; if(d<-Math.PI) d+=Math.PI*2; return a+d*Math.min(1,t); };
