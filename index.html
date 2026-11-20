@@ -396,13 +396,17 @@ flat(6,25,0x59646b,FX+6,0.08,31.5).material=texMat(TEX.road,1.5,6); flat(16,8,0x
 const SMOKE=Array.from({length:7},()=>{ const m=new THREE.Mesh(new THREE.SphereGeometry(1.2,10,8),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.5,depthWrite:false})); scene.add(m); return m; });
 // 대기환경측정소(미세먼지분석과), 어린이집(생활환경과), 공장 방류구(산업폐수과)
 // 맵 전체를 쓰도록 남쪽 가운데, 서남쪽, 강 건너 동북쪽에 하나씩 놓았어요. XAT는 플레이어가 서는 자리예요.
-const XAT={ d:[12,60], l:[-74,46.5], i:[146,-41] };
+const XAT={ d:[13.8,68.5], l:[-74,46.5], i:[146,-41] };
+// 주민센터 옥상(높이 y)과 바깥 계단. 계단은 x1~sx1 사이에서 z0부터 6칸 동안 올라가요.
+const ROOF={x0:7,x1:17.1,sx1:19.5,z0:65,z1:72.4,y:7.35};
+function floorAt(x,z){ if(z<ROOF.z0||z>ROOF.z1||x<ROOF.x0||x>ROOF.sx1) return 0; return x<=ROOF.x1?ROOF.y:Math.min(ROOF.y,(z-ROOF.z0)/6*ROOF.y); }
 // 대기환경측정소는 바람이 잘 통하는 주민센터 옥상에 있어요. 건물 옆 바깥 계단으로 올라가요.
 { fbox(10,7,7,'#f3ead8',['#7fb6a8','#5f8f86','#9cc7bd'],77,12,3.5,68.5,0.6); box(1.6,2.4,0.1,0x2f4a52,12,1.2,64.96); sign('동네 주민센터',5,0.8,12,5.9,64.94,Math.PI,{bg:'#f3ead8',fg:'#17323a'});
   box(3,2,2.4,0xf4f5f3,10.5,8.35,68.5); box(3.3,0.2,2.7,0x8d979d,10.5,9.45,68.5); cyl(0.05,0.05,3.2,0xdfe6ea,13.5,8.95,68.5,scene,8); box(0.9,0.12,0.12,0xdfe6ea,13.5,10.4,68.5); cyl(0.14,0.14,0.5,0xdfe6ea,9.7,9.8,68.5,scene,8);
-  for(const z of [65.1,71.9]) box(10,0.6,0.12,0xe9eef0,12,7.65,z); for(const x of [7.1,16.9]) box(0.12,0.6,7,0xe9eef0,x,7.65,68.5);
-  for(let i=0;i<14;i++) box(1.5,0.25,0.5,0xb9c1c6,17.85,0.5*i+0.38,65.25+i*0.5); box(0.08,0.08,7.6,0x7c878d,18.6,4.6,68.5).rotation.x=-Math.atan(1);
-  box(0.15,2.2,0.15,0x7c878d,16.2,1.1,63.4); panel2('옥상 대기환경측정소 ↑',4.6,0.8,16.2,2.4,63.4,{bg:'#e6f1fb',fg:'#0c447c'}); }
+  for(const z of [65.1,72.1]) box(10,0.6,0.12,0xe9eef0,12,7.65,z); box(0.12,0.6,7,0xe9eef0,7.1,7.65,68.6); box(0.12,0.6,5.6,0xe9eef0,16.9,7.65,67.9);   // 동쪽 난간은 계단 끝에서 들어오도록 남쪽을 틔웠어요
+  for(let i=0;i<14;i++){ const h=(i+1)*ROOF.y/14; box(2.4,h,6/14+0.02,i%2?0xb9c1c6:0xc7ced2,18.3,h/2,65+(i+0.5)*6/14); } box(2.4,ROOF.y,1.4,0xb9c1c6,18.3,ROOF.y/2,71.7);   // 바깥 계단과 계단참
+  box(0.08,0.08,9.5,0x7c878d,19.45,4.7,68).rotation.x=-Math.atan(ROOF.y/6); box(0.08,1,1.4,0x7c878d,19.45,ROOF.y+0.5,71.7); box(2.4,1,0.08,0x7c878d,18.3,ROOF.y+0.5,72.36);
+  box(0.15,2.2,0.15,0x7c878d,14.6,1.1,63.4); panel2('옥상 측정소 · 계단으로 올라가요',5.4,0.8,14.6,2.4,63.4,{bg:'#e6f1fb',fg:'#0c447c'}); }
 box(9,3.2,6,0xffe9a8,-74,1.6,52); box(9.4,0.4,6.4,0xff8fa3,-74,3.4,52); for(const x of [-77,-71]) box(1.4,1.4,0.1,0x7fd3e6,x,1.8,48.95); box(1.4,2.2,0.1,0x8a5a2b,-74,1.1,48.95); panel2('해님 어린이집',4.4,0.8,-74,2.75,48.9,{bg:'#fff0f5',fg:'#a8326a'});
 { box(12,6,10,0xc9c2b4,160,3,-45); box(12.6,0.5,10.6,0x8d979d,160,6.2,-45); cyl(0.7,0.9,9,0xd9dee1,163,4.5,-47); sign('강 건너 공장',7,0.9,160,4.6,-39.94,0,{bg:'#17323a',fg:'#fff'});
   const m=cyl(0.5,0.5,10.5,0x6b7780,148.75,0.6,-45,scene,14); m.rotation.z=Math.PI/2; flat(2.6,3,0x4f9bb5,142.2,0.09,-45); box(0.15,1.6,0.15,0x7c878d,146,0.8,-43); panel2('방류구',2,0.7,146,1.8,-43,{bg:'#17323a',fg:'#fff'}); }
@@ -414,13 +418,18 @@ for(let i=0;i<14;i++){ const a=i/14*Math.PI*2+0.3, r=215+(i%3)*18, h=40+(i*37%30
 
 /* 충돌 */
 const WALLS=[ [-12,12,-27,-17],[20,36,-21,-11],[-40,-24,-60,-49.6],[FX-21.5,FX-3.5,FZ-6,FZ+6],[FX-2,FX+2,FZ-2,FZ+2],[6.4,9.6,-15.4,-14.6],
-  [-20,-12,-27,-19],[-4,4,-17,-15.7],[-19.5,-14.5,-5.5,-0.5],[52.2,54.6,-33,-25],[7,18.7,65,72.4],[-78.5,-69.5,49,55],[154,166,-50,-40],[143.5,154,-45.6,-44.4], ...PARKED.map(([x,z])=>[x-0.9,x+0.9,z-1.9,z+1.9]) ];
+  [-20,-12,-27,-19],[-4,4,-17,-15.7],[-19.5,-14.5,-5.5,-0.5],[52.2,54.6,-33,-25],[7,19.5,65,72.4],[-78.5,-69.5,49,55],[154,166,-50,-40],[143.5,154,-45.6,-44.4], ...PARKED.map(([x,z])=>[x-0.9,x+0.9,z-1.9,z+1.9]) ];
 function blocked(x,z,r){
   if(x<-100+r||x>190-r||z<-89.5+r||z>90-r) return true;
   for(const w of WALLS) if(x>w[0]-r&&x<w[1]+r&&z>w[2]-r&&z<w[3]+r) return true;
   if(x>RIVER_X1-r&&x<RIVER_X2+r){ const half=ROAD_W/2-0.25-r; if(Math.abs(z-ROAD_Z)>half) return true; }
   return false;
 }
+// 걸어 다니는 연구원용: 주민센터 둘레에서는 바닥 높이 차이로 막아요. 계단은 오를 수 있고, 옥상 가장자리와 벽은 못 지나가요.
+function pBlocked(x,z,cx,cz){ const q=0.35;
+  if(x<ROOF.x0-0.6||x>ROOF.sx1+0.6||z<ROOF.z0-0.6||z>ROOF.z1+0.6) return blocked(x,z,0.5);
+  const h=floorAt(cx,cz); if(h>6&&x>8.6&&x<12.4&&z>66.9&&z<70.1) return true;   // 옥상 측정소 상자
+  for(const [a,b] of [[-q,-q],[q,-q],[-q,q],[q,q]]) if(Math.abs(floorAt(x+a,z+b)-h)>0.9) return true; return false; }
 // 마을 곳곳의 팻말: 보건환경연구원이 하는 일
 const SIGNS=[
   {x:-16,z:24,e:'🥬',t:'먹거리 안전',d:'시장과 마트의 농산물, 식품에 농약이나 해로운 물질이 남아 있지 않은지 검사해요. 우리 밥상을 지키는 일이에요.'},
@@ -580,7 +589,7 @@ const flag2=new THREE.Group(); cyl(0.07,0.07,4,0x7c878d,0,2,0,flag2,8); box(1.6,
 const P={ npc:[-3,-8], bridge:[130,ROAD_Z], door:[28,-8.6], board:[8,-13], info:[-9,3.6], stack:[FX,FZ-5], boss:[5,-7], play:[PGX,PGZ+12.5] };
 // 측정값을 보고 알맞은 깃발을 올리는 세 과의 임무. opts는 [깃발 이름, 색, 이 값까지]예요.
 const XMS={
-  d:{name:'미세먼지분석과',job:'미세먼지 측정',ic:'📡',sub:'주민센터 옥상 측정소에서 초미세먼지를 재고 등급 깃발을 올려요',roof:1,act:'옥상 측정소로 올라가기',at:XAT.d,go:'남쪽 주민센터 옥상의 대기환경측정소로 가서 미세먼지를 재세요',ask:v=>`초미세먼지 ${v}! 알맞은 등급 깃발을 올려요`,lo:3,
+  d:{name:'미세먼지분석과',job:'미세먼지 측정',ic:'📡',sub:'주민센터 옥상 측정소에서 초미세먼지를 재고 등급 깃발을 올려요',roof:1,at:XAT.d,go:'남쪽 주민센터 옆 계단으로 옥상에 올라가 미세먼지를 재세요',ask:v=>`초미세먼지 ${v}! 알맞은 등급 깃발을 올려요`,lo:3,
     opts:[['좋음','#3b82f6',15],['보통','#22c55e',35],['나쁨','#eab308',75],['매우 나쁨','#ef4444',130]],help:'좋음 15까지 · 보통 35까지 · 나쁨 75까지 · 그보다 높으면 매우 나쁨',fact:'대기환경측정소는 바람이 잘 통하는 건물 옥상에 있어요. 하루 24시간 미세먼지와 오존을 재서 알려 줘요. 나쁨이면 마스크를 쓰고 바깥 활동을 줄여요.'},
   i:{name:'산업폐수과',job:'폐수 검사',ic:'🏭',sub:'공장 방류구에서 나오는 물의 pH를 재고 판정 깃발을 올려요',at:XAT.i,go:'다리를 건너 북쪽 공장 방류구로 가서 폐수를 검사하세요',ask:v=>`폐수의 pH가 ${v}! 알맞은 판정 깃발을 올려요`,lo:3,dec:1,
     opts:[['산성이 강해요','#f97316',5.7],['기준 이내','#22c55e',8.6],['알칼리가 강해요','#8b5cf6',12]],help:'5.8보다 낮으면 산성 · 5.8부터 8.6까지 기준 이내 · 8.6보다 높으면 알칼리',fact:'공장에서 쓴 물은 깨끗하게 처리한 뒤에 내보내야 해요. 연구원은 방류구의 물을 떠서 기준을 지켰는지 검사해요.'},
@@ -618,7 +627,7 @@ const STEPS=[
   {t:'부적합! 물놀이터에서 염소 투입량을 늘리세요', at:()=>P.play},
   {t:'소독약이 퍼지는 중이에요. 30분을 기다려요', at:()=>null},
   {t:'30분이 지났어요. 물놀이터에서 다시 측정하세요', at:()=>P.play},
-  {t:'', at:()=>XM.at},
+  {t:'', at:()=>XM.roof&&player.g.position.y<0.3?[18.3,63.8]:XM.at},   // 옥상 임무는 먼저 계단 아래로 안내해요
   {t:'본관 앞 게시판에 결과를 보고하세요', at:()=>P.board},
 ];
 function setStep(n){ G.step=n; qtCache=null; const all=allDone(); $('#qno').textContent=n===0?(all?(G.cert?'완료':'임명장'):'임무 선택'):n<8?`수질 ${n}/7`:n<17?`대기 ${n-8}/7`:n>20?'물놀이터 재측정':`물놀이터 ${n-16}/4`;
@@ -963,7 +972,7 @@ function doWave(){ if(G.driving||G.lock) return; player.wave=1.4; const p=player
   for(const a of ANIMALS) if(dist(p,[a.g.position.x,a.g.position.z])<5.5){ a.hop=1.2; bubble(a.g,a.msg,a.fly?1.2:2.4);
     if(!a.met){ a.met=true; toast(`${a.name} 친구와 인사했어요! (${ANIMALS.filter(x=>x.met).length}/${ANIMALS.length})`); } } }
 // 버튼은 '누르는 순간'에 반응해요. 휴대폰은 다른 손가락이 조이스틱을 잡고 있으면 click을 만들어 주지 않아서, 걸으면서 누를 수 없었어요.
-function doJump(){ if(!G.driving&&!G.lock&&player.g.position.y<=0.01) G.vy=8; }
+function doJump(){ if(!G.driving&&!G.lock&&player.g.position.y<=floorAt(player.g.position.x,player.g.position.z)+0.01) G.vy=8; }
 let noClickUntil=0;   // 누른 직후 뒤따라오는 click이 새로 뜬 화면의 버튼을 잘못 누르지 않게 잠깐 막아요
 document.addEventListener('click',e=>{ if(performance.now()<noClickUntil){ e.stopPropagation(); e.preventDefault(); } },true);
 function press(el,fn){ el.style.touchAction='none'; el.addEventListener('pointerdown',e=>{ e.preventDefault(); e.stopPropagation(); noClickUntil=performance.now()+450; fn(); }); }
@@ -1114,7 +1123,7 @@ function getAction(){
   if(G.step===23&&dist(p,P.play)<7) return {label:'다시 측정하기',fn:()=>remeasure(ok=>{ if(ok){ setPlay('ok'); setStep(20); toast('적합! 아이들이 물놀이터로 달려가요. 본관에 결과를 보고하세요.',3200); }
       else { setStep(21); toast('아직 부적합이에요. 투입량을 다시 맞추고 30분 뒤에 또 측정해요.',3200); } })};
   if(G.step===20&&dist(p,P.board)<4.5) return {label:'보고하기',fn:playReport};
-  if(G.step===24&&dist(p,XM.at)<7) return {label:XM.act||XM.job+' 시작',fn:()=>focusPick(XM,()=>{ setStep(25); toast('측정 끝! 본관 게시판에 결과를 보고하세요.',2800); })};
+  if(G.step===24&&dist(p,XM.at)<(XM.roof?4:7)&&(!XM.roof||player.g.position.y>6)) return {label:XM.job+' 시작',fn:()=>focusPick(XM,()=>{ setStep(25); toast('측정 끝! 본관 게시판에 결과를 보고하세요.',2800); })};
   if(G.step===25&&dist(p,P.board)<4.5) return {label:'보고하기',fn:xReport};
   if(G.step===0&&dist(p,P.npc)<4.2) return {label:'임무 고르기',fn:missionSelect};
   if((G.step===2||G.step===3)&&dist(p,P.bridge)<8) return {label:'물 채취하기',fn:()=>{ if(needItems(ITEMS)) return; if(dist(car.position,P.bridge)>20){ toast('채수 장비가 차에 있어요. 차를 다리까지 몰고 오세요.'); return; }
@@ -1142,7 +1151,7 @@ let curAct=null; const actEl=$('#act');
 
 /* ───────── 메인 루프 ───────── */
 const lerpAng=(a,b,t)=>{ let d=(b-a)%(Math.PI*2); if(d>Math.PI) d-=Math.PI*2; if(d<-Math.PI) d+=Math.PI*2; return a+d*Math.min(1,t); };
-const camPos=new THREE.Vector3(0,6,16); let last=performance.now(),time=0,bridgeHint=false;
+const camPos=new THREE.Vector3(0,6,16); let last=performance.now(),time=0,bridgeHint=false,camLook=0;
 function frame(now){
   const dt=Math.min(0.05,Math.max(0,(now-last)/1000)); last=now; time+=dt;
   let f=-joy.y, r=joy.x;
@@ -1150,8 +1159,9 @@ function frame(now){
   const mx=-Math.sin(G.yaw)*f+Math.cos(G.yaw)*r, mz=-Math.cos(G.yaw)*f-Math.sin(G.yaw)*r, mag=Math.min(1,Math.hypot(mx,mz));
   const ent=G.driving?drv:player.g, rad=G.driving?1.7:0.5; let moving=false;
   if(mag>0.1&&!G.lock){ moving=true; const sp=(G.driving?14:6.2)*mag, h=Math.hypot(mx,mz), dx=mx/h*sp*dt, dz=mz/h*sp*dt;
-    if(!blocked(ent.position.x+dx,ent.position.z,rad)) ent.position.x+=dx;
-    if(!blocked(ent.position.x,ent.position.z+dz,rad)) ent.position.z+=dz;
+    const stop=(x,z)=>G.driving?blocked(x,z,rad):pBlocked(x,z,ent.position.x,ent.position.z);
+    if(!stop(ent.position.x+dx,ent.position.z)) ent.position.x+=dx;
+    if(!stop(ent.position.x,ent.position.z+dz)) ent.position.z+=dz;
     ent.rotation.y=lerpAng(ent.rotation.y,Math.atan2(mx,mz),dt*(G.driving?7:13)); }
   animPerson(player,moving&&!G.driving,dt); animPerson(npc,false,dt); animPerson(boss,false,dt);
   // 장비 줍기
@@ -1170,15 +1180,15 @@ function frame(now){
   const hideM=!tg||((G.step===1||G.step===9||G.step===17)&&G.driving);
   marker.visible=!hideM; arrow.visible=false;
   { const dx=hideM?0:tg[0]-ent.position.x, dz=hideM?0:tg[1]-ent.position.z, d=Math.hypot(dx,dz)||1, o=(time*5)%3;   // 바닥의 노란 점선
-    TRAIL.forEach((m,i)=>{ const s=2.5+i*3+o; m.visible=!hideM&&s<d-1.5; if(m.visible) m.position.set(ent.position.x+dx/d*s,0.24,ent.position.z+dz/d*s); }); }
-  if(!hideM){ marker.position.set(tg[0],4.2+Math.sin(time*4)*0.35,tg[1]); marker.rotation.y=time*2;
+    TRAIL.forEach((m,i)=>{ const s=2.5+i*3+o; m.visible=!hideM&&s<d-1.5; if(m.visible){ const tx=ent.position.x+dx/d*s, tz=ent.position.z+dz/d*s; m.position.set(tx,0.24+floorAt(tx,tz),tz); } }); }
+  if(!hideM){ marker.position.set(tg[0],4.2+floorAt(tg[0],tg[1])+Math.sin(time*4)*0.35,tg[1]); marker.rotation.y=time*2;
     const dx=tg[0]-ent.position.x,dz=tg[1]-ent.position.z,d=Math.hypot(dx,dz);
     if(d>7){ arrow.visible=true; const k=G.driving?4.2:2.2; arrow.position.set(ent.position.x+dx/d*k,0.12,ent.position.z+dz/d*k); arrow.rotation.y=Math.atan2(dx,dz); } }
   if(flag.visible) flag.rotation.y=Math.sin(time*2)*0.15;
   sun.position.set(ent.position.x+38,58,ent.position.z+26); sun.target.position.set(ent.position.x,0,ent.position.z); sun.target.updateMatrixWorld();
   water.material.map.offset.y=time*0.04; nriver.material.map.offset.x=time*0.03;
   // 점프
-  if(!G.driving){ G.vy-=22*dt; player.g.position.y+=G.vy*dt; if(player.g.position.y<=0){ player.g.position.y=0; G.vy=0; } }
+  if(!G.driving){ const gh=floorAt(player.g.position.x,player.g.position.z); G.vy-=22*dt; player.g.position.y+=G.vy*dt; if(player.g.position.y<=gh){ player.g.position.y=gh; G.vy=0; } }
   // 말풍선
   for(let i=BUBS.length-1;i>=0;i--){ const o=BUBS[i]; o.userData.bt-=dt; if(o.userData.bt<=0){ o.remove(o.userData.bub); o.userData.bub=null; BUBS.splice(i,1); } }
   // 물놀이터: 적합이면 분수가 나오고 아이들이 뛰어놀고, 부적합이면 앉아서 한숨을 쉬어요
@@ -1206,8 +1216,9 @@ function frame(now){
   const a=G.lock?null:getAction(); if((a&&a.label)!==(curAct&&curAct.label)){ actEl.style.display=a?'block':'none'; if(a) actEl.textContent=a.label; } curAct=a;
   // 카메라
   const tall=innerHeight>innerWidth, cd=(G.driving?13:8.5)*(tall?1.35:1), ch=(G.driving?6.5:4.6)*(tall?1.3:1);
-  const want=new THREE.Vector3(ent.position.x+Math.sin(G.yaw)*cd,ch,ent.position.z+Math.cos(G.yaw)*cd);
-  camPos.lerp(want,1-Math.exp(-9*dt)); camera.position.copy(camPos); camera.lookAt(ent.position.x,1.7,ent.position.z);
+  const py=G.driving?0:floorAt(player.g.position.x,player.g.position.z);   // 계단과 옥상에서는 카메라도 같이 올라가요
+  const want=new THREE.Vector3(ent.position.x+Math.sin(G.yaw)*cd,ch+py,ent.position.z+Math.cos(G.yaw)*cd);
+  camPos.lerp(want,1-Math.exp(-9*dt)); camera.position.copy(camPos); camLook+=(py-camLook)*(1-Math.exp(-9*dt)); camera.lookAt(ent.position.x,1.7+camLook,ent.position.z);
   renderer.render(scene,camera); requestAnimationFrame(frame);
 }
 
