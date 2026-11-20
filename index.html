@@ -582,7 +582,7 @@ const XMS={
   l:{name:'생활환경과',job:'소음 측정',ic:'🔊',sub:'어린이집 앞에서 소음을 재고 알맞은 깃발을 올려요',at:XAT.l,go:'서남쪽 끝 해님 어린이집으로 가서 소음을 재세요',ask:v=>`소음이 ${v}데시벨! 알맞은 깃발을 올려요`,lo:30,
     opts:[['조용해요','#3b82f6',45],['보통이에요','#22c55e',60],['시끄러워요','#eab308',75],['매우 시끄러워요','#ef4444',100]],help:'조용 45까지 · 보통 60까지 · 시끄러움 75까지 · 그보다 크면 매우 시끄러움',fact:'생활환경과는 소음뿐 아니라 실내 공기와 어린이 활동공간이 안전한지도 검사해요.'} };
 let XM=XMS.d;
-const allDone=()=>G.done.w&&G.done.a&&G.done.p, doneCount=()=>(G.done.w?1:0)+(G.done.a?1:0)+(G.done.p?1:0);
+const doneCount=()=>Object.values(G.done).filter(Boolean).length, allDone=()=>doneCount()>=6;
 
 /* ───────── 게임 상태 ───────── */
 const G={ name:'', step:0, driving:false, yaw:0, lock:true, waitLeft:0,
@@ -605,7 +605,7 @@ const STEPS=[
   {t:'분석 중이에요. 마을을 둘러보며 기다리세요', at:()=>null},
   {t:'분석 끝! 환경동에서 결과를 확인하세요', at:()=>P.door},
   {t:'본관 앞 게시판에 결과를 보고하세요', at:()=>P.board},
-  {t:'수질·대기 임무 완료! 마을을 자유롭게 둘러보세요', at:()=>null},
+  {t:'임무 완료! 마을을 자유롭게 둘러보세요', at:()=>null},
   {t:'도로에 세워 둔 수질 채수차량(초록 줄)에 타세요', at:()=>[car.position.x,car.position.z]},
   {t:'북서쪽 벚꽃길 옆 물놀이터로! 근처에 흩어진 검사 장비 3개를 찾으세요', at:()=>P.play},
   {t:'아이들이 기다려요. 물놀이터 입구에서 수질 검사를 시작하세요', at:()=>P.play},
@@ -1048,21 +1048,22 @@ function playReport(){ const s=G.pl, C=G.playCase, total=s.equip+s.sample+s.cl+s
 /* ───────── 도장과 임명장 ───────── */
 function stampsHtml(nw){ return `<div class="stamps">${[['w','<small>물환경조사과</small><br>하천 수질'],['p','<small>물환경조사과</small><br>물놀이터'],['a','<small>대기환경과</small><br>굴뚝 대기'],['d','<small>미세먼지분석과</small><br>미세먼지'],['i','<small>산업폐수과</small><br>폐수 검사'],['l','<small>생활환경과</small><br>소음 측정']].map(([k,t])=>`<div class="stamp ${G.done[k]?'on':''} ${k===nw?'new':''}"><span>${t}${G.done[k]?'<br>완료':''}</span></div>`).join('')}</div>`; }
 function stampBook(){ if(G.lock) return; const n=doneCount();
-  openMini(`<div class="card"><h3>연구 도장판</h3><p>임무를 끝낼 때마다 도장을 받아요.<br>모두 모으면 원장님이 임명장을 주세요. (${n}/3)</p>${stampsHtml()}<p style="font-weight:700">🪧 마을에서 읽은 팻말 ${SIGNS.filter(x=>x.read).length} / ${SIGNS.length}<br>🐾 인사한 동물 친구 ${ANIMALS.filter(x=>x.met).length} / ${ANIMALS.length}</p><button class="go" id="ok">닫기</button></div>`); $('#ok').addEventListener('click',closeMini); }
+  openMini(`<div class="card"><h3>연구 도장판</h3><p>임무를 끝낼 때마다 도장을 받아요.<br>모두 모으면 원장님이 임명장을 주세요. (${n}/6)</p>${stampsHtml()}<p style="font-weight:700">🪧 마을에서 읽은 팻말 ${SIGNS.filter(x=>x.read).length} / ${SIGNS.length}<br>🐾 인사한 동물 친구 ${ANIMALS.filter(x=>x.met).length} / ${ANIMALS.length}</p><button class="go" id="ok">닫기</button></div>`); $('#ok').addEventListener('click',closeMini); }
 $('#stampBtn').addEventListener('click',stampBook);
 function bossTalk(){ const n=doneCount();
-  if(n<3){ say([['원장님',`반가워요, {n} 연구원! 임무 도장을 모두 모아 오면 임명장을 줄게요. 지금은 ${n}/3개예요.`]]); return; }
+  if(n<6){ say([['원장님',`반가워요, {n} 연구원! 임무 도장 6개를 모두 모아 오면 임명장을 줄게요. 지금은 ${n}/6개예요.`]]); return; }
   if(G.cert){ certCard(); return; }
-  say([['원장님','{n} 연구원, 수질과 대기, 물놀이터 검사까지 모두 해냈군요. 정말 수고했어요!'],['원장님','시민의 건강과 깨끗한 환경을 지키는 일에 함께해 줘서 고마워요. 명예 연구원으로 임명합니다.']],certCard); }
+  say([['원장님','{n} 연구원, 여섯 가지 임무를 모두 해냈군요. 정말 수고했어요!'],['원장님','시민의 건강과 깨끗한 환경을 지키는 일에 함께해 줘서 고마워요. 명예 연구원으로 임명합니다.']],certCard); }
 function certCard(){ G.cert=true; setStep(G.step); const cv=document.createElement('canvas'); cv.width=900; cv.height=1200; const g=cv.getContext('2d');
   g.fillStyle='#fffaf0'; g.fillRect(0,0,900,1200); g.strokeStyle='#b8943f'; g.lineWidth=10; g.strokeRect(30,30,840,1140); g.strokeStyle='#12a594'; g.lineWidth=3; g.strokeRect(52,52,796,1096);
   g.textAlign='center'; g.fillStyle='#17323a'; g.font=`bold 96px ${FONT}`; g.fillText('임 명 장',450,230);
   g.font=`bold 40px ${FONT}`; g.fillStyle='#0b7d70'; g.fillText('명예 연구원',450,315);
   g.fillStyle='#17323a'; g.font=`bold 68px ${FONT}`; g.fillText(G.name,450,455); g.fillRect(250,478,400,3);
-  g.font=`32px ${FONT}`; ['위 사람은 물환경조사과와 대기환경과 임무를 훌륭히 마치고','시민의 건강과 깨끗한 환경을 지키는 일에','함께하였으므로 명예 연구원으로 임명합니다.'].forEach((l,i)=>g.fillText(l,450,575+i*56));
-  const seal=(x,t,u)=>{ g.save(); g.translate(x,845); g.rotate(-0.2); g.strokeStyle='#c8102e'; g.fillStyle='#c8102e'; g.lineWidth=6; g.beginPath(); g.arc(0,0,74,0,7); g.stroke(); g.lineWidth=2; g.beginPath(); g.arc(0,0,63,0,7); g.stroke();
+  g.font=`32px ${FONT}`; ['위 사람은 환경 분야 다섯 과의 임무를 훌륭히 마치고','시민의 건강과 깨끗한 환경을 지키는 일에','함께하였으므로 명예 연구원으로 임명합니다.'].forEach((l,i)=>g.fillText(l,450,575+i*56));
+  const seal=(x,y,t,u)=>{ g.save(); g.translate(x,y); g.scale(0.72,0.72); g.rotate(-0.2); g.strokeStyle='#c8102e'; g.fillStyle='#c8102e'; g.lineWidth=6; g.beginPath(); g.arc(0,0,74,0,7); g.stroke(); g.lineWidth=2; g.beginPath(); g.arc(0,0,63,0,7); g.stroke();
     g.font=`bold 19px ${FONT}`; g.fillText(t,0,-18); g.font=`bold 22px ${FONT}`; g.fillText(u,0,10); g.font=`bold 16px ${FONT}`; g.fillText('완료',0,36); g.restore(); };
-  seal(250,'물환경조사과','하천 수질'); seal(450,'물환경조사과','물놀이터'); seal(650,'대기환경과','굴뚝 대기');
+  seal(280,790,'물환경조사과','하천 수질'); seal(450,790,'물환경조사과','물놀이터'); seal(620,790,'대기환경과','굴뚝 대기');
+  seal(280,908,'미세먼지분석과','미세먼지'); seal(450,908,'산업폐수과','폐수 검사'); seal(620,908,'생활환경과','소음 측정');
   const d=new Date(); g.fillStyle='#17323a'; g.font=`30px ${FONT}`; g.fillText(`${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`,450,1005);
   g.font=`bold 46px ${FONT}`; g.fillText(CONFIG.ORG+'장',450,1080);
   g.font=`20px ${FONT}`; g.fillStyle='#8a8f94'; g.fillText('홍보 게임 「나는야 보건환경연구원」 기념 임명장',450,1128);
