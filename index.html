@@ -507,6 +507,8 @@ function drawChips(){ const n=G.step, set=(n>=2&&n<=4)?[CHIPS.w,ITEMS]:(n>=10&&n
   if(set) el.innerHTML=set[0].map((t,i)=>`<span class="chip${set[1][i].got?' on':''}">${t}</span>`).join(''); }
 
 /* ───────── 길 안내 ───────── */
+let qtCache=null;
+const TRAIL=Array.from({length:18},()=>{ const m=new THREE.Mesh(new THREE.CircleGeometry(0.3,10),new THREE.MeshBasicMaterial({color:0xffc53d,transparent:true,opacity:.92,depthWrite:false})); m.rotation.x=-Math.PI/2; m.visible=false; scene.add(m); return m; });
 const marker=new THREE.Mesh(new THREE.ConeGeometry(0.7,1.4,4),new THREE.MeshBasicMaterial({color:0xffc53d})); marker.rotation.x=Math.PI; scene.add(marker);
 const arrowGeo=new THREE.ConeGeometry(0.45,1.3,3); arrowGeo.rotateX(Math.PI/2); arrowGeo.scale(1,0.15,1);
 const arrow=new THREE.Mesh(arrowGeo,new THREE.MeshBasicMaterial({color:0xffc53d})); scene.add(arrow);
@@ -546,7 +548,7 @@ const STEPS=[
   {t:'소독약이 퍼지는 중이에요. 30분을 기다려요', at:()=>null},
   {t:'30분이 지났어요. 물놀이터에서 다시 측정하세요', at:()=>P.play},
 ];
-function setStep(n){ G.step=n; const all=allDone(); $('#qno').textContent=n===0?(all?(G.cert?'완료':'임명장'):'임무 선택'):n<8?`수질 ${n}/7`:n<17?`대기 ${n-8}/7`:n>20?'물놀이터 재측정':`물놀이터 ${n-16}/4`;
+function setStep(n){ G.step=n; qtCache=null; const all=allDone(); $('#qno').textContent=n===0?(all?(G.cert?'완료':'임명장'):'임무 선택'):n<8?`수질 ${n}/7`:n<17?`대기 ${n-8}/7`:n>20?'물놀이터 재측정':`물놀이터 ${n-16}/4`;
   $('#qtx').textContent=n===0&&all?(G.cert?'명예 연구원이 되었어요! 마을을 자유롭게 둘러보세요':'도장을 모두 모았어요! 원장님께 가서 임명장을 받으세요'):n===0&&doneCount()>0?'선배 연구원에게 가서 다음 임무를 고르세요':STEPS[n].t;
   drawChips(); $('#timer').style.display=(n===5||n===13||n===22)?'flex':'none'; }
 
@@ -1050,11 +1052,13 @@ function startMission(k){
   else { scatter(ITEMS_A,()=>{ const a=Math.random()*6.28, r=9+Math.random()*17; return [Math.min(116,FX+Math.cos(a)*r),Math.max(24,FZ+Math.sin(a)*r)]; }); G.air={equip:0,haul:0,gauge:0,filter:0,weigh:0,judge:0};
     say([[SENIOR,'대기 임무예요, {n} 연구원! 공장 굴뚝에서 나오는 연기에 먼지가 얼마나 있는지 검사해야 해요.'],[SENIOR,'도로의 파란 줄 측정차량을 타고 도로 건너 동남쪽 공장으로 가세요. 안전장비 3개가 공장 근처에 흩어져 있으니 꼭 찾아서 챙기고요!']],()=>setStep(9)); }
 }
+// 장비를 다 찾지 못했으면 측정을 시작할 수 없어요
+function needItems(list){ const n=list.filter(i=>!i.got); if(!n.length) return false; toast(`아직 못 찾은 장비: ${n.map(i=>i.n).join(', ')}. 노란 점선을 따라가 먼저 찾으세요.`,3000); return true; }
 function getAction(){
   if(G.driving) return {label:'차에서 내리기',fn:getOff};
   const p=player.g.position;
   if(dist(p,P.boss)<3.6) return {label:allDone()?(G.cert?'임명장 다시 보기':'임명장 받기'):'원장님과 대화',fn:bossTalk};
-  if((G.step===18||G.step===19)&&dist(p,P.play)<7) return {label:'수질 검사 시작',fn:()=>{ if(dist(car.position,P.play)>36){ toast('검사 장비가 차에 있어요. 채수차량을 물놀이터 앞까지 몰고 오세요.'); return; }
+  if((G.step===18||G.step===19)&&dist(p,P.play)<7) return {label:'수질 검사 시작',fn:()=>{ if(needItems(ITEMS_P)) return; if(dist(car.position,P.play)>36){ toast('검사 장비가 차에 있어요. 채수차량을 물놀이터 앞까지 몰고 오세요.'); return; }
     playTest(ok=>{ ITEMS_P.forEach(i=>i.g.visible=false); setPlay(ok?'ok':'bad'); setStep(ok?20:21);
       if(ok) toast('적합! 아이들이 물놀이터로 달려가요. 본관에 결과를 보고하세요.',3200);
       else say([['안내','부적합이에요. 아이들이 아쉬워해요…'],['안내','현장에서 소독약(염소) 투입량을 늘리고, 30분 뒤에 다시 측정해요. 적합이 나올 때까지 30분마다 되풀이해요.']]); }); }};
@@ -1063,14 +1067,14 @@ function getAction(){
       else { setStep(21); toast('아직 부적합이에요. 투입량을 다시 맞추고 30분 뒤에 또 측정해요.',3200); } })};
   if(G.step===20&&dist(p,P.board)<4.5) return {label:'보고하기',fn:playReport};
   if(G.step===0&&dist(p,P.npc)<4.2) return {label:'임무 고르기',fn:missionSelect};
-  if((G.step===2||G.step===3)&&dist(p,P.bridge)<8) return {label:'물 채취하기',fn:()=>{ if(dist(car.position,P.bridge)>20){ toast('채수 장비가 차에 있어요. 차를 다리까지 몰고 오세요.'); return; }
+  if((G.step===2||G.step===3)&&dist(p,P.bridge)<8) return {label:'물 채취하기',fn:()=>{ if(needItems(ITEMS)) return; if(dist(car.position,P.bridge)>20){ toast('채수 장비가 차에 있어요. 차를 다리까지 몰고 오세요.'); return; }
     sampleGame(()=>{ iceBox.visible=true; ITEMS.forEach(i=>i.g.visible=false); setStep(4); say([[SENIOR,'수고했어요! 시료는 아이스박스에 잘 담겼어요.'],[SENIOR,'차를 타고 환경동으로 돌아와 시료를 접수하세요.']]); }); }};
   if(G.step===4&&dist(p,P.door)<5) return {label:'실험실 들어가기',fn:()=>{ if(dist(car.position,P.door)>DOOR_LIMIT){ toast('시료가 차에 있어요. 차를 환경동 앞 도로에 세워 주세요.'); return; }
     labGame(()=>{ iceBox.visible=false; G.waitLeft=CONFIG.WAIT_SEC; setStep(5); say([[SENIOR,`배양을 시작했어요. 실제로는 5일을 기다리지만 게임에서는 ${CONFIG.WAIT_SEC}초면 돼요.`],[SENIOR,'기다리는 동안 마을을 둘러보세요. 광장의 ‘연구원 이야기’ 안내판도 읽어 보고요.']]); }); }};
   if(G.step===6&&dist(p,P.door)<5) return {label:'결과 확인하기',fn:()=>resultGame(g=>{ G.grade=g; setStep(7); toast('결과지를 들고 본관 게시판으로!'); })};
   if(G.step===7&&dist(p,P.board)<4.5) return {label:'보고하기',fn:()=>reportGame(G.grade)};
   if(G.step===8&&dist(p,P.npc)<4.2) return {label:'대화하기',fn:()=>say([[SENIOR,'수질 임무 훌륭했어요, {n} 연구원! 다음은 대기 임무예요.'],[SENIOR,'공장 굴뚝에서 나오는 연기에 먼지가 얼마나 있는지 검사해야 해요.'],[SENIOR,'대기 측정차량을 타고 서쪽 공장으로 가세요. 굴뚝은 높고 장비는 무거우니 안전장비를 꼭 챙기고요!']],()=>setStep(9))};
-  if((G.step===10||G.step===11)&&dist(p,P.stack)<6) return {label:'굴뚝 측정 시작',fn:()=>{ if(dist(car2.position,P.stack)>30){ toast('측정 장비가 차에 있어요. 측정차량을 공장 앞까지 몰고 오세요.'); return; }
+  if((G.step===10||G.step===11)&&dist(p,P.stack)<6) return {label:'굴뚝 측정 시작',fn:()=>{ if(needItems(ITEMS_A)) return; if(dist(car2.position,P.stack)>30){ toast('측정 장비가 차에 있어요. 측정차량을 공장 앞까지 몰고 오세요.'); return; }
     airField(()=>{ ITEMS_A.forEach(i=>i.g.visible=false); setStep(12); say([[SENIOR,'고생했어요! 굴뚝 측정은 체력이 반이에요.'],[SENIOR,'먼지가 묻은 필터를 들고 환경동으로 돌아와 접수하세요.']]); }); }};
   if(G.step===12&&dist(p,P.door)<5) return {label:'실험실 들어가기',fn:()=>{ if(dist(car2.position,P.door)>DOOR_LIMIT){ toast('필터가 차에 있어요. 측정차량을 환경동 앞 도로에 세워 주세요.'); return; }
     airLab(()=>{ G.waitLeft=CONFIG.WAIT_SEC; setStep(13); say([[SENIOR,'분석 장비가 돌아가고 있어요. 결과가 나올 때까지 잠깐 쉬어요.']]); }); }};
@@ -1109,8 +1113,14 @@ function frame(now){
   if(G.step===5||G.step===13||G.step===22){ const pg=G.step===22; G.waitLeft-=dt; $('#ttx').textContent=(pg?'⏱ 30분 기다리는 중 ':'🧪 분석 중 ')+Math.max(0,Math.ceil(G.waitLeft))+'초';
     if(G.waitLeft<=0){ setStep(G.step+1); toast(pg?'30분이 지났어요. 물놀이터에서 다시 측정하세요.':'띵! 분석이 끝났어요. 환경동으로 가세요.'); } }
   // 길 안내
-  const tg=STEPS[G.step].at(); const hideM=!tg||((G.step===1||G.step===9)&&G.driving);
+  // 아직 못 찾은 장비가 있으면 가장 가까운 장비 쪽으로 안내해요
+  let tg=STEPS[G.step].at(); const left=its?its.filter(i=>!i.got):[];
+  if(left.length){ const dd=i=>Math.hypot(i.x-ent.position.x,i.z-ent.position.z), n=left.reduce((a,b)=>dd(a)<dd(b)?a:b); tg=[n.x,n.z]; }
+  const qt=left.length?`장비 ${left.length}개가 남았어요. 노란 점선을 따라가 찾으세요`:null; if(qt!==qtCache){ qtCache=qt; $('#qtx').textContent=qt||STEPS[G.step].t; }
+  const hideM=!tg||((G.step===1||G.step===9||G.step===17)&&G.driving);
   marker.visible=!hideM; arrow.visible=false;
+  { const dx=hideM?0:tg[0]-ent.position.x, dz=hideM?0:tg[1]-ent.position.z, d=Math.hypot(dx,dz)||1, o=(time*5)%3;   // 바닥의 노란 점선
+    TRAIL.forEach((m,i)=>{ const s=2.5+i*3+o; m.visible=!hideM&&s<d-1.5; if(m.visible) m.position.set(ent.position.x+dx/d*s,0.24,ent.position.z+dz/d*s); }); }
   if(!hideM){ marker.position.set(tg[0],4.2+Math.sin(time*4)*0.35,tg[1]); marker.rotation.y=time*2;
     const dx=tg[0]-ent.position.x,dz=tg[1]-ent.position.z,d=Math.hypot(dx,dz);
     if(d>7){ arrow.visible=true; const k=G.driving?4.2:2.2; arrow.position.set(ent.position.x+dx/d*k,0.12,ent.position.z+dz/d*k); arrow.rotation.y=Math.atan2(dx,dz); } }
