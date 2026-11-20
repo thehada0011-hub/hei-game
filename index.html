@@ -829,7 +829,7 @@ function gaugeGame(next){
   const cv=$('#gc'), g=cv.getContext('2d'), dpr=Math.min(devicePixelRatio,2), W=cv.clientWidth, H=cv.clientHeight; cv.width=W*dpr; cv.height=H*dpr;
   let v=0.1,holding=false,prog=0,T=0,t=0,last=performance.now(),alive=true; const b=$('#gbtn');
   b.addEventListener('pointerdown',e=>{ e.preventDefault(); holding=true; }); for(const ev of ['pointerup','pointercancel','pointerleave']) b.addEventListener(ev,()=>holding=false);
-  const wx=W*0.42, ww=W*0.09, py=H*0.36, nx=W*0.74, ny=py+22, fx=W*0.2;   // 안쪽 벽, 벽 두께, 측정구 높이, 노즐, 필터 위치
+  const wx=W*0.42, ww=W*0.09, py=H*0.36, nx=W*0.74, ny=py, fx=W*0.2;   // 채취관은 꺾지 않고 일자로   // 안쪽 벽, 벽 두께, 측정구 높이, 노즐, 필터 위치
   const parts=Array.from({length:80},()=>({x:wx+Math.random()*(W-wx),y:Math.random()*H,s:0.6+Math.random()*0.8,r:2+Math.random()*4.5}));
   function draw(dt){ g.setTransform(dpr,0,0,dpr,0,0); const inBand=v>=0.42&&v<=0.62, ox=wx-ww;
     const sk=g.createLinearGradient(0,0,0,H); sk.addColorStop(0,'#aedcf0'); sk.addColorStop(1,'#eaf8fb'); g.fillStyle=sk; g.fillRect(0,0,ox,H);          // 바깥 하늘
@@ -847,7 +847,7 @@ function gaugeGame(next){
     g.strokeStyle='#55636b'; g.lineWidth=3; g.beginPath(); g.moveTo(fx-12,py); g.quadraticCurveTo(W*0.02,py+30,W*0.1,H*0.72); g.stroke();                    // 호스
     g.lineCap='round'; g.lineJoin='round'; g.strokeStyle='#8b979d'; g.lineWidth=10; g.beginPath(); g.moveTo(fx,py); g.lineTo(nx,py); g.lineTo(nx,ny); g.stroke();
     g.strokeStyle='#e3e8ea'; g.lineWidth=6; g.beginPath(); g.moveTo(fx,py); g.lineTo(nx,py); g.lineTo(nx,ny); g.stroke(); g.lineCap='butt';               // 채취관
-    g.fillStyle=inBand?'#3ecf8e':'#ffc53d'; g.beginPath(); g.arc(nx,ny+3,6,0,7); g.fill();
+    g.fillStyle=inBand?'#3ecf8e':'#ffc53d'; g.beginPath(); g.arc(nx+4,ny,6,0,7); g.fill();
     const c=Math.round(250-150*Math.min(1,prog)); g.fillStyle=`rgb(${c},${c},${c-6})`; g.strokeStyle='#55636b'; g.lineWidth=3; g.beginPath(); g.arc(fx,py,13,0,7); g.fill(); g.stroke();   // 필터
     g.font=`bold 12px ${FONT}`; g.fillStyle='#17323a'; g.fillText('필터',fx,py-20); g.fillText('측정구',ox-4,py-26);
     g.fillStyle='#fff'; g.textAlign='left'; g.font=`bold 13px ${FONT}`; g.fillText('굴뚝 안 · 연기 ↑',wx+10,22); g.fillText('채취관',wx+14,py-10);
