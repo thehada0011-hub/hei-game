@@ -974,11 +974,13 @@ function certCard(){ G.cert=true; setStep(G.step); const cv=document.createEleme
     <div class="opts" style="margin-top:12px"><a class="opt" download="명예연구원_임명장.png" href="${url}" style="text-decoration:none;display:block;color:inherit">이미지 저장</a><button class="opt sel" id="ok">닫기</button></div></div>`);
   $('#ok').addEventListener('click',closeMini); }
 function missionSelect(){ const d=G.done, tag=x=>x?'<span class="dn">완료 ✓</span>':'';
-  openMini(`<div class="card"><h3>어떤 임무를 맡을까요?</h3><p>${G.name} 연구원, 오늘 할 임무를 골라요.</p><div class="steps">
-    <button class="step" id="mw"><span class="ic">💧</span><span><b>수질 임무</b><br><small>차를 타고 강으로 가서 다리 위에서 물을 떠요</small></span>${tag(d.w)}</button>
-    <button class="step" id="ma"><span class="ic">🏭</span><span><b>대기 임무</b><br><small>공장 굴뚝에 올라 장비를 올리고 연기를 채취해요</small></span>${tag(d.a)}</button>
-    <button class="step" id="mp"><span class="ic">💦</span><span><b>물놀이터 검사 임무</b><br><small>아이들이 기다리는 물놀이터의 물을 현장에서 검사해요</small></span>${tag(d.p)}</button>
-    <button class="step" disabled style="opacity:.5"><span class="ic">🧫</span><span><b>보건 임무</b><br><small>준비 중이에요</small></span></button></div>
+  const dept=t=>`<div style="text-align:left;font-weight:800;font-size:16px;color:var(--teal-d);margin:8px 2px 0">${t}</div>`;
+  openMini(`<div class="card"><h3>어느 과의 임무를 맡을까요?</h3><p>${G.name} 연구원, 오늘 할 임무를 골라요.</p><div class="steps">
+    ${dept('물환경조사과')}
+    <button class="step" id="mw"><span class="ic">💧</span><span><b>하천 수질 검사</b><br><small>차를 타고 강으로 가서 다리 위에서 물을 떠요</small></span>${tag(d.w)}</button>
+    <button class="step" id="mp"><span class="ic">💦</span><span><b>물놀이터 수질 검사</b><br><small>아이들이 기다리는 물놀이터의 물을 현장에서 검사해요</small></span>${tag(d.p)}</button>
+    ${dept('대기환경과')}
+    <button class="step" id="ma"><span class="ic">🏭</span><span><b>굴뚝 대기 검사</b><br><small>공장 굴뚝에 올라 장비를 올리고 연기를 채취해요</small></span>${tag(d.a)}</button></div>
     <button class="opt" id="mx" style="width:100%;margin-top:8px">나중에 할게요</button></div>`);
   $('#mw').addEventListener('click',()=>{ closeMini(); startMission('w'); }); $('#ma').addEventListener('click',()=>{ closeMini(); startMission('a'); }); $('#mp').addEventListener('click',()=>{ closeMini(); startMission('p'); }); $('#mx').addEventListener('click',closeMini);
 }
