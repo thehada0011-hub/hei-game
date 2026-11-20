@@ -605,8 +605,11 @@ const ITEMS_P=[ {x:PGX-14,z:PGZ+14,n:'채수병',c:0xffffff}, {x:PGX+14,z:PGZ+12
   if(i===0){ cyl(0.3,0.34,0.9,it.c,0,0,0,g); cyl(0.14,0.14,0.2,0x3b82c4,0,0.55,0,g); } else { box(0.5,0.9,0.25,it.c,0,0,0,g); box(0.36,0.3,0.27,0x17323a,0,0.18,0,g); if(i===2) cyl(0.05,0.05,0.6,0x8a8f94,0,-0.7,0,g,6); }
   const l=label(it.n); l.position.y=1.2; g.add(l); g.visible=false; scene.add(g); return {...it,g,got:false};
 });
+// 미세먼지·폐수·소음 임무가 같이 쓰는 준비물 3개. 임무를 받을 때 이름과 색을 그 과에 맞게 바꿔요.
+const ITEMS_X=[0,1,2].map(i=>{ const g=new THREE.Group(); g.position.y=1.3; const m=i===1?cyl(0.32,0.32,0.8,0xffffff,0,0,0,g):box(i?0.7:0.9,i?0.9:0.6,i?0.14:0.7,0xffffff,0,0,0,g); m.material=new THREE.MeshLambertMaterial({color:0xffffff}); g.visible=false; scene.add(g); return {x:0,z:0,n:'',g,m,got:false}; });
+function setXItems(M){ ITEMS_X.forEach((it,i)=>{ const [n,c]=M.items[i]; it.n=n; it.m.material.color.setHex(c); if(it.l) it.g.remove(it.l); it.l=label(n); it.l.position.y=1.2; it.g.add(it.l); }); }
 const CHIPS={ w:['🧊 아이스박스','🧴 채수병','🌡️ 수온계'], a:['⛑️ 안전모','🪢 안전대','🧰 장비가방'], p:['🧴 채수병','🧪 염소 측정기','📟 pH 측정기'] };
-function drawChips(){ const n=G.step, set=(n>=2&&n<=4)?[CHIPS.w,ITEMS]:(n>=10&&n<=12)?[CHIPS.a,ITEMS_A]:(n>=18&&n<=19)?[CHIPS.p,ITEMS_P]:null; const el=$('#chips'); el.style.display=set?'flex':'none';
+function drawChips(){ const n=G.step, set=(n>=2&&n<=4)?[CHIPS.w,ITEMS]:(n>=10&&n<=12)?[CHIPS.a,ITEMS_A]:(n>=18&&n<=19)?[CHIPS.p,ITEMS_P]:n===24?[XM.items.map(e=>e[2]+' '+e[0]),ITEMS_X]:null; const el=$('#chips'); el.style.display=set?'flex':'none';
   if(set) el.innerHTML=set[0].map((t,i)=>`<span class="chip${set[1][i].got?' on':''}">${t}</span>`).join(''); }
 
 /* ───────── 길 안내 ───────── */
@@ -621,11 +624,11 @@ const flag2=new THREE.Group(); cyl(0.07,0.07,4,0x7c878d,0,2,0,flag2,8); box(1.6,
 const P={ npc:[-3,-8], bridge:[130,ROAD_Z], door:[19,-29.5], board:[8,-13], info:[-9,3.6], stack:[FX,FZ-5], boss:[5,-7], play:[PGX,PGZ+12.5] };
 // 측정값을 보고 알맞은 깃발을 올리는 세 과의 임무. opts는 [깃발 이름, 색, 이 값까지]예요.
 const XMS={
-  d:{name:'미세먼지분석과',job:'미세먼지 측정',ic:'📡',sub:'주민센터 옥상 측정소에서 먼지를 모아 미세먼지 신호등을 켜요',roof:1,car:'a',at:XAT.d,go:'남쪽 주민센터 옆 계단으로 옥상에 올라가 미세먼지를 재세요',ask:v=>`초미세먼지 ${v}! 알맞은 등급 깃발을 올려요`,lo:3,
+  d:{name:'미세먼지분석과',job:'미세먼지 측정',ic:'📡',sub:'주민센터 옥상 측정소에서 먼지를 모아 미세먼지 신호등을 켜요',roof:1,items:[['먼지 필터',0xffffff,'🧻'],['흡입 펌프',0x3b82c4,'⚙️'],['기록지',0xffc53d,'📋']],at:XAT.d,go:'남쪽 주민센터 옆 계단으로 옥상에 올라가 미세먼지를 재세요',ask:v=>`초미세먼지 ${v}! 알맞은 등급 깃발을 올려요`,lo:3,
     opts:[['좋음','#3b82f6',15],['보통','#22c55e',35],['나쁨','#eab308',75],['매우 나쁨','#ef4444',130]],help:'좋음 15까지 · 보통 35까지 · 나쁨 75까지 · 그보다 높으면 매우 나쁨',fact:'대기환경측정소는 바람이 잘 통하는 건물 옥상에 있어요. 하루 24시간 미세먼지와 오존을 재서 알려 줘요. 나쁨이면 마스크를 쓰고 바깥 활동을 줄여요.'},
-  i:{name:'산업폐수과',job:'폐수 검사',ic:'🏭',sub:'공장 방류구 물에 시험지를 담가 pH 색을 맞춰요',car:'w',at:XAT.i,go:'다리를 건너 북쪽 공장 방류구로 가서 폐수를 검사하세요',ask:v=>`폐수의 pH가 ${v}! 알맞은 판정 깃발을 올려요`,lo:3,dec:1,
+  i:{name:'산업폐수과',job:'폐수 검사',ic:'🏭',sub:'공장 방류구 물에 시험지를 담가 pH 색을 맞춰요',items:[['시험지',0xfff3c4,'🧪'],['비커',0x9fd8ff,'🥛'],['고무장갑',0xff8fa3,'🧤']],at:XAT.i,go:'다리를 건너 북쪽 공장 방류구로 가서 폐수를 검사하세요',ask:v=>`폐수의 pH가 ${v}! 알맞은 판정 깃발을 올려요`,lo:3,dec:1,
     opts:[['산성이 강해요','#f97316',5.7],['기준 이내','#22c55e',8.6],['알칼리가 강해요','#8b5cf6',12]],help:'5.8보다 낮으면 산성 · 5.8부터 8.6까지 기준 이내 · 8.6보다 높으면 알칼리',fact:'공장에서 쓴 물은 깨끗하게 처리한 뒤에 내보내야 해요. 연구원은 방류구의 물을 떠서 기준을 지켰는지 검사해요.'},
-  l:{name:'생활환경과',job:'소음 측정',ic:'🔊',sub:'어린이집 앞에서 소음계로 가장 시끄러운 곳을 찾아요',car:'a',at:XAT.l,go:'서쪽 끝 큰 벚꽃나무 옆 정원어린이집으로 가서 소음을 재세요',ask:v=>`소음이 ${v}데시벨! 알맞은 깃발을 올려요`,lo:30,
+  l:{name:'생활환경과',job:'소음 측정',ic:'🔊',sub:'어린이집 앞에서 소음계로 방해 소리를 피해 소음을 정확히 재요',items:[['소음계',0x4a4f55,'🎙️'],['삼각대',0x8d979d,'📐'],['방풍망',0x6b7780,'⚫']],at:XAT.l,go:'서쪽 끝 큰 벚꽃나무 옆 정원어린이집으로 가서 소음을 재세요',ask:v=>`소음이 ${v}데시벨! 알맞은 깃발을 올려요`,lo:30,
     opts:[['조용해요','#3b82f6',45],['보통이에요','#22c55e',60],['시끄러워요','#eab308',75],['매우 시끄러워요','#ef4444',100]],help:'조용 45까지 · 보통 60까지 · 시끄러움 75까지 · 그보다 크면 매우 시끄러움',fact:'생활환경과는 소음뿐 아니라 실내 공기와 어린이 활동공간이 안전한지도 검사해요.'} };
 let XM=XMS.d;
 const XCAR_NEAR=34, xCar=()=>({d:carD,i:carI,l:carL})[G.xk]||car2, xCarName=()=>XM.name+' 차량';   // 이 세 임무도 장비를 실은 차를 현장 가까이 몰고 가야 해요
@@ -653,7 +656,7 @@ const STEPS=[
   {t:'분석 끝! 환경동에서 결과를 확인하세요', at:()=>P.door},
   {t:'본관 앞 게시판에 결과를 보고하세요', at:()=>P.board},
   {t:'임무 완료! 마을을 자유롭게 둘러보세요', at:()=>null},
-  {t:'도로에 세워 둔 수질 채수차량(초록 줄)에 타세요', at:()=>[car.position.x,car.position.z]},
+  {t:'주차장에 세워 둔 물환경조사과 차량에 타세요', at:()=>[car.position.x,car.position.z]},
   {t:'북서쪽 벚꽃길 옆 물놀이터로! 근처에 흩어진 검사 장비 3개를 찾으세요', at:()=>P.play},
   {t:'아이들이 기다려요. 물놀이터 입구에서 수질 검사를 시작하세요', at:()=>P.play},
   {t:'본관 앞 게시판에 검사 결과를 보고하세요', at:()=>P.board},
@@ -1019,6 +1022,7 @@ $('#tskip').addEventListener('click',()=>{ if(G.step===5||G.step===13||G.step===
 const dist=(p,a)=>Math.hypot(p.x-a[0],p.z-a[1]);
 let drv=car;
 function board(c){ drv=c; G.driving=true; player.g.visible=false;
+  { const need=(G.step===1||G.step===17)?car:G.step===9?car2:G.step===24?xCar():null; if(need&&need!==c) toast(`이번 임무는 ${CARS.find(e=>e[0]===need)[3]} 차량을 타야 해요. 내려서 바꿔 타세요.`,3200); }
   if(G.step===9&&c===car2){ setStep(10); ITEMS_A.forEach(i=>{ if(!i.got) i.g.visible=true; }); toast('조이스틱으로 운전해요. 도로 건너 동남쪽 공장까지!'); }
   if(G.step===17&&c===car){ setStep(18); ITEMS_P.forEach(i=>{ if(!i.got) i.g.visible=true; }); toast('조이스틱으로 운전해요. 북서쪽 벚꽃길 옆 물놀이터까지!'); }
   if(G.step===1&&c===car){ setStep(2); ITEMS.forEach(i=>{ if(!i.got) i.g.visible=true; }); toast('조이스틱으로 운전해요. 동쪽 강의 다리까지!'); } }
@@ -1138,7 +1142,10 @@ function scatter(list,ok){ const used=[]; for(const it of list){ let x,z,n=0; do
     used.push([x,z]); it.x=x; it.z=z; it.g.position.x=x; it.g.position.z=z; it.got=false; it.g.visible=false; } }
 function startMission(k){
   if(!G.driving) for(const [c,x,z] of CARS){ c.position.set(x,0,z); c.rotation.y=0; }   // 출장은 늘 주차장에서 출발해요
-  if(XMS[k]){ XM=XMS[k]; G.xk=k; say([[SENIOR,`${XM.name} 임무예요, {n} 연구원! ${XM.sub}.`],[SENIOR,'주차장의 '+xCarName()+'을 타고 출장을 나가요. '+XM.go+'.']],()=>setStep(24)); return; }
+  ITEMS_X.forEach(i=>i.g.visible=false);
+  if(XMS[k]){ XM=XMS[k]; G.xk=k; setXItems(XM);
+    scatter(ITEMS_X,()=>{ const a=Math.random()*6.28, r=9+Math.random()*13; return [Math.max(-96,Math.min(186,XM.at[0]+Math.cos(a)*r)),Math.max(-84,Math.min(86,XM.at[1]+Math.sin(a)*r))]; }); ITEMS_X.forEach(i=>i.g.visible=true);
+    say([[SENIOR,`${XM.name} 임무예요, {n} 연구원! ${XM.sub}.`],[SENIOR,'주차장의 '+xCarName()+'을 타고 출장을 나가요. '+XM.go+'.'],[SENIOR,`준비물 3개(${XM.items.map(e=>e[0]).join(', ')})가 현장 근처에 흩어져 있으니 꼭 찾아서 챙기고요!`]],()=>setStep(24)); return; }
   if(k==='w'){ scatter(ITEMS,()=>[86+Math.random()*31,-14+Math.random()*44]); G.score={equip:0,depth:0,bottle:0,order:0,grade:0}; bridgeHint=false; iceBox.visible=false;
     say([[SENIOR,'수질 임무예요, {n} 연구원! 강물이 깨끗한지 검사해 달라는 의뢰가 들어왔어요.'],[SENIOR,'주차장의 물환경조사과 차량을 타고 동쪽 강의 다리로 가세요. 장비 3개가 다리 근처 어딘가에 흩어져 있으니 꼭 찾아서 챙기고요!']],()=>setStep(1)); }
   else if(k==='p'){ scatter(ITEMS_P,()=>{ const a=Math.random()*6.28, r=13+Math.random()*14; return [PGX+Math.cos(a)*r,Math.max(-82,PGZ+Math.sin(a)*r)]; }); G.pl={equip:0,sample:0,cl:0,ph:0,judge:0}; setPlay('wait');
@@ -1160,7 +1167,7 @@ function getAction(){
   if(G.step===23&&dist(p,P.play)<7) return {label:'다시 측정하기',fn:()=>remeasure(ok=>{ if(ok){ setPlay('ok'); setStep(20); toast('적합! 아이들이 물놀이터로 달려가요. 본관에 결과를 보고하세요.',3200); }
       else { setStep(21); toast('아직 부적합이에요. 투입량을 다시 맞추고 30분 뒤에 또 측정해요.',3200); } })};
   if(G.step===20&&dist(p,P.board)<4.5) return {label:'보고하기',fn:playReport};
-  if(G.step===24&&dist(p,XM.at)<(XM.roof?4:7)&&(!XM.roof||player.g.position.y>6)) return {label:XM.job+' 시작',fn:()=>{ if(dist(xCar().position,XM.at)>XCAR_NEAR){ toast('측정 장비가 차에 있어요. 주차장의 '+xCarName()+'을 타고 오세요.',3000); return; } xGame(G.xk)(XM,()=>{ setStep(25); toast('측정 끝! 본관 게시판에 결과를 보고하세요.',2800); }); }};
+  if(G.step===24&&dist(p,XM.at)<(XM.roof?4:7)&&(!XM.roof||player.g.position.y>6)) return {label:XM.job+' 시작',fn:()=>{ if(needItems(ITEMS_X)) return; if(dist(xCar().position,XM.at)>XCAR_NEAR){ toast('측정 장비가 차에 있어요. 주차장의 '+xCarName()+'을 타고 오세요.',3000); return; } xGame(G.xk)(XM,()=>{ setStep(25); toast('측정 끝! 본관 게시판에 결과를 보고하세요.',2800); }); }};
   if(G.step===25&&dist(p,P.board)<4.5) return {label:'보고하기',fn:xReport};
   if(G.step===0&&dist(p,P.npc)<4.2) return {label:'임무 고르기',fn:missionSelect};
   if((G.step===2||G.step===3)&&dist(p,P.bridge)<8) return {label:'물 채취하기',fn:()=>{ if(needItems(ITEMS)) return; if(dist(car.position,P.bridge)>20){ toast('채수 장비가 차에 있어요. 차를 다리까지 몰고 오세요.'); return; }
@@ -1176,9 +1183,8 @@ function getAction(){
     airLab(()=>{ G.waitLeft=CONFIG.WAIT_SEC; setStep(13); say([[SENIOR,'분석 장비가 돌아가고 있어요. 결과가 나올 때까지 잠깐 쉬어요.']]); }); }};
   if(G.step===14&&dist(p,P.door)<5) return {label:'결과 확인하기',fn:()=>airResult(()=>{ setStep(15); toast('결과지를 들고 본관 게시판으로!'); })};
   if(G.step===15&&dist(p,P.board)<4.5) return {label:'보고하기',fn:airReport};
-  for(const c of [carD,carI,carL]) if(dist(p,[c.position.x,c.position.z])<4.6) return {label:'차에 타기',fn:()=>board(c)};
-  if(dist(p,[car2.position.x,car2.position.z])<4.6) return {label:'차에 타기',fn:()=>board(car2)};
-  if(dist(p,[car.position.x,car.position.z])<4.6) return {label:'차에 타기',fn:()=>board(car)};
+  { let best=null, bd=4.6; for(const e of CARS){ const d=dist(p,[e[0].position.x,e[0].position.z]); if(d<bd){ bd=d; best=e; } }   // 차들이 나란히 서 있으니 가장 가까운 차를 골라요
+    if(best) return {label:best[3]+' 차에 타기',fn:()=>board(best[0])}; }
   if(G.sit) return {label:'일어나기',fn:()=>{ G.sit=null; }};
   for(const b of BENCHES) if(dist(p,[b.x,b.z])<2.6) return {label:'의자에 앉아 쉬기',fn:()=>{ G.sit=b; toast('벚꽃나무 아래에서 잠깐 쉬어요 🌸',2400); }};
   for(const s of SIGNS) if(dist(p,[s.x,s.z])<3.6) return {label:'팻말 읽기',fn:()=>{ s.read=true; const n=SIGNS.filter(x=>x.read).length;
@@ -1224,16 +1230,17 @@ function frame(now){
     ent.rotation.y=lerpAng(ent.rotation.y,Math.atan2(mx,mz),dt*(G.driving?7:13)); }
   animPerson(player,moving&&!G.driving,dt); strollers(dt);
   // 장비 줍기
-  const its=(G.step===2||G.step===3)?ITEMS:(G.step===10||G.step===11)?ITEMS_A:(G.step===18||G.step===19)?ITEMS_P:null;
+  const its=(G.step===2||G.step===3)?ITEMS:(G.step===10||G.step===11)?ITEMS_A:(G.step===18||G.step===19)?ITEMS_P:G.step===24?ITEMS_X:null;
+  const carFirst=G.step===24&&!G.driving&&dist(xCar().position,XM.at)>XCAR_NEAR;   // 차를 아직 안 몰고 왔으면 준비물보다 차 안내가 먼저예요
   if(its) for(const [i,it] of its.entries()){ if(it.got) continue; it.g.rotation.y+=dt*1.5; it.g.position.y=1.3+Math.sin(time*3+i)*0.15;
-    if(Math.hypot(ent.position.x-it.x,ent.position.z-it.z)<3.4){ it.got=true; it.g.visible=false; if(its===ITEMS) G.score.equip+=10; else if(its===ITEMS_A) G.air.equip+=5; else G.pl.equip+=5; drawChips(); toast(it.n+' 챙김!',1200); } }
+    if(Math.hypot(ent.position.x-it.x,ent.position.z-it.z)<3.4){ it.got=true; it.g.visible=false; if(its===ITEMS) G.score.equip+=10; else if(its===ITEMS_A) G.air.equip+=5; else if(its===ITEMS_P) G.pl.equip+=5; drawChips(); toast(it.n+' 챙김!',1200); } }
   if(G.step===2&&G.driving&&dist(car.position,P.bridge)<6&&!bridgeHint){ bridgeHint=true; toast('다리에 도착! 차에서 내려 물을 채취하세요.'); }
   // 기다리기
   if(G.step===5||G.step===13||G.step===22){ const pg=G.step===22; G.waitLeft-=dt; $('#ttx').textContent=(pg?'⏱ 30분 기다리는 중 ':'🧪 분석 중 ')+Math.max(0,Math.ceil(G.waitLeft))+'초';
     if(G.waitLeft<=0){ setStep(G.step+1); toast(pg?'30분이 지났어요. 물놀이터에서 다시 측정하세요.':'띵! 분석이 끝났어요. 환경동으로 가세요.'); } }
   // 길 안내
   // 아직 못 찾은 장비가 있으면 가장 가까운 장비 쪽으로 안내해요
-  let tg=STEPS[G.step].at(); const left=its?its.filter(i=>!i.got):[];
+  let tg=STEPS[G.step].at(); const left=its&&!carFirst?its.filter(i=>!i.got):[];
   if(left.length){ const dd=i=>Math.hypot(i.x-ent.position.x,i.z-ent.position.z), n=left.reduce((a,b)=>dd(a)<dd(b)?a:b); tg=[n.x,n.z]; }
   const qt=left.length?`장비 ${left.length}개가 남았어요. 노란 점선을 따라가 찾으세요`:null; if(qt!==qtCache){ qtCache=qt; $('#qtx').textContent=qt||STEPS[G.step].t; }
   const hideM=!tg||((G.step===1||G.step===9||G.step===17)&&G.driving);
@@ -1296,7 +1303,7 @@ $('#enter').addEventListener('click',()=>{ const v=nm.value.trim().slice(0,6);
   $('#start').style.display='none'; $('#hud').style.display='block'; setStep(0); G.lock=false;
   say([['안내',`${G.name} 연구원, 첫 출근을 환영해요! 왼쪽 아래 조이스틱으로 걷고, 화면을 좌우로 밀면 둘러볼 수 있어요.`]]);
 });
-window.__G=G; window.__dbg={player,car,car2,carD,carI,carL,P}; window.__t={sampleGame,bottleGame,labGame,climbGame,haulGame,gaugeGame,filterGame,closeMini,focusSample,focusCatch,focusHaul,playTest,setPlay,playReport,doseGame,remeasure,focusDust,focusStrip,focusNoise,xReport,startMission,setStep,XMS};
+window.__G=G; window.__dbg={player,car,car2,carD,carI,carL,P}; window.__t={sampleGame,bottleGame,labGame,climbGame,haulGame,gaugeGame,filterGame,closeMini,focusSample,focusCatch,focusHaul,playTest,setPlay,playReport,doseGame,remeasure,focusDust,focusStrip,focusNoise,xReport,startMission,setStep,XMS,ITEMS,ITEMS_A,ITEMS_P,ITEMS_X};
 const DOOR_LIMIT=52;   // 차를 실험동 입구에서 이 거리 안에 세워야 시료를 접수할 수 있어요
 flag.position.set(24,0,-25);
 // 차량 3D 모형. 못 불러오면 상자로 만든 차량을 그대로 써요. rotY로 앞머리 방향을 맞춰요.
@@ -1305,7 +1312,7 @@ function loadCar(file,grp,len,rotY,tint){ new GLTFLoader().load(file,gltf=>{ con
   m.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; if(o.material){ o.material.metalness=0; o.material.roughness=0.9; if(tint) o.material.color.multiply(new THREE.Color(tint)); } } });
   for(const o of [...grp.children]) if(!o.userData.keep) o.visible=false; if(grp===car) car.remove(iceBox); grp.add(m); grp.userData.model=m; },undefined,()=>{}); }
 loadCar('car_water.glb',car,4.7,Math.PI/2); loadCar('car_air.glb',car2,5.4,Math.PI/2);
-loadCar('car_air.glb',carD,5.4,Math.PI/2,0xffe9a0); loadCar('car_water.glb',carI,4.7,Math.PI/2,0xffc79a); loadCar('car_air.glb',carL,5.4,Math.PI/2,0xd9c4ff);   // 같은 모형에 과마다 다른 색을 입혀요
+loadCar('car_air.glb',carD,5.4,Math.PI/2); loadCar('car_water.glb',carI,4.7,Math.PI/2); loadCar('car_air.glb',carL,5.4,Math.PI/2);   // 모형은 같고, 차 위의 과 이름표로 구분해요
 /* ───────── 초점 모드 (산사 방식): 걷던 마을이 흐려지고, 그 앞에 실물 같은 장비 하나만 떠요 ───────── */
 const FOC={};
 { const cv=document.createElement('canvas'); cv.id='fx'; document.body.appendChild(cv);
@@ -1395,32 +1402,37 @@ function focusStrip(M,next){ focusUI({hintTop:1,go:'시험지 담그기'}); cons
     if(phase==='dip'){ dipT+=dt; if(dipT>0.9){ pad.material.color.set(CH[want][1]); st=1.45; } if(dipT>1.7){ phase='pick'; ob.style.display='grid'; hint('시험지와 같은 색 견본을 골라요'); } }
     sy+=(st-sy)*Math.min(1,dt*6); strip.position.y=sy; sadT=Math.max(0,sadT-dt); hopT=Math.max(0,hopT-dt); wk.face(sadT>0); wk.body.position.y=-0.6+Math.sin(hopT/0.35*Math.PI)*0.15; wk.who.armR.rotation.x=phase==='dip'?-1.2:phase==='done'?-2.6:0;
     r.render(s,c); requestAnimationFrame(loop); })(last); }
-// 생활환경과: 소음계를 들고 움직이며 가장 시끄러운 물건을 찾아요.
-function focusNoise(M,next){ focusUI({hintTop:1,go:'여기예요!'}); const S=xStage(0xcfc7b4), {grp,add,rod,cv,r,s,c,hint}=S, go=$('#fgo');
-  add(9,2.7,0.3,0xffe9a8,0,0.75,-1.4); add(9.2,0.28,0.6,0xff8fa3,0,2.2,-1.4); for(const x of [-3.2,-1.1,1.1,3.2]) add(0.8,0.6,0.06,0x7fd3e6,x,1.6,-1.22); add(9,0.6,1.3,0xbdb5a2,0,-0.3,-0.6);   // 물건은 연구원에게 가리지 않게 단 위에 올려요
-  const sp=Math.min(1.6,(S.hw-0.55)*2/3), SX=[-1.5,-0.5,0.5,1.5].map(k=>k*sp), NAME=['트럭','확성기','공사 드릴','스피커'], src=SX.map(x=>{ const g=new THREE.Group(); g.position.set(x,0,-0.6); g.scale.setScalar(Math.min(1,sp/1.3)); grp.add(g); return g; });
-  const put=(g,geo,col,x,y,z,o)=>{ const m=new THREE.Mesh(geo,PBR(col,o)); m.position.set(x,y,z); g.add(m); return m; }, B=(w,h,d)=>new THREE.BoxGeometry(w,h,d), C=(a,b,h)=>new THREE.CylinderGeometry(a,b,h,16);
-  put(src[0],B(0.75,0.5,0.5),0x3b82c4,-0.12,0.42,0); put(src[0],B(0.32,0.38,0.5),0xf4f7f8,0.42,0.36,0); for(const x of [-0.3,0.4]) put(src[0],C(0.13,0.13,0.54),0x2b2b2b,x,0.13,0).rotation.x=Math.PI/2;
-  put(src[1],C(0.035,0.035,1.1),0x8d979d,0,0.55,0); put(src[1],new THREE.ConeGeometry(0.26,0.5,20,1,true),0xe5484d,0,1.15,0.18,{side:THREE.DoubleSide}).rotation.x=-Math.PI/2; put(src[1],B(0.16,0.16,0.16),0xf4f7f8,0,1.15,-0.12);
-  put(src[2],B(0.3,0.26,0.22),0xffc53d,0,0.78,0); put(src[2],C(0.05,0.03,0.65),0x6b7780,0,0.33,0); put(src[2],B(0.5,0.05,0.05),0x2b2b2b,0,0.93,0);
-  put(src[3],B(0.5,0.85,0.4),0x2b2b2b,0,0.43,0); put(src[3],C(0.17,0.17,0.03),0x8d979d,0,0.3,0.21).rotation.x=Math.PI/2; put(src[3],C(0.09,0.09,0.03),0x8d979d,0,0.66,0.21).rotation.x=Math.PI/2;
-  const rings=[0,1,2].map(()=>{ const m=new THREE.Mesh(new THREE.TorusGeometry(0.4,0.025,8,32),new THREE.MeshBasicMaterial({color:0xff5d5d,transparent:true})); m.visible=false; grp.add(m); return m; });
-  const wk=fxWorker(grp,{hat:0xffc53d,scale:0.5}); wk.body.position.set(0,-0.6,0.7); const scr=xScreen(grp,0.95,0.48);
-  let wx=0,tx=0,loud=-1,round=0,stars=0,miss=0,busy=false,val=0,t=0,alive=true,last=performance.now(),sadT=0,hopT=0,showT=0;
-  const off=()=>{ alive=false; focusOff(grp); };
-  const newRound=()=>{ let k; do{ k=Math.floor(Math.random()*4); }while(k===loud); loud=k; miss=0; busy=false; rings.forEach(m=>m.visible=false); go.style.display='block'; hint(`소음계를 들고 좌우로 움직여 가장 시끄러운 곳을 찾아요 (${round+1}/5)`); };
-  cv.onpointerdown=cv.onpointermove=e=>{ if(!busy) tx=S.px(e); };
-  go.onclick=()=>{ if(busy) return; let k=0; SX.forEach((x,i)=>{ if(Math.abs(x-wx)<Math.abs(SX[k]-wx)) k=i; });
-    if(Math.abs(SX[k]-wx)>sp*0.42){ hint('소리 나는 물건 바로 앞에 서서 눌러요'); return; }
-    if(k!==loud){ miss++; sadT=1.1; sfx('no'); fPop('여긴 조용해요','warn'); hint(`${NAME[k]} 앞은 ${val}데시벨이에요. 숫자가 가장 큰 곳을 찾아요`); return; }
-    busy=true; hopT=0.35; go.style.display='none'; const got=miss===0?3:miss===1?2:1; stars+=got; sfx(got===3?'ok':'good'); fPop('★'.repeat(got)+' '+NAME[k]+'!','good'); $('#fstar').textContent='★ '+stars;
-    rings.forEach(m=>{ m.visible=true; m.position.set(SX[k],0.5,-0.5); }); hint(`${NAME[k]} 소리가 ${val}데시벨! 어린이집 옆에서는 소리를 줄여 달라고 알려 줘요`);
-    setTimeout(()=>{ if(!alive) return; round++; src[k].position.x=SX[k]; if(round<5){ newRound(); return; } xFinish(stars,grp,next,()=>{ alive=false; }); },2400); };
-  $('#fclose').onclick=off; newRound();
-  (function loop(now){ if(!alive) return; const dt=Math.min(0.05,Math.max(0,(now-last)/1000)); last=now; t+=dt; wx+=(tx-wx)*Math.min(1,dt*8); wk.body.position.x=wx; scr.position.set(wx,-1.2,1.52);
-    showT-=dt; if(showT<=0){ showT=0.12; val=Math.round(43+47*Math.exp(-((wx-SX[loud])**2)/(sp*sp*0.3))+Math.sin(t*9)*1.5); scr.userData.show(val+'dB',val<60?'#7ff0b8':val<78?'#ffd84d':'#ff7b7b',64); }
-    if(busy){ src[loud].position.x=SX[loud]+Math.sin(t*45)*0.03; rings.forEach((m,i)=>{ const k=(t*0.9+i/3)%1; m.scale.setScalar(0.6+k*2.2); m.material.opacity=0.8*(1-k); }); }
-    sadT=Math.max(0,sadT-dt); hopT=Math.max(0,hopT-dt); wk.face(sadT>0); wk.body.position.y=-0.6+Math.sin(hopT/0.35*Math.PI)*0.15; wk.who.armR.rotation.x=-1.4; r.render(s,c); requestAnimationFrame(loop); })(last); }
+// 생활환경과: 소음계 버튼을 꾹 눌러 측정해요. 강아지가 짖거나 비행기, 트럭이 지나가면 그 소리가 섞이지 않게 손을 떼요.
+function focusNoise(M,next){ focusUI({hintTop:1,go:'꾹 눌러 측정',star:'측정 0%'}); const S=xStage(0xcfc7b4), {grp,add,rod,r,s,c,hint}=S, go=$('#fgo'), hw=S.hw;
+  add(9,2.7,0.3,0xffe9a8,0,0.75,-1.4); add(9.2,0.28,0.6,0xff8fa3,0,2.2,-1.4); for(const x of [-3.2,-1.1,1.1,3.2]) add(0.8,0.8,0.06,0x7fd3e6,x,1.2,-1.22); add(1,1.7,0.06,0x8a5a2b,0,0.25,-1.22);
+  // 삼각대 위의 소음계
+  for(const a of [0,2.1,4.2]){ const l=rod(0.025,0.025,1.1,0x3a4046,Math.cos(a)*0.22,-0.1,0.2+Math.sin(a)*0.22); l.rotation.z=-Math.cos(a)*0.4; l.rotation.x=Math.sin(a)*0.4; }
+  rod(0.03,0.03,0.5,0x3a4046,0,0.6,0.2); add(0.16,0.34,0.08,0xf4f7f8,0,0.95,0.2); const foam=new THREE.Mesh(new THREE.SphereGeometry(0.12,14,10),PBR(0x4a4f55,{roughness:1})); foam.position.set(0,1.25,0.2); grp.add(foam);
+  const scr=xScreen(grp,1.1,0.55); scr.position.set(0,2.4,0.2);
+  const barBg=add(2.2,0.16,0.05,0x2b3137,0,1.85,0.2), bar=add(2.2,0.16,0.06,0x35c98a,0,1.85,0.22); bar.scale.x=0.001;
+  const wk=fxWorker(grp,{hat:0xffc53d,scale:0.5}); wk.body.position.set(0.75,-0.6,0.3); wk.body.rotation.y=-0.5;
+  // 방해 소리 세 가지: 강아지, 트럭, 비행기
+  const mk=()=>{ const g=new THREE.Group(); g.visible=false; grp.add(g); return g; }, put=(g,geo,col,x,y,z)=>{ const m=new THREE.Mesh(geo,PBR(col)); m.position.set(x,y,z); g.add(m); return m; }, B=(w,h,d)=>new THREE.BoxGeometry(w,h,d);
+  const dog=mk(); put(dog,B(0.55,0.3,0.26),0xb9823f,0,0.4,0); put(dog,B(0.26,0.26,0.24),0xb9823f,0.36,0.6,0); put(dog,B(0.14,0.1,0.14),0x5a3a1c,0.52,0.56,0); for(const x of [-0.2,0.2]) for(const z of [-0.08,0.08]) put(dog,B(0.08,0.26,0.08),0x9a6b33,x,0.13,z); put(dog,B(0.06,0.24,0.06),0x9a6b33,-0.3,0.6,0).rotation.z=0.6; for(const z of [-0.09,0.09]) put(dog,B(0.07,0.14,0.05),0x5a3a1c,0.3,0.78,z);
+  const truck=mk(); put(truck,B(1.3,0.8,0.8),0x3b82c4,-0.2,0.75,0); put(truck,B(0.55,0.62,0.8),0xf4f7f8,0.75,0.66,0); for(const x of [-0.55,0.7]) put(truck,new THREE.CylinderGeometry(0.2,0.2,0.84,14),0x2b2b2b,x,0.2,0).rotation.x=Math.PI/2;
+  const plane=mk(); put(plane,new THREE.CylinderGeometry(0.16,0.16,1.6,12),0xf4f7f8,0,0,0).rotation.z=Math.PI/2; put(plane,B(0.4,0.04,1.7),0xdfe6ea,0,0,0); put(plane,B(0.2,0.34,0.04),0xe5484d,-0.7,0.2,0); put(plane,B(0.2,0.04,0.6),0xdfe6ea,-0.7,0.02,0);
+  const KIND=[{g:dog,y:-0.6,z:1.0,sp:3.2,name:'강아지',cry:'멍멍! 강아지가 짖어요. 손을 떼요!',db:84},{g:truck,y:-0.6,z:1.15,sp:2.7,name:'트럭',cry:'부릉! 트럭이 지나가요. 손을 떼요!',db:88},{g:plane,y:3.1,z:-2.5,sp:3.6,name:'비행기',cry:'슈웅! 비행기가 지나가요. 손을 떼요!',db:92}];
+  let hold=false,prog=0,miss=0,t=0,alive=true,ended=false,last=performance.now(),sadT=0,hopT=0,showT=0,nextAt=2.2,cur=null,cx=0,dir=1,hitThis=false,lastK=-1,mix=0;
+  const base=48+Math.floor(Math.random()*9), IDLE='버튼을 꾹 누르고 있으면 소음을 재요. 다른 소리가 나면 손을 떼요!';
+  const clean=()=>{ alive=false; go.onpointerdown=go.onpointerup=go.onpointerleave=go.onpointercancel=null; }, off=()=>{ clean(); focusOff(grp); };
+  go.onpointerdown=e=>{ e.preventDefault(); if(!ended) hold=true; }; go.onpointerup=go.onpointerleave=go.onpointercancel=()=>{ hold=false; };
+  $('#fclose').onclick=off; hint(IDLE);
+  (function loop(now){ if(!alive) return; const dt=Math.min(0.05,Math.max(0,(now-last)/1000)); last=now; t+=dt;
+    if(!ended&&!cur&&t>nextAt){ let k; do{ k=Math.floor(Math.random()*3); }while(k===lastK); lastK=k; cur=KIND[k]; dir=Math.random()<0.5?1:-1; cx=-dir*(hw+1.6); cur.g.visible=true; cur.g.rotation.y=dir>0?0:Math.PI; hitThis=false; mix=0; }
+    let loud=false;
+    if(cur){ cx+=dir*cur.sp*dt; cur.g.position.set(cx,cur.y+(cur===KIND[0]?Math.abs(Math.sin(t*12))*0.12:0),cur.z); loud=Math.abs(cx)<hw+0.4;
+      if(loud&&!ended) hint(cur.cry); if(Math.abs(cx)>hw+1.8){ cur.g.visible=false; cur=null; nextAt=t+1.8+Math.random()*2.2; if(!ended) hint(IDLE); } }
+    if(!ended&&hold){ if(loud){ mix+=dt; if(!hitThis&&mix>0.5){ hitThis=true; miss++; sadT=1.2; prog=Math.max(0,prog-10); sfx('no'); fPop('앗, '+cur.name+' 소리가 섞였어요!','warn'); } }
+      else { prog=Math.min(100,prog+dt*10); } }
+    bar.scale.x=Math.max(0.001,prog/100); bar.position.x=-1.1+1.1*prog/100; bar.material.color.set(hold&&loud?0xe5484d:0x35c98a); $('#fstar').textContent='측정 '+Math.floor(prog)+'%';
+    showT-=dt; if(showT<=0){ showT=0.12; const v=Math.round((loud?cur.db:base)+Math.sin(t*9)*1.5); scr.userData.show(v+'dB',v<60?'#7ff0b8':v<78?'#ffd84d':'#ff7b7b',64); }
+    if(!ended&&prog>=100){ ended=true; hold=false; go.style.display='none'; hopT=0.4; hint(`측정 끝! 어린이집 앞 소음은 ${base}데시벨, ${base<=55?'조용한 편이에요':'조금 시끄러운 편이에요'}`); xFinish(Math.max(6,15-miss*2),grp,next,clean); }
+    sadT=Math.max(0,sadT-dt); hopT=Math.max(0,hopT-dt); wk.face(sadT>0); wk.body.position.y=-0.6+Math.sin(hopT/0.4*Math.PI)*0.15; wk.who.armR.rotation.x=hold?-1.5:0; r.render(s,c); requestAnimationFrame(loop); })(last); }
 function xGame(k){ return {d:focusDust,i:focusStrip,l:focusNoise}[k]; }
 function xReport(){ const st=G.xStars||0, k=G.xk; G.done[k]=true; let extra='';
   if(k==='d'&&G.dust){ const o=XMS.d.opts[G.dust.k]; setDust(String(G.dust.v),o[1],o[0]); G.airK=G.dust.k; setMasks(G.airK>=2); WALKERS.forEach(w=>w.told=false);
