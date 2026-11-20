@@ -129,6 +129,7 @@ input{font:inherit;user-select:text;-webkit-user-select:text}
 .bottle .mk{z-index:4}
 .step .ic{flex:none;font-size:20px}
 #stampBtn{position:absolute;right:18px;bottom:calc(180px + env(safe-area-inset-bottom));width:52px;height:52px;border-radius:50%;background:rgba(255,253,247,.95);font-size:24px;box-shadow:0 4px 12px rgba(0,40,50,.22)}
+#jump{position:absolute;right:82px;bottom:calc(118px + env(safe-area-inset-bottom));width:52px;height:52px;border-radius:50%;background:rgba(255,253,247,.95);font-size:24px;font-weight:800;box-shadow:0 4px 12px rgba(0,40,50,.22)}
 .stamps{display:flex;justify-content:center;gap:12px;margin:14px 0}
 .stamp{width:88px;height:88px;border-radius:50%;border:3px dashed #c9d3d7;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:800;font-size:14px;color:#b7c3c7;line-height:1.25}
 .stamp.on{border:5px double #c8102e;color:#c8102e;transform:rotate(-12deg);background:rgba(200,16,46,.06)}
@@ -152,6 +153,7 @@ input{font:inherit;user-select:text;-webkit-user-select:text}
   <div id="joy"><div id="knob"></div></div>
   <button id="wave" aria-label="인사하기">👋</button>
   <button id="stampBtn" aria-label="도장판">📔</button>
+  <button id="jump" aria-label="점프">⤴</button>
   <button id="act"></button>
   <div id="toast"></div>
 </div>
@@ -216,7 +218,7 @@ function slabTex(){ const s=256, cv=document.createElement('canvas'); cv.width=c
 const TEX={ grass:grainTex('#84b96a',['#76ab5d','#93c97a','#6b9f54','#a2cd86','#7fb565'],9000,256,4), road:grainTex('#575f65',['#4c5459','#666e74','#5f676d','#474e53'],5000,256,2),
   slab:slabTex(), water:grainTex('#3f97cf',['#57aee0','#3587bd','#6cbbe8','#2f7eb3'],900,256,26) };
 function texMat(t,rx,ry,o={}){ const c=t.clone(); c.needsUpdate=true; c.repeat.set(rx,ry); return new THREE.MeshLambertMaterial({map:c,...o}); }
-const camera = new THREE.PerspectiveCamera(62, 1, 0.1, 600);
+const camera = new THREE.PerspectiveCamera(62, 1, 0.5, 700);
 scene.add(new THREE.HemisphereLight(0xd8ecff, 0xb9ad8e, 1.9));
 const sun = new THREE.DirectionalLight(0xfff0d2, 3.4); sun.position.set(40, 60, 30); scene.add(sun); scene.add(sun.target);
 sun.castShadow = true; sun.shadow.mapSize.set(innerWidth < 700 ? 1024 : 2048, innerWidth < 700 ? 1024 : 2048);
@@ -250,14 +252,24 @@ function label(text,o={}){
 
 /* ───────── 마을 ───────── */
 const RIVER_X1=120, RIVER_X2=140, ROAD_Z=15, ROAD_W=8;
-flat(260,220,0x9fd18b,-10,0,0).material=texMat(TEX.grass,52,44);     // 서쪽 땅
-flat(70,220,0x9fd18b,175,0,0).material=texMat(TEX.grass,14,44);      // 강 건너 땅
+flat(260,380,0x9fd18b,-10,0,-40).material=texMat(TEX.grass,52,76);   // 서쪽 땅
+flat(70,380,0x9fd18b,175,0,-40).material=texMat(TEX.grass,14,76);    // 강 건너 땅
+// 북쪽 영산강과 벚꽃길
+const nriver=flat(330,24,0x4fa8e0,45,0.09,-104); nriver.material=texMat(TEX.water,30,2,{transparent:true,opacity:.95});
+flat(330,2.4,0xd8cba6,45,0.06,-91); flat(330,2.4,0xd8cba6,45,0.06,-117);
+{ const d=new THREE.Object3D(), col=new THREE.Color(), PINK=[0xf7b6cf,0xf9c9dc,0xf29ebf,0xfbdbe8], spots=[];
+  for(let x=-98;x<118;x+=6.5) spots.push([x+Math.sin(x)*1.2,-86.5+Math.cos(x*1.7)*0.8]); for(let x=-98;x<190;x+=6.5) spots.push([x+Math.cos(x)*1.2,-121+Math.sin(x*1.3)]);
+  const tr=new THREE.InstancedMesh(new THREE.CylinderGeometry(0.2,0.32,1,6),mat(0x5a4636),spots.length), bl=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,1),new THREE.MeshLambertMaterial({flatShading:true}),spots.length*4); let k=0;
+  spots.forEach(([x,z],i)=>{ const s=0.9+(i*37%10)/22; d.position.set(x,1.2*s,z); d.scale.set(s,2.4*s,s); d.rotation.set(0,0,0); d.updateMatrix(); tr.setMatrixAt(i,d.matrix);
+    for(let j=0;j<4;j++){ const a=j*2.1+i, off=j?1.1*s:0, b=(j?1.25:1.6)*s; d.position.set(x+Math.cos(a)*off,2.4*s+(j?0.5:1.3)*s,z+Math.sin(a)*off); d.scale.set(b,b*0.8,b); d.rotation.set(0,i+j,0); d.updateMatrix(); bl.setMatrixAt(k,d.matrix); col.setHex(PINK[(i+j)%4]); bl.setColorAt(k,col); k++; } });
+  tr.castShadow=bl.castShadow=true; bl.receiveShadow=true; scene.add(tr,bl); }
+box(0.18,1.7,0.18,0x7a5b3a,-8,0.85,-83.5); box(3,1.1,0.14,0xc9a26b,-8,1.95,-83.5); sign('🌸 영산강 벚꽃길',2.8,0.9,-8,1.95,-83.38,0,{bg:'#fff0f5',fg:'#a8326a'});
 const water=flat(22,220,0x4fa8e0,130,-1.1,0); water.material=texMat(TEX.water,2,18,{transparent:true,opacity:.92});
 flat(22,220,0x8a7a5c,130,-2.2,0);                       // 강바닥
 box(1,2.4,220,0x8fb07a,119.6,-1.2,0); box(1,2.4,220,0x8fb07a,140.4,-1.2,0);  // 강둑
 // 도로
-flat(200,ROAD_W,0x59646b,20,0.02,ROAD_Z).material=texMat(TEX.road,50,2); flat(40,ROAD_W,0x59646b,160,0.02,ROAD_Z).material=texMat(TEX.road,10,2);
-for(let x=-76;x<180;x+=7){ if(x>118&&x<142) continue; flat(3,0.25,0xf4f4f4,x,0.04,ROAD_Z); }
+flat(200,ROAD_W,0x59646b,20,0.08,ROAD_Z).material=texMat(TEX.road,50,2); flat(40,ROAD_W,0x59646b,160,0.08,ROAD_Z).material=texMat(TEX.road,10,2);
+for(let x=-76;x<180;x+=7){ if(x>118&&x<142) continue; flat(3,0.25,0xf4f4f4,x,0.12,ROAD_Z); }
 // 다리
 box(20.8,0.6,ROAD_W,0x7c878d,130,-0.28,ROAD_Z);
 for(const z of [ROAD_Z-ROAD_W/2,ROAD_Z+ROAD_W/2]){ box(20.8,0.14,0.2,0xe9eef0,130,1.05,z); box(20.8,0.14,0.2,0xe9eef0,130,0.6,z);
@@ -265,8 +277,8 @@ for(const z of [ROAD_Z-ROAD_W/2,ROAD_Z+ROAD_W/2]){ box(20.8,0.14,0.2,0xe9eef0,13
 for(const x of [125,135]) cyl(0.9,1.1,2.4,0x9aa5aa,x,-1.5,ROAD_Z);
 sign('채수 지점',3.4,0.8,130,2.2,ROAD_Z-ROAD_W/2-0.05,0,{bg:'#12a594',fg:'#fff'}); box(0.15,2.2,0.15,0x7c878d,130,1.1,ROAD_Z-ROAD_W/2-0.1);
 // 광장과 길
-{ const m=new THREE.Mesh(new THREE.CircleGeometry(11,40),texMat(TEX.slab,5.5,5.5)); m.rotation.x=-Math.PI/2; m.position.set(0,0.02,-3); scene.add(m); }
-flat(5,10,0xeadfc8,0,0.02,6.5).material=texMat(TEX.slab,1.25,2.5); flat(22,4,0xeadfc8,18,0.02,-8).material=texMat(TEX.slab,5.5,1); flat(4,5,0xeadfc8,28,0.02,-9).material=texMat(TEX.slab,1,1.25);
+{ const m=new THREE.Mesh(new THREE.CircleGeometry(11,40),texMat(TEX.slab,5.5,5.5)); m.rotation.x=-Math.PI/2; m.position.set(0,0.11,-3); scene.add(m); }
+flat(5,9.4,0xeadfc8,0,0.07,6.2).material=texMat(TEX.slab,1.25,2.4);
 
 // 본관
 // 외벽 무늬: 흰 벽에 네모 창이 불규칙하게 박힌 실제 청사 모습
@@ -296,10 +308,10 @@ glass(8,2.6,3,16,5.4,-19.5); for(const x of [14,18]) cyl(0.25,0.25,4.1,0xdfe3e3,
 box(5,6.6,5,0x34444b,-17,3.3,-3); for(const y of [2.2,4.4,6.6]) box(5.25,0.25,5.25,0xf4f5f3,-17,y,-3); glass(4.4,1.6,5.06,-17,3.3,-3);
 const OLD_HQ=scene.children.slice(B0);
 // 주차장
-flat(24,16,0x6a747a,48,0.02,-3); for(let i=0;i<8;i++){ flat(0.15,4.2,0xf4f4f4,38.4+i*2.6,0.04,-8); flat(0.15,4.2,0xf4f4f4,38.4+i*2.6,0.04,2); }
-const PARKED=[[39.7,-8,0xffffff],[44.9,-8,0x2f3b46],[52.7,-8,0xdfe3e3],[42.3,2,0x9aa5aa],[50.1,2,0xffffff]];
+flat(24,16,0x6a747a,44,0.08,-32).material=texMat(TEX.road,6,4); for(let i=0;i<8;i++){ flat(0.15,4.2,0xf4f4f4,34.4+i*2.6,0.12,-37); flat(0.15,4.2,0xf4f4f4,34.4+i*2.6,0.12,-27); }
+const PARKED=[[35.7,-37,0xffffff],[40.9,-37,0x2f3b46],[48.7,-37,0xdfe3e3],[38.3,-27,0x9aa5aa],[46.1,-27,0xffffff]];
 for(const [x,z,c] of PARKED){ box(1.8,0.7,3.8,c,x,0.65,z); box(1.6,0.6,2,0x2a3f55,x,1.3,z-0.2); }
-box(2.4,2.4,8,0xffffff,57.4,1.5,0); box(2.42,0.5,8.02,0x2e9e6b,57.4,1.1,0); box(2.42,0.7,7,0x2a3f55,57.4,2.1,0);   // 버스
+box(2.4,2.4,8,0xffffff,53.4,1.5,-29); box(2.42,0.5,8.02,0x2e9e6b,53.4,1.1,-29); box(2.42,0.7,7,0x2a3f55,53.4,2.1,-29);   // 버스
 // 정원 정자
 for(const [x,z] of [[-27.2,4.8],[-24.8,4.8],[-27.2,7.2],[-24.8,7.2]]) cyl(0.12,0.12,2.4,0x7a5b3a,x,1.2,z,scene,6);
 { const m=new THREE.Mesh(new THREE.ConeGeometry(2.5,1,4),mat(0x6b5b4a)); m.rotation.y=Math.PI/4; m.position.set(-26,2.9,6); scene.add(m); }
@@ -315,17 +327,19 @@ glass(11,2.6,0.3,28,1.5,-10.9); box(2.4,2.6,0.12,0x2f4a52,28,1.3,-10.72); box(5,
 sign(`${CONFIG.ENV_BUILDING} · ${CONFIG.DEPT_WATER}`,8,0.9,28,6.3,-10.94,0,{bg:'#f7f7f4',fg:'#0b7d70'});
 const OLD_ENV=scene.children.slice(E0);
 // 보건동 (공사 중)
-box(16,0.3,10,0xcdbfa5,-28,0.15,-16);
-for(let i=0;i<9;i++){ box(1.6,1.3,0.12,i%2?0xffa94d:0xfff3d6,-35+i*1.75,0.75,-10.9); }
-sign('보건동 · 공사 중 (곧 열려요)',9,1,-28,2.4,-10.9,0,{bg:'#ffa94d',fg:'#3b2a00'}); box(0.15,2.4,0.15,0x7c878d,-32,1.2,-10.95); box(0.15,2.4,0.15,0x7c878d,-24,1.2,-10.95);
-// 공장 (대기 임무 준비 중)
-box(18,7,12,0xb9c1c6,-60,3.5,-8); box(18.6,0.5,12.6,0x8d979d,-60,7.2,-8);
-cyl(1.3,1.7,20,0xd9dee1,-47.5,10,-8); cyl(1.36,1.42,1.6,0xe5484d,-47.5,17.5,-8); cyl(1.48,1.54,1.6,0xe5484d,-47.5,13.5,-8);
-sign('공장 · 굴뚝 측정 지점',10,1,-60,5.6,-1.94,0,{bg:'#17323a',fg:'#fff'});
-cyl(2.7,2.7,0.2,0x5d6b71,-47.5,14,-8,scene,20); { const m=new THREE.Mesh(new THREE.TorusGeometry(2.7,0.06,6,24),mat(0x5d6b71)); m.rotation.x=Math.PI/2; m.position.set(-47.5,15.1,-8); scene.add(m); }
-for(let i=0;i<8;i++){ const a=i/8*Math.PI*2; cyl(0.05,0.05,1.1,0x5d6b71,-47.5+Math.cos(a)*2.7,14.6,-8+Math.sin(a)*2.7,scene,5); }
-for(const x of [-47.8,-47.2]) box(0.06,14,0.06,0x5d6b71,x,7,-6.2); for(let y=0.5;y<14;y+=0.6) box(0.6,0.05,0.05,0x5d6b71,-47.5,y,-6.2);   // 사다리
-box(0.5,0.5,0.4,0x2b2b2b,-47.5,15,-6.55);                                                                                              // 측정구
+box(16,0.3,10,0xcdbfa5,-32,0.15,-55);
+for(let i=0;i<9;i++){ box(1.6,1.3,0.12,i%2?0xffa94d:0xfff3d6,-39+i*1.75,0.75,-49.9); }
+sign('보건동 · 공사 중 (곧 열려요)',9,1,-32,2.4,-49.9,0,{bg:'#ffa94d',fg:'#3b2a00'}); box(0.15,2.4,0.15,0x7c878d,-36,1.2,-49.95); box(0.15,2.4,0.15,0x7c878d,-28,1.2,-49.95);
+// 공장과 굴뚝 (도로 건너 동남쪽 구석). FX, FZ가 굴뚝 위치예요.
+const FX=100.5, FZ=54;
+box(18,7,12,0xb9c1c6,FX-12.5,3.5,FZ); box(18.6,0.5,12.6,0x8d979d,FX-12.5,7.2,FZ);
+cyl(1.3,1.7,20,0xd9dee1,FX,10,FZ); cyl(1.36,1.42,1.6,0xe5484d,FX,17.5,FZ); cyl(1.48,1.54,1.6,0xe5484d,FX,13.5,FZ);
+sign('공장 · 굴뚝 측정 지점',10,1,FX-12.5,5.6,FZ-6.06,Math.PI,{bg:'#17323a',fg:'#fff'});
+cyl(2.7,2.7,0.2,0x5d6b71,FX,14,FZ,scene,20); { const m=new THREE.Mesh(new THREE.TorusGeometry(2.7,0.06,6,24),mat(0x5d6b71)); m.rotation.x=Math.PI/2; m.position.set(FX,15.1,FZ); scene.add(m); }
+for(let i=0;i<8;i++){ const a=i/8*Math.PI*2; cyl(0.05,0.05,1.1,0x5d6b71,FX+Math.cos(a)*2.7,14.6,FZ+Math.sin(a)*2.7,scene,5); }
+for(const x of [FX-0.3,FX+0.3]) box(0.06,14,0.06,0x5d6b71,x,7,FZ-1.8); for(let y=0.5;y<14;y+=0.6) box(0.6,0.05,0.05,0x5d6b71,FX,y,FZ-1.8);   // 사다리 (도로 쪽)
+box(0.5,0.5,0.4,0x2b2b2b,FX,15,FZ-1.45);                                                                                                 // 측정구
+flat(6,25,0x59646b,FX+6,0.08,31.5).material=texMat(TEX.road,1.5,6); flat(16,8,0x59646b,FX+1,0.08,FZ-8).material=texMat(TEX.road,4,2);   // 공장 진입로
 const SMOKE=Array.from({length:7},()=>{ const m=new THREE.Mesh(new THREE.SphereGeometry(1.2,10,8),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.5,depthWrite:false})); scene.add(m); return m; });
 // 안내판
 box(0.2,2,0.2,0x7a5b3a,-9,1,2); sign('연구원 이야기',2.6,1.2,-9,1.9,2.12,0,{bg:'#fff7e0',fg:'#7a4b00'});
@@ -334,10 +348,10 @@ for(let i=0;i<14;i++){ const a=i/14*Math.PI*2+0.3, r=215+(i%3)*18, h=40+(i*37%30
   const m=new THREE.Mesh(new THREE.ConeGeometry(55+(i%4)*10,h,7),new THREE.MeshLambertMaterial({color:i%2?0x6f9f7c:0x7dae86,flatShading:true})); m.position.set(40+Math.cos(a)*r,h/2-2,Math.sin(a)*r); scene.add(m); }
 
 /* 충돌 */
-const WALLS=[ [-12,12,-27,-17],[20,36,-21,-11],[-36,-20,-21,-10.6],[-69,-51,-14,-2],[-49.5,-45.5,-10,-6],[6.4,9.6,-15.4,-14.6],
-  [-20,-12,-27,-19],[-4,4,-17,-15.7],[-19.5,-14.5,-5.5,-0.5],[56.2,58.6,-4,4], ...PARKED.map(([x,z])=>[x-0.9,x+0.9,z-1.9,z+1.9]) ];
+const WALLS=[ [-12,12,-27,-17],[20,36,-21,-11],[-40,-24,-60,-49.6],[FX-21.5,FX-3.5,FZ-6,FZ+6],[FX-2,FX+2,FZ-2,FZ+2],[6.4,9.6,-15.4,-14.6],
+  [-20,-12,-27,-19],[-4,4,-17,-15.7],[-19.5,-14.5,-5.5,-0.5],[52.2,54.6,-33,-25], ...PARKED.map(([x,z])=>[x-0.9,x+0.9,z-1.9,z+1.9]) ];
 function blocked(x,z,r){
-  if(x<-100+r||x>190-r||z<-90+r||z>90-r) return true;
+  if(x<-100+r||x>190-r||z<-89.5+r||z>90-r) return true;
   for(const w of WALLS) if(x>w[0]-r&&x<w[1]+r&&z>w[2]-r&&z<w[3]+r) return true;
   if(x>RIVER_X1-r&&x<RIVER_X2+r){ const half=ROAD_W/2-0.25-r; if(Math.abs(z-ROAD_Z)>half) return true; }
   return false;
@@ -351,11 +365,11 @@ const SIGNS=[
   {x:-36,z:27,e:'🌱',t:'건강한 땅',d:'놀이터와 공원의 흙에 중금속 같은 해로운 물질이 없는지 살펴요. 아이들이 뛰노는 땅을 지켜요.'},
   {x:-74,z:24,e:'🐄',t:'동물 건강',d:'가축 전염병을 검사하고 축산물이 안전한지 확인해요. 사람과 동물의 건강은 이어져 있기 때문이에요.'},
 ].map(s=>{ box(0.18,1.7,0.18,0x7a5b3a,s.x,0.85,s.z); box(2.5,1.25,0.14,0xc9a26b,s.x,1.95,s.z);
-  for(const r of [0,Math.PI]) sign(s.e+' '+s.t,2.3,1.05,s.x,1.95,s.z+(r?-0.08:0.08),r,{bg:'#fff7e0',fg:'#5b3a12'}); return {...s,read:false}; });
+  for(const r of [0,Math.PI]) sign(s.e+' '+s.t,2.3,1.05,s.x,1.95,s.z+(r?-0.12:0.12),r,{bg:'#fff7e0',fg:'#5b3a12'}); return {...s,read:false}; });
 // 나무
 { let seed=7; const rnd=()=>{ seed=(seed*16807)%2147483647; return seed/2147483647; };
   const spots=[]; while(spots.length<120){ const x=-95+rnd()*280, z=-85+rnd()*170;
-    if(Math.abs(z-ROAD_Z)<8||Math.hypot(x,z+3)<16||(x>-42&&x<62&&z>-13&&z<8)||(z<-100)||(x>-26&&x<46&&z<-14&&z>-82)||SIGNS.some(s=>Math.hypot(x-s.x,z-s.z)<5)||Math.hypot(x+47.5,z-4)<14||blocked(x,z,4)||(x>114&&x<146)||(Math.abs(x)<5&&z>0&&z<14)||(x>4&&x<32&&z>-12&&z<-4)) continue;
+    if(Math.abs(z-ROAD_Z)<8||Math.hypot(x,z+3)<16||(x>-42&&x<62&&z>-13&&z<8)||(z<-82)||(x>-44&&x<60&&z<-14&&z>-82)||SIGNS.some(s=>Math.hypot(x-s.x,z-s.z)<5)||Math.hypot(x-FX,z-FZ)<16||(x>FX-2&&x<FX+12&&z>18&&z<50)||blocked(x,z,4)||(x>114&&x<146)||(Math.abs(x)<5&&z>0&&z<14)||(x>4&&x<32&&z>-12&&z<-4)) continue;
     spots.push([x,z,0.85+rnd()*0.9,rnd()]); }
   // 줄기와 잎 뭉치를 한꺼번에 그려서 휴대폰에서도 가볍게 (단풍 든 나무와 소나무)
   const d=new THREE.Object3D(), col=new THREE.Color(), PAL=[0x4f9d58,0x5fae62,0x3f8a4f,0x7fb857,0xd9a43a,0xd8742f,0xc9492f,0xe0b84a];
@@ -371,7 +385,7 @@ const SIGNS=[
   // 풀숲과 꽃
   const bush=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshLambertMaterial({flatShading:true}),170); let bi=0;
   const FL=[0x5fae62,0x4f9d58,0x7fb857,0xf2a7c3,0xf6d55c,0xffffff];
-  while(bi<170){ const x=-95+rnd()*280, z=-85+rnd()*170; if(Math.abs(z-ROAD_Z)<5||blocked(x,z,2)||(x>114&&x<146)||(x>-26&&x<46&&z<-12&&z>-82)||SIGNS.some(s=>Math.hypot(x-s.x,z-s.z)<3)||Math.hypot(x,z+3)<12||(x>36&&x<61&&z>-12&&z<6)) continue;
+  while(bi<170){ const x=-95+rnd()*280, z=-85+rnd()*170; if(Math.abs(z-ROAD_Z)<5||blocked(x,z,2)||(x>114&&x<146)||(x>-44&&x<60&&z<-12&&z>-82)||(z<-84)||(x>FX-2&&x<FX+12&&z>18&&z<50)||SIGNS.some(s=>Math.hypot(x-s.x,z-s.z)<3)||Math.hypot(x,z+3)<12||(x>36&&x<61&&z>-12&&z<6)) continue;
     const fl=rnd()<0.3, s=fl?0.18+rnd()*0.12:0.5+rnd()*0.6; d.position.set(x,s*0.5,z); d.scale.set(s,s*0.7,s); d.rotation.set(0,rnd()*6,0); d.updateMatrix(); bush.setMatrixAt(bi,d.matrix);
     col.setHex(fl?FL[3+Math.floor(rnd()*3)]:FL[Math.floor(rnd()*3)]); bush.setColorAt(bi,col); bi++; }
   bush.castShadow=true; bush.receiveShadow=true; scene.add(bush); }
@@ -400,6 +414,36 @@ const npc=makePerson({coat:0xe9f6ff,hair:0x5a4632,pants:0x3d3d3d}); npc.g.positi
 { const l=label('선배 연구원',{bg:'rgba(18,165,148,.95)',fg:'#fff'}); l.position.y=2.75; npc.g.add(l); }
 const boss=makePerson({coat:0x2b3a55,hair:0x9aa0a6,pants:0x1f2a40}); boss.g.position.set(5,0,-7); boss.g.rotation.y=-0.3;
 { const l=label('원장님',{bg:'rgba(200,16,46,.92)',fg:'#fff'}); l.position.y=2.75; boss.g.add(l); }
+// 말풍선: 머리 위에 잠깐 떴다가 사라져요
+const BUBS=[];
+function bubble(o,text,y=3.5){ if(o.userData.bub) o.remove(o.userData.bub); const W=Math.min(10,1.4+text.length*0.4), l=label(text,{w:Math.round(140*W),bg:'rgba(255,255,255,.97)'});
+  l.scale.set(W,0.8,1); l.position.y=y; o.add(l); o.userData.bub=l; o.userData.bt=3.6; if(!BUBS.includes(o)) BUBS.push(o); }
+/* ───────── 동물 친구들 ───────── */
+function sph(r,c,x,y,z,p,sx=1,sy=1,sz=1){ const m=new THREE.Mesh(new THREE.SphereGeometry(r,10,8),mat(c)); m.position.set(x,y,z); m.scale.set(sx,sy,sz); p.add(m); return m; }
+function cone(r,h,c,x,y,z,p){ const m=new THREE.Mesh(new THREE.ConeGeometry(r,h,6),mat(c)); m.position.set(x,y,z); p.add(m); return m; }
+function quad(g,c,s,o={}){   // 네발 동물: 몸통, 머리, 귀, 눈, 다리, 꼬리
+  sph(0.5*s,c,0,0.55*s,0,g,0.8,0.75,1.25); sph(0.34*s,o.head||c,0,0.9*s,0.62*s,g); sph(0.06*s,o.nose||0x222222,0,0.86*s,0.95*s,g);
+  for(const x of [-1,1]){ if(o.ear==='long') sph(0.09*s,c,x*0.14*s,1.38*s,0.55*s,g,1,3.2,1); else if(o.ear==='round') sph(0.11*s,c,x*0.22*s,1.18*s,0.58*s,g); else cone(0.1*s,0.24*s,c,x*0.2*s,1.24*s,0.58*s,g);
+    sph(0.04*s,0x222222,x*0.13*s,0.96*s,0.92*s,g); for(const z of [-0.4,0.4]) cyl(0.07*s,0.07*s,0.32*s,c,x*0.24*s,0.16*s,z*s,g,6); }
+  if(o.tail==='bushy') sph(0.2*s,c,0,0.95*s,-0.7*s,g,0.8,1.9,0.8); else if(o.tail==='pom') sph(0.13*s,0xffffff,0,0.6*s,-0.66*s,g); else if(o.tail!=='none'){ const t=cyl(0.05*s,0.03*s,0.5*s,c,0,0.8*s,-0.7*s,g,5); t.rotation.x=-0.7; } }
+function bird(g,c,s,beak){ sph(0.3*s,c,0,0.4*s,0,g,0.9,0.9,1.3); sph(0.2*s,c,0,0.68*s,0.3*s,g); const b=cone(0.07*s,0.2*s,beak,0,0.66*s,0.54*s,g); b.rotation.x=Math.PI/2;
+  for(const x of [-1,1]){ sph(0.03*s,0x222222,x*0.1*s,0.74*s,0.44*s,g); cyl(0.02*s,0.02*s,0.2*s,beak,x*0.1*s,0.1*s,0,g,4); } }
+const ANIMAL_DEFS=[
+  ['강아지','멍멍! 환경을 지켜줘서 고마워~',g=>quad(g,0xc98b4a,1,{ear:'round',head:0xd9a066})],
+  ['고양이','야옹~ 공기가 맑아져서 기분 좋아!',g=>quad(g,0x8d8f94,0.8,{nose:0xf2a7c3})],
+  ['다람쥐','도토리 숲을 지켜줘서 고마워!',g=>quad(g,0xb5651d,0.5,{ear:'round',tail:'bushy'})],
+  ['토끼','깡충! 풀밭이 깨끗해서 좋아~',g=>quad(g,0xffffff,0.65,{ear:'long',tail:'pom',nose:0xf2a7c3})],
+  ['고라니','맑은 물을 마시게 해 줘서 고마워!',g=>quad(g,0xb98b5e,1.25,{ear:'long',tail:'pom'})],
+  ['고슴도치','땅이 건강해져서 고마워!',g=>{ quad(g,0x8a6f52,0.55,{ear:'round',tail:'none',head:0xe8d2b0}); for(let i=0;i<12;i++) cone(0.05,0.2,0x4a3a2a,(i%3-1)*0.13,0.5,(Math.floor(i/3)-1.5)*0.16,g); }],
+  ['참새','짹짹! 하늘이 맑아졌어, 고마워~',g=>bird(g,0x9b6b43,0.8,0x444444)],
+  ['오리','꽥꽥! 강물이 깨끗해서 행복해~',g=>bird(g,0xffffff,1.3,0xf5a623)],
+  ['개구리','개굴! 물이 맑아서 살기 좋아~',g=>{ sph(0.3,0x5fae62,0,0.25,0,g,1.1,0.7,1.2); for(const x of [-1,1]){ sph(0.1,0x5fae62,x*0.15,0.46,0.18,g); sph(0.05,0x222222,x*0.15,0.5,0.25,g); sph(0.12,0x4f9d58,x*0.3,0.1,-0.15,g,1,0.6,1.6); } }],
+  ['나비','팔랑팔랑~ 꽃향기가 좋아졌어, 고마워!',g=>{ sph(0.06,0x333333,0,0,0,g,1,1,3); g.userData.wings=[]; for(const x of [-1,1]){ const w=new THREE.Mesh(new THREE.CircleGeometry(0.28,10),new THREE.MeshLambertMaterial({color:0xf6c445,side:THREE.DoubleSide})); w.position.x=x*0.26; w.rotation.x=-Math.PI/2; const piv=new THREE.Group(); piv.add(w); g.add(piv); g.userData.wings.push([piv,x]); } }],
+];
+const ANIMALS=ANIMAL_DEFS.map(([name,msg,build])=>{ const g=new THREE.Group(); build(g); scene.add(g); let x,z,n=0;
+  do{ if(name==='오리'||name==='개구리'){ x=112+Math.random()*5; z=-70+Math.random()*75; } else { x=-80+Math.random()*190; z=-80+Math.random()*150; } n++; }
+  while(n<300&&(blocked(x,z,2.5)||Math.abs(z-ROAD_Z)<7||x>117.5||Math.hypot(x,z+3)<9||(x>-44&&x<60&&z<-12&&z>-82)));
+  g.position.set(x,0,z); g.rotation.y=Math.random()*6; return {name,msg,g,fly:name==='나비',hx:x,hz:z,tx:x,tz:z,wait:Math.random()*3,hop:0,met:false}; });
 
 /* ───────── 자동차 ───────── */
 const car=new THREE.Group(); scene.add(car);
@@ -418,7 +462,7 @@ function makeCar(text){ const c=new THREE.Group(); scene.add(c);
   for(const x of [-0.6,0.6]) box(0.4,0.2,0.06,0xffe38a,x,0.95,2.01,c);
   sign(text,2.6,0.42,0.962,0.98,0,Math.PI/2,{bg:'#ffffff',fg:'#1f5f99'},c); sign(text,2.6,0.42,-0.962,0.98,0,-Math.PI/2,{bg:'#ffffff',fg:'#1f5f99'},c);
   cyl(0.05,0.05,1.4,0x7c878d,0.6,2.6,-1,c,6); return c; }
-const car2=makeCar('대기 측정차량'); car2.position.set(-7,0,ROAD_Z-1.5); car2.rotation.y=-Math.PI/2;
+const car2=makeCar('대기 측정차량'); car2.position.set(-7,0,ROAD_Z+1.5); car2.rotation.y=Math.PI/2;
 function blob(r,parent,sy=1){ const m=new THREE.Mesh(new THREE.CircleGeometry(r,20),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.2,depthWrite:false})); m.rotation.x=-Math.PI/2; m.scale.y=sy; m.position.y=0.07; parent.add(m); }
 
 /* ───────── 줍는 장비 ───────── */
@@ -444,17 +488,17 @@ const arrowGeo=new THREE.ConeGeometry(0.45,1.3,3); arrowGeo.rotateX(Math.PI/2); 
 const arrow=new THREE.Mesh(arrowGeo,new THREE.MeshBasicMaterial({color:0xffc53d})); scene.add(arrow);
 const flag=new THREE.Group(); cyl(0.07,0.07,4,0x7c878d,0,2,0,flag,8); box(1.6,0.9,0.05,0x12a594,0.85,3.5,0,flag); flag.position.set(23,0,-9); flag.visible=false; scene.add(flag);
 
-const flag2=new THREE.Group(); cyl(0.07,0.07,4,0x7c878d,0,2,0,flag2,8); box(1.6,0.9,0.05,0x3b82c4,0.85,3.5,0,flag2); flag2.position.set(-43.5,0,-3); flag2.visible=false; scene.add(flag2);
-const P={ npc:[-3,-8], bridge:[130,ROAD_Z], door:[28,-8.6], board:[8,-13], info:[-9,3.6], stack:[-47.5,-3.2], boss:[5,-7] };
+const flag2=new THREE.Group(); cyl(0.07,0.07,4,0x7c878d,0,2,0,flag2,8); box(1.6,0.9,0.05,0x3b82c4,0.85,3.5,0,flag2); flag2.position.set(FX+4.5,0,FZ-5); flag2.visible=false; scene.add(flag2);
+const P={ npc:[-3,-8], bridge:[130,ROAD_Z], door:[28,-8.6], board:[8,-13], info:[-9,3.6], stack:[FX,FZ-5], boss:[5,-7] };
 
 /* ───────── 게임 상태 ───────── */
 const G={ name:'', step:0, driving:false, yaw:0, lock:true, waitLeft:0,
   score:{equip:0,depth:0,bottle:0,order:0,grade:0}, bod:0, receipt:'',
-  air:{equip:0,haul:0,gauge:0,filter:0,weigh:0,judge:0}, dust:0, done:{w:false,a:false}, cert:false };
+  air:{equip:0,haul:0,gauge:0,filter:0,weigh:0,judge:0}, dust:0, done:{w:false,a:false}, cert:false, vy:0 };
 const STEPS=[
   {t:'선배 연구원에게 가서 임무를 고르세요', at:()=>G.cert?null:(G.done.w&&G.done.a)?P.boss:P.npc},
   {t:'도로에 세워 둔 수질 채수차량에 타세요', at:()=>[car.position.x,car.position.z]},
-  {t:'차를 몰고 동쪽 강의 다리로! 가는 길에 장비 3개를 챙기세요', at:()=>P.bridge},
+  {t:'차를 몰고 동쪽 강의 다리로! 다리 근처에 흩어진 장비 3개를 찾으세요', at:()=>P.bridge},
   {t:'다리 위에서 강물을 채취하세요', at:()=>P.bridge},
   {t:'차를 타고 환경동으로 돌아가 시료를 접수하세요', at:()=>P.door},
   {t:'분석 중이에요. 마을을 둘러보며 기다리세요', at:()=>null},
@@ -462,7 +506,7 @@ const STEPS=[
   {t:'본관 앞 게시판에 결과를 보고하세요', at:()=>P.board},
   {t:'수질 임무 완료! 선배 연구원에게 다음 임무를 받으세요', at:()=>P.npc},
   {t:'도로에 세워 둔 대기 측정차량에 타세요', at:()=>[car2.position.x,car2.position.z]},
-  {t:'차를 몰고 서쪽 공장 굴뚝으로! 가는 길에 안전장비 3개를 챙기세요', at:()=>P.stack},
+  {t:'차를 몰고 동남쪽 공장 굴뚝으로! 공장 근처에 흩어진 안전장비 3개를 찾으세요', at:()=>P.stack},
   {t:'굴뚝 아래에서 측정을 시작하세요', at:()=>P.stack},
   {t:'차를 타고 환경동으로 돌아가 필터를 접수하세요', at:()=>P.door},
   {t:'분석 중이에요. 마을을 둘러보며 기다리세요', at:()=>null},
@@ -803,16 +847,22 @@ let camId=null,camX=0;
 canvas.addEventListener('pointerdown',e=>{ camId=e.pointerId; camX=e.clientX; canvas.setPointerCapture(e.pointerId); });
 canvas.addEventListener('pointermove',e=>{ if(e.pointerId!==camId) return; G.yaw-=(e.clientX-camX)*0.006; camX=e.clientX; });
 const camEnd=e=>{ if(e.pointerId===camId) camId=null; }; canvas.addEventListener('pointerup',camEnd); canvas.addEventListener('pointercancel',camEnd);
-const keys={}; addEventListener('keydown',e=>{ if(e.target.tagName==='INPUT') return; keys[e.code]=true; if((e.code==='KeyE'||e.code==='Space')&&curAct&&!G.lock) curAct.fn(); });
+const keys={}; addEventListener('keydown',e=>{ if(e.target.tagName==='INPUT') return; keys[e.code]=true; if(e.code==='KeyE'&&curAct&&!G.lock) curAct.fn(); if(e.code==='Space') $('#jump').click(); });
 addEventListener('keyup',e=>{ keys[e.code]=false; });
-$('#wave').addEventListener('click',()=>{ if(G.driving) return; player.wave=1.4; if(dist(player.g.position,P.npc)<7) setTimeout(()=>npc.wave=1.4,400); });
+function doWave(){ if(G.driving||G.lock) return; player.wave=1.4; const p=player.g.position;
+  if(dist(p,P.npc)<7) setTimeout(()=>{ npc.wave=1.4; bubble(npc.g,`안녕하세요, ${G.name} 연구원!`); },400);
+  if(dist(p,P.boss)<7) setTimeout(()=>{ boss.wave=1.4; bubble(boss.g,'반가워요! 오늘도 수고가 많아요.'); },400);
+  for(const a of ANIMALS) if(dist(p,[a.g.position.x,a.g.position.z])<5.5){ a.hop=1.2; bubble(a.g,a.msg,a.fly?1.2:2.4);
+    if(!a.met){ a.met=true; toast(`${a.name} 친구와 인사했어요! (${ANIMALS.filter(x=>x.met).length}/${ANIMALS.length})`); } } }
+$('#wave').addEventListener('click',doWave);
+$('#jump').addEventListener('click',()=>{ if(!G.driving&&!G.lock&&player.g.position.y<=0.01) G.vy=8; });
 $('#tskip').addEventListener('click',()=>{ if(G.step===5||G.step===13) G.waitLeft=0; });
 
 /* ───────── 행동 버튼 ───────── */
 const dist=(p,a)=>Math.hypot(p.x-a[0],p.z-a[1]);
 let drv=car;
 function board(c){ drv=c; G.driving=true; player.g.visible=false;
-  if(G.step===9&&c===car2){ setStep(10); ITEMS_A.forEach(i=>{ if(!i.got) i.g.visible=true; }); toast('조이스틱으로 운전해요. 서쪽 공장 굴뚝까지!'); }
+  if(G.step===9&&c===car2){ setStep(10); ITEMS_A.forEach(i=>{ if(!i.got) i.g.visible=true; }); toast('조이스틱으로 운전해요. 도로 건너 동남쪽 공장까지!'); }
   if(G.step===1&&c===car){ setStep(2); ITEMS.forEach(i=>{ if(!i.got) i.g.visible=true; }); toast('조이스틱으로 운전해요. 동쪽 강의 다리까지!'); } }
 function getOff(){ const a=drv.rotation.y; for(const s of [1,-1,0]){ const x=drv.position.x+Math.cos(a)*2.3*s, z=drv.position.z-Math.sin(a)*2.3*s; if(!blocked(x,z,0.5)||s===0){ player.g.position.set(x,0,z); break; } }
   G.driving=false; player.g.visible=true; player.g.rotation.y=drv.rotation.y; if(G.step===2&&dist(car.position,P.bridge)<14) setStep(3);
@@ -820,7 +870,7 @@ function getOff(){ const a=drv.rotation.y; for(const s of [1,-1,0]){ const x=drv
 /* ───────── 도장과 임명장 ───────── */
 function stampsHtml(nw){ return `<div class="stamps">${[['w','수질<br>연구과'],['a','대기<br>연구과']].map(([k,t])=>`<div class="stamp ${G.done[k]?'on':''} ${k===nw?'new':''}"><span>${t}${G.done[k]?'<br>완료':''}</span></div>`).join('')}<div class="stamp"><span>보건<br>준비 중</span></div></div>`; }
 function stampBook(){ if(G.lock) return; const n=(G.done.w?1:0)+(G.done.a?1:0);
-  openMini(`<div class="card"><h3>연구 도장판</h3><p>임무를 끝낼 때마다 도장을 받아요.<br>모두 모으면 원장님이 임명장을 주세요. (${n}/2)</p>${stampsHtml()}<p style="font-weight:700">🪧 마을에서 읽은 팻말 ${SIGNS.filter(x=>x.read).length} / ${SIGNS.length}</p><button class="go" id="ok">닫기</button></div>`); $('#ok').addEventListener('click',closeMini); }
+  openMini(`<div class="card"><h3>연구 도장판</h3><p>임무를 끝낼 때마다 도장을 받아요.<br>모두 모으면 원장님이 임명장을 주세요. (${n}/2)</p>${stampsHtml()}<p style="font-weight:700">🪧 마을에서 읽은 팻말 ${SIGNS.filter(x=>x.read).length} / ${SIGNS.length}<br>🐾 인사한 동물 친구 ${ANIMALS.filter(x=>x.met).length} / ${ANIMALS.length}</p><button class="go" id="ok">닫기</button></div>`); $('#ok').addEventListener('click',closeMini); }
 $('#stampBtn').addEventListener('click',stampBook);
 function bossTalk(){ const n=(G.done.w?1:0)+(G.done.a?1:0);
   if(n<2){ say([['원장님',`반가워요, {n} 연구원! 임무 도장을 모두 모아 오면 임명장을 줄게요. 지금은 ${n}/2개예요.`]]); return; }
@@ -849,11 +899,14 @@ function missionSelect(){ const d=G.done, tag=x=>x?'<span class="dn">완료 ✓<
     <button class="opt" id="mx" style="width:100%;margin-top:8px">나중에 할게요</button></div>`);
   $('#mw').addEventListener('click',()=>{ closeMini(); startMission('w'); }); $('#ma').addEventListener('click',()=>{ closeMini(); startMission('a'); }); $('#mx').addEventListener('click',closeMini);
 }
+// 장비를 현장 근처에 무작위로 흩어 놓아요. ok(x,z)가 참인 곳에만 놓고, 서로 6 이상 떨어뜨려요.
+function scatter(list,ok){ const used=[]; for(const it of list){ let x,z,n=0; do{ [x,z]=ok(); n++; } while(n<300&&(blocked(x,z,2)||used.some(u=>Math.hypot(u[0]-x,u[1]-z)<6)));
+    used.push([x,z]); it.x=x; it.z=z; it.g.position.x=x; it.g.position.z=z; it.got=false; it.g.visible=false; } }
 function startMission(k){
-  if(k==='w'){ ITEMS.forEach(i=>{ i.got=false; i.g.visible=false; }); G.score={equip:0,depth:0,bottle:0,order:0,grade:0}; bridgeHint=false; iceBox.visible=false;
-    say([[SENIOR,'수질 임무예요, {n} 연구원! 강물이 깨끗한지 검사해 달라는 의뢰가 들어왔어요.'],[SENIOR,'도로의 초록 줄 채수차량을 타고 동쪽 강의 다리로 가세요. 가는 길에 장비 3개도 꼭 챙기고요!']],()=>setStep(1)); }
-  else { ITEMS_A.forEach(i=>{ i.got=false; i.g.visible=false; }); G.air={equip:0,haul:0,gauge:0,filter:0,weigh:0,judge:0};
-    say([[SENIOR,'대기 임무예요, {n} 연구원! 공장 굴뚝에서 나오는 연기에 먼지가 얼마나 있는지 검사해야 해요.'],[SENIOR,'도로의 파란 줄 측정차량을 타고 서쪽 공장으로 가세요. 굴뚝은 높고 장비는 무거우니 안전장비를 꼭 챙기고요!']],()=>setStep(9)); }
+  if(k==='w'){ scatter(ITEMS,()=>[86+Math.random()*31,-14+Math.random()*44]); G.score={equip:0,depth:0,bottle:0,order:0,grade:0}; bridgeHint=false; iceBox.visible=false;
+    say([[SENIOR,'수질 임무예요, {n} 연구원! 강물이 깨끗한지 검사해 달라는 의뢰가 들어왔어요.'],[SENIOR,'도로의 초록 줄 채수차량을 타고 동쪽 강의 다리로 가세요. 장비 3개가 다리 근처 어딘가에 흩어져 있으니 꼭 찾아서 챙기고요!']],()=>setStep(1)); }
+  else { scatter(ITEMS_A,()=>{ const a=Math.random()*6.28, r=9+Math.random()*17; return [Math.min(116,FX+Math.cos(a)*r),Math.max(24,FZ+Math.sin(a)*r)]; }); G.air={equip:0,haul:0,gauge:0,filter:0,weigh:0,judge:0};
+    say([[SENIOR,'대기 임무예요, {n} 연구원! 공장 굴뚝에서 나오는 연기에 먼지가 얼마나 있는지 검사해야 해요.'],[SENIOR,'도로의 파란 줄 측정차량을 타고 도로 건너 동남쪽 공장으로 가세요. 안전장비 3개가 공장 근처에 흩어져 있으니 꼭 찾아서 챙기고요!']],()=>setStep(9)); }
 }
 function getAction(){
   if(G.driving) return {label:'차에서 내리기',fn:getOff};
@@ -877,6 +930,7 @@ function getAction(){
   if(dist(p,[car.position.x,car.position.z])<4.6) return {label:'차에 타기',fn:()=>board(car)};
   for(const s of SIGNS) if(dist(p,[s.x,s.z])<3.6) return {label:'팻말 읽기',fn:()=>{ s.read=true; const n=SIGNS.filter(x=>x.read).length;
     openMini(`<div class="card"><div style="font-size:54px">${s.e}</div><h3>${s.t}</h3><div class="fact">${s.d}</div><p style="font-weight:700">읽은 팻말 ${n} / ${SIGNS.length}${n===SIGNS.length?' · 모두 찾았어요! 🎉':''}</p><button class="go" id="ok">닫기</button></div>`); $('#ok').addEventListener('click',closeMini); }};
+  for(const a of ANIMALS) if(dist(p,[a.g.position.x,a.g.position.z])<4) return {label:a.name+'에게 인사',fn:doWave};
   if(dist(p,P.info)<3.6) return {label:'안내판 읽기',fn:()=>{ const f=FACTS[factI++%FACTS.length]; openMini(`<div class="card"><h3>연구원 이야기</h3><div class="fact">${f}</div><button class="go" id="ok">닫기</button></div>`); $('#ok').addEventListener('click',closeMini); }};
   return null;
 }
@@ -911,8 +965,21 @@ function frame(now){
     if(d>7){ arrow.visible=true; const k=G.driving?4.2:2.2; arrow.position.set(ent.position.x+dx/d*k,0.12,ent.position.z+dz/d*k); arrow.rotation.y=Math.atan2(dx,dz); } }
   if(flag.visible) flag.rotation.y=Math.sin(time*2)*0.15;
   sun.position.set(ent.position.x+38,58,ent.position.z+26); sun.target.position.set(ent.position.x,0,ent.position.z); sun.target.updateMatrixWorld();
-  water.material.map.offset.y=time*0.04;
-  for(const [i,s] of SMOKE.entries()){ const k=(time*0.16+i/SMOKE.length)%1; s.position.set(-47.5+k*k*9,20.6+k*15,-8+Math.sin(i*2.1)*k*2); s.scale.setScalar(0.9+k*3.2); s.material.opacity=0.55*(1-k); }
+  water.material.map.offset.y=time*0.04; nriver.material.map.offset.x=time*0.03;
+  // 점프
+  if(!G.driving){ G.vy-=22*dt; player.g.position.y+=G.vy*dt; if(player.g.position.y<=0){ player.g.position.y=0; G.vy=0; } }
+  // 말풍선
+  for(let i=BUBS.length-1;i>=0;i--){ const o=BUBS[i]; o.userData.bt-=dt; if(o.userData.bt<=0){ o.remove(o.userData.bub); o.userData.bub=null; BUBS.splice(i,1); } }
+  // 동물 친구들: 집 근처를 어슬렁거리다가 연구원이 다가오면 쳐다봐요
+  for(const a of ANIMALS){ const g=a.g; a.wait-=dt;
+    if(a.wait<=0){ a.wait=2+Math.random()*4; const ang=Math.random()*6.28, r=1+Math.random()*4, nx=a.hx+Math.cos(ang)*r, nz=a.hz+Math.sin(ang)*r; if(!blocked(nx,nz,1.5)&&Math.abs(nz-ROAD_Z)>6){ a.tx=nx; a.tz=nz; } }
+    const dx=a.tx-g.position.x, dz=a.tz-g.position.z, d=Math.hypot(dx,dz), px=player.g.position.x-g.position.x, pz=player.g.position.z-g.position.z, near=!G.driving&&Math.hypot(px,pz)<5;
+    if(near) g.rotation.y=lerpAng(g.rotation.y,Math.atan2(px,pz),dt*6);
+    else if(d>0.15){ const sp=(a.fly?1.6:1.1)*dt; g.position.x+=dx/d*sp; g.position.z+=dz/d*sp; g.rotation.y=lerpAng(g.rotation.y,Math.atan2(dx,dz),dt*5); }
+    a.hop=Math.max(0,a.hop-dt);
+    g.position.y=a.fly?1.3+Math.sin(time*2+a.hx)*0.4:a.hop>0?Math.abs(Math.sin(a.hop*10))*0.5:(!near&&d>0.15)?Math.abs(Math.sin(time*8+a.hx))*0.12:0;
+    if(g.userData.wings) for(const [p,s] of g.userData.wings) p.rotation.z=s*Math.sin(time*14)*0.9; }
+  for(const [i,s] of SMOKE.entries()){ const k=(time*0.16+i/SMOKE.length)%1; s.position.set(FX+k*k*9,20.6+k*15,FZ+Math.sin(i*2.1)*k*2); s.scale.setScalar(0.9+k*3.2); s.material.opacity=0.55*(1-k); }
   // 행동 버튼
   const a=G.lock?null:getAction(); if((a&&a.label)!==(curAct&&curAct.label)){ actEl.style.display=a?'block':'none'; if(a) actEl.textContent=a.label; } curAct=a;
   // 카메라
@@ -955,7 +1022,7 @@ new GLTFLoader().load(HQ_MODEL.file, gltf=>{ const m=gltf.scene; const sz=new TH
   m.traverse(o=>{ if(!o.isMesh) return; const p=o.geometry.attributes.position; for(let i=0;i<p.count;i++){ v.fromBufferAttribute(p,i).applyMatrix4(o.matrixWorld); if(v.y>2&&!inCut(v.x,v.z)) cells.add(Math.floor(v.x/C)+','+Math.floor(v.z/C)); } });
   // 모형에 맞춰 실험동 입구와 깃발, 길 위치를 옮겨요
   P.door[0]=19; P.door[1]=-26.5; flag.position.set(24,0,-25); DOOR_LIMIT=52;
-  flat(6,16,0xeadfc8,19,0.025,-21).material=texMat(TEX.slab,1.5,4); flat(14,4,0xeadfc8,12,0.025,-13.5).material=texMat(TEX.slab,3.5,1);
+  flat(6,16,0xeadfc8,19,0.08,-21).material=texMat(TEX.slab,1.5,4); flat(14,4,0xeadfc8,12,0.15,-13.5).material=texMat(TEX.slab,3.5,1);
   { const l=label('환경 실험동 입구 (시료 접수)',{bg:'rgba(18,165,148,.95)',fg:'#fff'}); l.scale.set(6.4,1.1,1); l.position.set(19,5.2,-28); scene.add(l); }
   for(const k of cells){ const [cx,cz]=k.split(',').map(Number); WALLS.push([cx*C,cx*C+C,cz*C,cz*C+C]); }
   window.__hq=m; window.__cells=cells; }, undefined, ()=>{});
