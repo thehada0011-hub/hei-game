@@ -346,20 +346,27 @@ function fbox(w,h,d,base,cols,seed,x,y,z,fill){ const f=new THREE.MeshLambertMat
 const GLASS=new THREE.MeshLambertMaterial({color:0x5fb3ad,transparent:true,opacity:.84});
 function glass(w,h,d,x,y,z){ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),GLASS); m.position.set(x,y,z); scene.add(m); return m; }
 const WIN_W=['#5f8f86','#7fb6a8','#3d5a60','#9cc7bd','#6c7a80'], WIN_G=['#eef1f0','#cfd6d8','#55636b','#f7f8f7'];
-const B0=scene.children.length;   // 여기부터 만든 상자 건물은 3D 모형이 불러와지면 숨겨요
-fbox(24,10,10,'#f7f7f4',WIN_W,11,0,5,-22);                     // 가운데 흰 건물
-fbox(11,4,8,'#f7f7f4',WIN_W,23,-6,12.35,-23);                    // 위로 올라간 흰 건물
-box(3,1.2,2,0xb9c1c6,7,10.95,-22); box(2,1,2,0xb9c1c6,3,10.85,-24.5);
-fbox(8,7,8,'#8d969b',WIN_G,31,-16,3.5,-23,0.5);                  // 왼쪽 회색 건물
-glass(8,5.2,1.4,0,2.6,-16.4); box(8.3,0.28,1.7,0xf4f5f3,0,5.34,-16.4);   // 유리 현관
-for(let i=-3;i<=3;i++) box(0.1,5.2,0.1,0xf4f5f3,i*1.14,2.6,-15.68);
-box(2.4,2.6,0.1,0x2f4a52,0,1.3,-15.66);
-flat(11,3.4,0xdcdcd6,0,0.03,-14); for(let i=0;i<3;i++) flat(11,0.08,0xb8b8b0,0,0.035,-13+i*-0.9);   // 현관 앞 계단
-sign(CONFIG.ORG,9,0.95,0,6.5,-16.94,0,{bg:'#f7f7f4',fg:'#c8102e'});
-glass(8,2.6,3,16,5.4,-19.5); for(const x of [14,18]) cyl(0.25,0.25,4.1,0xdfe3e3,x,2.05,-19.5);          // 공중 연결 통로
-// 앞쪽 작은 유리 건물
-box(5,6.6,5,0x34444b,-17,3.3,-3); for(const y of [2.2,4.4,6.6]) box(5.25,0.25,5.25,0xf4f5f3,-17,y,-3); glass(4.4,1.6,5.06,-17,3.3,-3);
-const OLD_HQ=scene.children.slice(B0);
+// 본관과 환경동: 흰 벽에 층마다 창이 가지런히 줄지어 있는 깔끔한 모형이에요.
+function winTex(cols,floors,base,gA,gB){ const cw=48, fh=64, cv=document.createElement('canvas'); cv.width=cols*cw; cv.height=floors*fh; const g=cv.getContext('2d'); g.fillStyle=base; g.fillRect(0,0,cv.width,cv.height);
+  for(let f=0;f<floors;f++) for(let i=0;i<cols;i++){ g.fillStyle=(i+f)%3?gA:gB; g.fillRect(i*cw+7,f*fh+16,cw-14,fh-30); g.fillStyle='rgba(255,255,255,.4)'; g.fillRect(i*cw+7,f*fh+16,cw-14,4); }
+  const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=8; return t; }
+function tower(w,h,d,x,z,floors,base,gA,gB,y0=0){ const f=new THREE.MeshLambertMaterial({map:winTex(Math.round(w/2.2),floors,base,gA,gB)}), s=new THREE.MeshLambertMaterial({map:winTex(Math.max(2,Math.round(d/2.2)),floors,base,gA,gB)}), top=mat(0xe4e7e6);
+  const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),[s,s,top,top,f,f]); m.position.set(x,y0+h/2,z); m.castShadow=true; m.receiveShadow=true; scene.add(m);
+  box(w+0.5,0.4,d+0.5,0xf4f5f3,x,y0+h+0.2,z); if(!y0) box(w+0.2,0.5,d+0.2,0xcfd4d3,x,0.25,z); return m; }
+tower(30,13,16,-5,-42,4,'#f7f7f4','#6fa8a0','#4f8a84');                    // 본관
+tower(11,3.6,8,-10,-43,1,'#f7f7f4','#6fa8a0','#4f8a84',13.4);              // 옥상 위 작은 층
+box(3,1.2,2,0xb9c1c6,3,14.2,-41); box(2,1,2,0xb9c1c6,6,14.1,-45);
+glass(9,4.2,2,-5,2.1,-33); box(10,0.3,3.6,0xf4f5f3,-5,4.45,-32.4); box(2.6,2.8,0.1,0x2f4a52,-5,1.4,-31.94);   // 유리 현관과 차양
+for(const x of [-9.6,-0.4]) cyl(0.2,0.2,4.3,0xf4f5f3,x,2.15,-30.9,scene,12);
+flat(11,3,0xdcdcd6,-5,0.1,-30.2); for(let i=0;i<3;i++) flat(11,0.08,0xb8b8b0,-5,0.11,-29.4-i*0.8);
+sign(CONFIG.ORG,12,1.2,-5,6.6,-33.93,0,{bg:'#f7f7f4',fg:'#c8102e'});
+flat(5,17.5,0xeadfc8,-5,0.08,-21).material=texMat(TEX.slab,1.25,4.4);        // 광장에서 본관 현관까지 길
+tower(18,9,16,21,-38,3,'#e3e7e7','#5d7d86','#3f5f68');                      // 환경동
+glass(6,3,1.2,19,1.5,-29.4); box(7,0.25,2.6,0xf4f5f3,19,3.15,-29); box(2.2,2.6,0.1,0x2f4a52,19,1.3,-28.75);
+sign(`${CONFIG.ENV_BUILDING} · ${CONFIG.DEPT_WATER}`,9,0.9,21,6.9,-29.93,0,{bg:'#f7f7f4',fg:'#0b7d70'});
+glass(2.4,2.8,4,11,6,-40); box(2.6,0.25,4.2,0xf4f5f3,11,7.5,-40);           // 두 건물을 잇는 공중 통로
+flat(6,16,0xeadfc8,19,0.08,-21).material=texMat(TEX.slab,1.5,4); flat(14,4,0xeadfc8,12,0.09,-13.5).material=texMat(TEX.slab,3.5,1);   // 환경동 입구까지 길
+{ const l=label('환경 실험동 입구 (시료 접수)',{bg:'rgba(18,165,148,.95)',fg:'#fff'}); l.scale.set(6.4,1.1,1); l.position.set(19,5.2,-28); scene.add(l); }
 // 주차장
 flat(24,16,0x6a747a,44,0.08,-32).material=texMat(TEX.road,6,4); for(let i=0;i<8;i++){ flat(0.15,4.2,0xf4f4f4,34.4+i*2.6,0.12,-37); flat(0.15,4.2,0xf4f4f4,34.4+i*2.6,0.12,-27); }
 const PARKED=[[35.7,-37,0xffffff],[40.9,-37,0x2f3b46],[48.7,-37,0xdfe3e3],[38.3,-27,0x9aa5aa],[46.1,-27,0xffffff]];
@@ -373,12 +380,6 @@ for(let i=0;i<13;i++){ const h=32+(i*13%20), w=14+(i*7%8); fbox(w,h,10,'#f1f1ec'
 // 보고 게시판
 box(0.2,2.6,0.2,0x7a5b3a,6.3,1.3,-15); box(0.2,2.6,0.2,0x7a5b3a,9.7,1.3,-15);
 panel2('결과 보고 게시판',3.2,1.5,8,1.8,-15,{bg:'#fff',fg:'#0b7d70'});
-// 환경동
-const E0=scene.children.length;
-fbox(16,7.5,10,'#8d969b',WIN_G,47,28,3.75,-16,0.5);
-glass(11,2.6,0.3,28,1.5,-10.9); box(2.4,2.6,0.12,0x2f4a52,28,1.3,-10.72); box(5,0.2,1.8,0xf4f5f3,28,2.95,-10.2);
-sign(`${CONFIG.ENV_BUILDING} · ${CONFIG.DEPT_WATER}`,8,0.9,28,6.3,-10.94,0,{bg:'#f7f7f4',fg:'#0b7d70'});
-const OLD_ENV=scene.children.slice(E0);
 // 보건동 (공사 중)
 box(16,0.3,10,0xcdbfa5,-32,0.15,-55);
 for(let i=0;i<9;i++){ box(1.6,1.3,0.12,i%2?0xffa94d:0xfff3d6,-39+i*1.75,0.75,-49.9); }
@@ -429,8 +430,8 @@ for(let i=0;i<14;i++){ const a=i/14*Math.PI*2+0.3, r=215+(i%3)*18, h=40+(i*37%30
   const m=new THREE.Mesh(new THREE.ConeGeometry(55+(i%4)*10,h,7),new THREE.MeshLambertMaterial({color:i%2?0x6f9f7c:0x7dae86,flatShading:true})); m.position.set(40+Math.cos(a)*r,h/2-2,Math.sin(a)*r); scene.add(m); }
 
 /* 충돌 */
-const WALLS=[ [-12,12,-27,-17],[20,36,-21,-11],[-40,-24,-60,-49.6],[FX-21.5,FX-3.5,FZ-6,FZ+6],[FX-2,FX+2,FZ-2,FZ+2],[6.4,9.6,-15.4,-14.6],
-  [-20,-12,-27,-19],[-4,4,-17,-15.7],[-19.5,-14.5,-5.5,-0.5],[52.2,54.6,-33,-25],[7,19.5,65,72.4],[-78.5,-69.5,49,55],[154,166,-50,-40],[143.5,154,-45.6,-44.4], ...PARKED.map(([x,z])=>[x-0.9,x+0.9,z-1.9,z+1.9]) ];
+const WALLS=[ [-20,10,-50,-34],[12,30,-46,-30],[-9.8,-0.2,-34,-31.8],[16,22,-30,-28.6],[-40,-24,-60,-49.6],[FX-21.5,FX-3.5,FZ-6,FZ+6],[FX-2,FX+2,FZ-2,FZ+2],[6.4,9.6,-15.4,-14.6],
+  [52.2,54.6,-33,-25],[7,19.5,65,72.4],[-78.5,-69.5,49,55],[154,166,-50,-40],[143.5,154,-45.6,-44.4], ...PARKED.map(([x,z])=>[x-0.9,x+0.9,z-1.9,z+1.9]) ];
 function blocked(x,z,r){
   if(x<-100+r||x>190-r||z<-89.5+r||z>90-r) return true;
   for(const w of WALLS) if(x>w[0]-r&&x<w[1]+r&&z>w[2]-r&&z<w[3]+r) return true;
@@ -598,7 +599,7 @@ const arrow=new THREE.Mesh(arrowGeo,new THREE.MeshBasicMaterial({color:0xffc53d}
 const flag=new THREE.Group(); cyl(0.07,0.07,4,0x7c878d,0,2,0,flag,8); box(1.6,0.9,0.05,0x12a594,0.85,3.5,0,flag); flag.position.set(23,0,-9); flag.visible=false; scene.add(flag);
 
 const flag2=new THREE.Group(); cyl(0.07,0.07,4,0x7c878d,0,2,0,flag2,8); box(1.6,0.9,0.05,0x3b82c4,0.85,3.5,0,flag2); flag2.position.set(FX+4.5,0,FZ-5); flag2.visible=false; scene.add(flag2);
-const P={ npc:[-3,-8], bridge:[130,ROAD_Z], door:[28,-8.6], board:[8,-13], info:[-9,3.6], stack:[FX,FZ-5], boss:[5,-7], play:[PGX,PGZ+12.5] };
+const P={ npc:[-3,-8], bridge:[130,ROAD_Z], door:[19,-26.5], board:[8,-13], info:[-9,3.6], stack:[FX,FZ-5], boss:[5,-7], play:[PGX,PGZ+12.5] };
 // 측정값을 보고 알맞은 깃발을 올리는 세 과의 임무. opts는 [깃발 이름, 색, 이 값까지]예요.
 const XMS={
   d:{name:'미세먼지분석과',job:'미세먼지 측정',ic:'📡',sub:'주민센터 옥상 측정소에서 초미세먼지를 재고 등급 깃발을 올려요',roof:1,at:XAT.d,go:'남쪽 주민센터 옆 계단으로 옥상에 올라가 미세먼지를 재세요',ask:v=>`초미세먼지 ${v}! 알맞은 등급 깃발을 올려요`,lo:3,
@@ -1245,32 +1246,8 @@ $('#enter').addEventListener('click',()=>{ const v=nm.value.trim().slice(0,6);
   say([['안내',`${G.name} 연구원, 첫 출근을 환영해요! 왼쪽 아래 조이스틱으로 걷고, 화면을 좌우로 밀면 둘러볼 수 있어요.`]]);
 });
 window.__G=G; window.__dbg={player,car,car2,P}; window.__t={sampleGame,bottleGame,labGame,climbGame,haulGame,gaugeGame,filterGame,closeMini,focusSample,focusCatch,focusHaul,playTest,setPlay,playReport,doseGame,remeasure,focusDust,focusStrip,focusNoise,xReport,startMission,setStep,XMS};
-// 실제 청사 3D 모형(hq.glb). 못 불러오면 위에서 만든 상자 건물을 그대로 써요.
-const HQ_MODEL={ file:'hq.glb', width:64, x:10, z:-46.5, rotY:0 };
-let DOOR_LIMIT=34;   // 차를 실험동 입구에서 이 거리 안에 세워야 시료를 접수할 수 있어요
-const OLD_WALLS=['-12,12,-27,-17','20,36,-21,-11','-20,-12,-27,-19','-4,4,-17,-15.7','-19.5,-14.5,-5.5,-0.5'];
-new GLTFLoader().load(HQ_MODEL.file, gltf=>{ const m=gltf.scene; const sz=new THREE.Box3().setFromObject(m).getSize(new THREE.Vector3());
-  m.scale.setScalar(HQ_MODEL.width/Math.max(sz.x,sz.z)); m.rotation.y=HQ_MODEL.rotY; const b=new THREE.Box3().setFromObject(m), c=b.getCenter(new THREE.Vector3());
-  m.position.x+=HQ_MODEL.x-c.x; m.position.z+=HQ_MODEL.z-c.z; m.position.y-=b.min.y;
-  m.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; if(o.material){ o.material.metalness=0; o.material.roughness=1; } } }); scene.add(m);
-  for(const o of [...OLD_HQ,...OLD_ENV]) o.visible=false;
-  m.updateMatrixWorld(true);
-  // 앞쪽의 작은 별동 건물은 잘라내요 (CUT 범위 안의 면을 지움)
-  const CUT=[3,20.5,-29.5,-13], inCut=(x,z)=>x>CUT[0]&&x<CUT[1]&&z>CUT[2]&&z<CUT[3];
-  m.traverse(o=>{ if(!o.isMesh) return; const g=o.geometry, p=g.attributes.position, idx=g.index?g.index.array:null, n=idx?idx.length:p.count, keep=[], a=new THREE.Vector3(), b=new THREE.Vector3(), c=new THREE.Vector3();
-    for(let i=0;i<n;i+=3){ const i0=idx?idx[i]:i, i1=idx?idx[i+1]:i+1, i2=idx?idx[i+2]:i+2; a.fromBufferAttribute(p,i0).applyMatrix4(o.matrixWorld); b.fromBufferAttribute(p,i1).applyMatrix4(o.matrixWorld); c.fromBufferAttribute(p,i2).applyMatrix4(o.matrixWorld);
-      if(inCut((a.x+b.x+c.x)/3,(a.z+b.z+c.z)/3)) continue; keep.push(i0,i1,i2); }
-    g.setIndex(keep); });
-  // 모형 모양대로 벽 만들기: 높이 2 이상인 부분이 있는 칸은 지나갈 수 없어요
-  for(let i=WALLS.length-1;i>=0;i--) if(OLD_WALLS.includes(WALLS[i].join(','))) WALLS.splice(i,1);
-  const C=2, cells=new Set(), v=new THREE.Vector3();
-  m.traverse(o=>{ if(!o.isMesh) return; const p=o.geometry.attributes.position; for(let i=0;i<p.count;i++){ v.fromBufferAttribute(p,i).applyMatrix4(o.matrixWorld); if(v.y>2&&!inCut(v.x,v.z)) cells.add(Math.floor(v.x/C)+','+Math.floor(v.z/C)); } });
-  // 모형에 맞춰 실험동 입구와 깃발, 길 위치를 옮겨요
-  P.door[0]=19; P.door[1]=-26.5; flag.position.set(24,0,-25); DOOR_LIMIT=52;
-  flat(6,16,0xeadfc8,19,0.08,-21).material=texMat(TEX.slab,1.5,4); flat(14,4,0xeadfc8,12,0.15,-13.5).material=texMat(TEX.slab,3.5,1);
-  { const l=label('환경 실험동 입구 (시료 접수)',{bg:'rgba(18,165,148,.95)',fg:'#fff'}); l.scale.set(6.4,1.1,1); l.position.set(19,5.2,-28); scene.add(l); }
-  for(const k of cells){ const [cx,cz]=k.split(',').map(Number); WALLS.push([cx*C,cx*C+C,cz*C,cz*C+C]); }
-  window.__hq=m; window.__cells=cells; }, undefined, ()=>{});
+const DOOR_LIMIT=52;   // 차를 실험동 입구에서 이 거리 안에 세워야 시료를 접수할 수 있어요
+flag.position.set(24,0,-25);
 // 차량 3D 모형. 못 불러오면 상자로 만든 차량을 그대로 써요. rotY로 앞머리 방향을 맞춰요.
 function loadCar(file,grp,len,rotY){ new GLTFLoader().load(file,gltf=>{ const m=gltf.scene; m.rotation.y=rotY; let b=new THREE.Box3().setFromObject(m), sz=b.getSize(new THREE.Vector3());
   m.scale.setScalar(len/Math.max(sz.x,sz.z)); b=new THREE.Box3().setFromObject(m); const c=b.getCenter(new THREE.Vector3()); m.position.set(-c.x,-b.min.y,-c.z);
