@@ -438,12 +438,13 @@ for(const s of DSTN){ s.at=s.roof?[s.x,s.z]:[s.x,s.z+(s.ry?-3.2:3.2)];
   box(4.4,2.5,2.6,0x2b3036,0,1.35,0,g); box(4.6,0.1,2.8,0x1f2327,0,0.05,0,g); box(4.7,0.12,2.9,0x1f2327,0,2.66,0,g); for(let x=-1.9;x<=1.9;x+=0.63) box(0.03,2.5,0.02,0x3a4148,x,1.35,1.31,g);   // 검은 컨테이너 건물
   box(0.95,2.0,0.05,0x343b42,-1.5,1.1,1.32,g); box(0.06,0.25,0.06,0xb9bec4,-1.15,1.1,1.36,g); box(1.6,0.95,0.05,0xdfe3e6,0.25,1.55,1.32,g); box(0.5,0.9,0.05,0xdfe3e6,1.45,1.55,1.32,g); box(0.38,0.78,0.06,0x9fc3d6,1.45,1.55,1.33,g);
   const cvs=document.createElement('canvas'); cvs.width=256; cvs.height=144; const tex=new THREE.CanvasTexture(cvs); tex.colorSpace=THREE.SRGBColorSpace; const d=new THREE.Mesh(new THREE.PlaneGeometry(1.46,0.82),new THREE.MeshBasicMaterial({map:tex})); d.position.set(0.25,1.55,1.36); g.add(d);
-  s.draw=v=>{ const c2=cvs.getContext('2d'); c2.fillStyle='#10151a'; c2.fillRect(0,0,256,144); c2.textAlign='center'; c2.textBaseline='middle'; c2.fillStyle='#ff5a5a'; c2.font='bold 38px '+FONT; c2.fillText('초미세먼지',128,42); c2.fillStyle=v>75?'#ff5a5a':v>35?'#ffd84d':'#7ff0b8'; c2.font='bold 58px '+FONT; c2.fillText(String(v),128,100); tex.needsUpdate=true; }; s.draw(23);
+  s.draw=v=>{ const c2=cvs.getContext('2d'); c2.fillStyle='#10151a'; c2.fillRect(0,0,256,144); c2.textAlign='center'; c2.textBaseline='middle'; c2.fillStyle='#ff5a5a'; c2.font='bold 38px '+FONT; c2.fillText('초미세먼지',128,42); if(v==null){ c2.fillStyle='#ff5a5a'; c2.font='bold 46px '+FONT; c2.fillText('통신 끊김',128,100); } else { c2.fillStyle=v>75?'#ff5a5a':v>35?'#ffd84d':'#7ff0b8'; c2.font='bold 58px '+FONT; c2.fillText(String(v),128,100); } tex.needsUpdate=true; }; s.draw(23);
   sign(s.name,2.6,0.36,0.6,2.25,1.32,0,{bg:'#2b3036',fg:'#e9eef0'},g);
   for(const [x,z] of [[-2.2,-1.3],[2.2,-1.3],[-2.2,1.3],[2.2,1.3],[0,-1.3],[0,1.3]]) box(0.05,0.85,0.05,0xdfe6ea,x,3.14,z,g);   // 지붕 난간과 흡입구
   for(const z of [-1.3,1.3]) for(const y of [3.15,3.55]) box(4.45,0.04,0.04,0xdfe6ea,0,y,z,g); for(const x of [-2.2,2.2]) for(const y of [3.15,3.55]) box(0.04,0.04,2.6,0xdfe6ea,x,y,0,g);
   for(const [x,h] of [[-1.3,1.0],[-0.4,0.8],[0.6,0.9]]){ cyl(0.04,0.04,h,0xdfe6ea,x,2.72+h/2,0,g,8); cyl(0.2,0.12,0.16,0xe9eef0,x,2.72+h+0.06,0,g,12); }
   cyl(0.03,0.03,1.6,0xdfe6ea,1.5,3.5,0.3,g,6); { const m=new THREE.Mesh(new THREE.ConeGeometry(0.16,0.3,10),mat(0xdfe6ea)); m.position.set(1.5,4.4,0.3); g.add(m); } }
+const STN_WARN=label('⚠ 측정소 고장 · 수리 필요',{bg:'rgba(229,72,77,.95)',fg:'#fff'}); STN_WARN.scale.set(5.2,0.95,1); STN_WARN.visible=false; scene.add(STN_WARN);   // 고장 난 측정소 위에 뜨는 경고
 // 미세먼지 신호등: 숫자 전광판 아래에 등급 표지 네 개. 미세먼지 임무를 보고하면 모든 신호등에 측정값이 켜져요.
 const DSIG=[], DTAG=[['좋음','#3b82f6'],['보통','#22c55e'],['나쁨','#eab308'],['매우 나쁨','#ef4444']];
 function dustSignal(x,z){ cyl(0.12,0.12,2,0x3a4046,x,1,z,scene,10); box(1,1.9,0.22,0xd9d5c8,x,2.95,z); box(1.3,1.1,0.7,0x20262b,x,4.45,z);
@@ -737,7 +738,7 @@ const flag2=new THREE.Group(); cyl(0.07,0.07,4,0x7c878d,0,2,0,flag2,8); box(1.6,
 const P={ npc:[-3,-8], bridge:[130,ROAD_Z], door:[19,-31], board:[8,-13], info:[-9,3.6], stack:[FX,FZ-5], boss:[5,-7], play:[PGX,PGZ+12.5], hq:[2,-31.2] };
 // 측정값을 보고 알맞은 깃발을 올리는 세 과의 임무. opts는 [깃발 이름, 색, 이 값까지]예요.
 const XMS={
-  d:{name:'미세먼지분석과',job:'측정소 점검',ic:'📡',sub:'도로변과 옥상의 측정소를 점검하고, TMS 상황실에서 주의보를 발령해요',items:[['점검표',0xffffff,'📋'],['청소 솔',0x3b82c4,'🧹'],['새 필터',0xffc53d,'🧻']],at:DSTN[0].at,go:'측정소 세 곳을 차례로 점검하세요. 노란 점선이 다음 측정소를 알려 줘요',lo:3,
+  d:{name:'미세먼지분석과',job:'측정소 수리',ic:'📡',sub:'고장 난 측정소를 고치고, TMS 상황실에서 주의보를 발령해요',items:[['공구함',0xe5484d,'🧰'],['청소 솔',0x3b82c4,'🧹'],['새 필터',0xffc53d,'🧻']],at:DSTN[0].at,go:'고장 난 측정소로 출동해서 수리하세요',lo:3,
     opts:[['좋음','#3b82f6',15],['보통','#22c55e',35],['나쁨','#eab308',75],['매우 나쁨','#ef4444',130]],help:'',fact:'측정소는 도로 옆과 건물 옥상에서 하루 24시간 스스로 공기를 재서 TMS 상황실로 보내요. 평균이 75를 넘은 채로 2시간 이어지면 초미세먼지 주의보를 발령해요.'},
   i:{name:'산업폐수과',job:'폐수 검사',ic:'🏭',sub:'공장 방류구에서 물을 떠 시험지로 pH를 검사해요',items:[['시험지',0xfff3c4,'🧪'],['비커',0x9fd8ff,'🥛'],['고무장갑',0xff8fa3,'🧤']],at:XAT.i,go:'다리를 건너 북쪽 공장 방류구로 가서 폐수를 검사하세요',ask:v=>`폐수의 pH가 ${v}! 알맞은 판정 깃발을 올려요`,lo:3,dec:1,
     opts:[['산성이 강해요','#f97316',5.7],['기준 이내','#22c55e',8.6],['알칼리가 강해요','#8b5cf6',12]],help:'5.8보다 낮으면 산성 · 5.8부터 8.6까지 기준 이내 · 8.6보다 높으면 알칼리',fact:'공장에서 쓴 물은 깨끗하게 처리한 뒤에 내보내야 해요. 연구원은 방류구의 물을 떠서 기준을 지켰는지 검사해요.'},
@@ -1258,8 +1259,10 @@ function scatter(list,ok){ const used=[]; for(const it of list){ let x,z,n=0; do
     used.push([x,z]); it.x=x; it.z=z; it.g.position.x=x; it.g.position.z=z; it.got=false; it.g.visible=false; } }
 function startMission(k){
   if(!G.driving) for(const [c,x,z] of CARS){ c.position.set(x,0,z); c.rotation.y=0; }   // 출장은 늘 주차장에서 출발해요
-  ITEMS_X.forEach(i=>i.g.visible=false);
-  if(XMS[k]){ XM=XMS[k]; G.xk=k; DSTN.forEach(s=>s.ok=false); setXItems(XM);
+  ITEMS_X.forEach(i=>i.g.visible=false); DSTN.forEach(s=>{ s.bad=false; }); stnT=0;
+  if(XMS[k]){ XM=XMS[k]; G.xk=k;
+    if(k==='d'){ const b=Math.floor(Math.random()*DSTN.length); DSTN.forEach((s,i)=>{ s.bad=i===b; s.ok=i!==b; }); XM.at=DSTN[b].at; XM.go='고장 난 '+DSTN[b].name+'로 출동해서 수리하세요'; XM.sub=DSTN[b].name+'에서 측정값이 끊겼어요. 출동해서 고치고, TMS 상황실에서 주의보를 발령해요'; }
+    setXItems(XM);
     scatter(ITEMS_X,()=>{ const a=Math.random()*6.28, r=9+Math.random()*13; return [Math.max(-96,Math.min(186,XM.at[0]+Math.cos(a)*r)),Math.max(-84,Math.min(86,XM.at[1]+Math.sin(a)*r))]; }); ITEMS_X.forEach(i=>i.g.visible=true);
     say([[SENIOR,`${XM.name} 임무예요, {n} 연구원! ${XM.sub}.`],[SENIOR,'주차장의 '+xCarName()+'을 타고 출장을 나가요. '+XM.go+'.'],[SENIOR,`준비물 3개(${XM.items.map(e=>e[0]).join(', ')})가 현장 근처에 흩어져 있으니 꼭 찾아서 챙기고요!`]],()=>setStep(24)); return; }
   if(k==='w'){ scatter(ITEMS,()=>[86+Math.random()*31,-14+Math.random()*44]); G.score={equip:0,depth:0,bottle:0,order:0,grade:0}; bridgeHint=false; iceBox.visible=false;
@@ -1283,8 +1286,8 @@ function getAction(){
   if(G.step===23&&dist(p,P.play)<7) return {label:'다시 측정하기',fn:()=>remeasure(ok=>{ if(ok){ setPlay('ok'); setStep(20); toast('적합! 아이들이 물놀이터로 달려가요. 본관에 결과를 보고하세요.',3200); }
       else { setStep(21); toast('아직 부적합이에요. 투입량을 다시 맞추고 30분 뒤에 또 측정해요.',3200); } })};
   if(G.step===20&&dist(p,P.board)<4.5) return {label:'보고하기',fn:playReport};
-  if(G.step===24&&G.xk==='d'){ const st=xStn(); if(st&&dist(p,st.at)<(st.roof?4:4.6)&&(!st.roof||player.g.position.y>6)) return {label:'측정소 점검',fn:()=>{ if(needItems(ITEMS_X)) return; if(dist(xCar().position,st.at)>XCAR_NEAR){ toast('점검 도구가 차에 있어요. '+xCarName()+'을 측정소 가까이 몰고 오세요.',3000); return; }
-      focusInlet(st.name,()=>{ st.ok=true; const left=DSTN.filter(s=>!s.ok).length; if(left){ qtCache=null; $('#qtx').textContent='남은 측정소 '+left+'곳. 노란 점선을 따라 다음 측정소로 가세요'; toast(st.name+' 점검 끝! 남은 측정소 '+left+'곳',2600); } else { setStep(26); toast('세 곳 모두 점검했어요. 본관 TMS 상황실로 가세요!',3000); } }); }}; }
+  if(G.step===24&&G.xk==='d'){ const st=xStn(); if(st&&dist(p,st.at)<(st.roof?4:4.6)&&(!st.roof||player.g.position.y>6)) return {label:'측정소 수리',fn:()=>{ if(needItems(ITEMS_X)) return; if(dist(xCar().position,st.at)>XCAR_NEAR){ toast('수리 도구가 차에 있어요. '+xCarName()+'을 측정소 가까이 몰고 오세요.',3000); return; }
+      focusInlet(st.name,()=>{ st.ok=true; st.bad=false; stnT=0; const left=DSTN.filter(s=>!s.ok).length; if(left){ qtCache=null; $('#qtx').textContent='남은 측정소 '+left+'곳. 노란 점선을 따라 다음 측정소로 가세요'; toast(st.name+' 점검 끝! 남은 측정소 '+left+'곳',2600); } else { setStep(26); toast('수리 끝! 측정값이 다시 들어와요. 본관 TMS 상황실로 가세요!',3200); } }); }}; }
   if(G.step===26&&dist(p,P.hq)<5) return {label:'TMS 상황실 들어가기',fn:()=>enterLab('t',()=>{ setStep(25); toast('주의보 발령 완료! 본관 게시판에 보고하세요.',2800); })};
   if(G.step===24&&G.xk!=='d'&&dist(p,XM.at)<7) return {label:XM.job+' 시작',fn:()=>{ if(needItems(ITEMS_X)) return; if(dist(xCar().position,XM.at)>XCAR_NEAR){ toast('측정 장비가 차에 있어요. 주차장의 '+xCarName()+'을 타고 오세요.',3000); return; } xGame(G.xk)(XM,()=>{ setStep(25); toast('측정 끝! 본관 게시판에 결과를 보고하세요.',2800); }); }};
   if(G.step===25&&dist(p,P.board)<4.5) return {label:'보고하기',fn:xReport};
@@ -1425,8 +1428,9 @@ function frame(now){
     if(f.ring.visible){ const rk=(time-(f.t0<0?f.next-2.5:f.t0))/1.6, q=f.t0<0?1:Math.min(1,(time-f.t0)/1.4); f.ring.scale.setScalar(0.6+q*2.2); f.ring.material.opacity=0.8*(1-q); if(f.t0<0) f.ring.visible=false; } }
   // 측정소: 전광판 숫자가 가끔 바뀌고, 측정값이 본관 TMS 상황실로 날아가요. 주의보는 보고하고 90초 뒤에 해제돼요.
   if(ROOF.anemo) ROOF.anemo.rotation.y+=dt*3.2;
-  stnT-=dt; if(stnT<=0){ stnT=2.5; for(const s of DSTN) if(s.draw) s.draw(G.alertLeft>0?78+Math.floor(Math.random()*18):G.airK===0?7+Math.floor(Math.random()*7):18+Math.floor(Math.random()*15)); }
-  STN_TX.forEach((m,i)=>{ const s=DSTN[i], k=(time*0.3+i*0.37)%1, y0=s.roof?10:3.6; m.position.set(s.x+(2-s.x)*k,y0+(13-y0)*k+Math.sin(k*Math.PI)*9,s.z+(-45-s.z)*k); m.scale.setScalar(0.6+Math.sin(k*Math.PI)*0.7); });
+  stnT-=dt; if(stnT<=0){ stnT=2.5; for(const s of DSTN) if(s.draw) s.draw(s.bad?null:G.alertLeft>0?78+Math.floor(Math.random()*18):G.airK===0?7+Math.floor(Math.random()*7):18+Math.floor(Math.random()*15)); }
+  STN_TX.forEach((m,i)=>{ const s=DSTN[i], k=(time*0.3+i*0.37)%1, y0=s.roof?10:3.6; m.position.set(s.x+(2-s.x)*k,y0+(13-y0)*k+Math.sin(k*Math.PI)*9,s.z+(-45-s.z)*k); m.scale.setScalar(0.6+Math.sin(k*Math.PI)*0.7); m.visible=!s.bad; });
+  { const b=DSTN.find(s=>s.bad); STN_WARN.visible=!!b&&Math.sin(time*6)>-0.6; if(b) STN_WARN.position.set(b.x,(b.roof?ROOF.y+6.2:5.6),b.z); }
   if(G.alertLeft>0){ G.alertLeft-=dt; if(G.alertLeft<=0){ G.airK=1; setDust('28','#22c55e','보통'); setMasks(false); WALKERS.forEach(w=>w.told=false); toast('미세먼지 주의보가 해제됐어요. 이제 마스크를 벗어도 돼요!',3600); } }
   // 캠핑장: 모닥불이 일렁이고 연기가 올라가요. 가까이 가면 캠핑 온 가족이 한마디씩 해요.
   { const fl=1+Math.sin(time*13)*0.12+Math.sin(time*7.3)*0.1; CAMP.flames.forEach((f,i)=>{ const sy=fl+Math.sin(time*9+i*2)*0.14; f.m.scale.set(1+Math.sin(time*11+i)*0.08,sy,1); f.m.position.y=0.3+f.h*sy/2; });
@@ -1801,8 +1805,8 @@ function drawTMS(g,W,H,st){ const mx=W*0.4, my=H*0.5, P=6; g.fillStyle='#0b1420'
     g.fillStyle='rgba(11,20,32,.7)'; g.fillRect(x0+8,y0+8,w*0.36,H*0.07); g.fillStyle='#fff'; g.textAlign='left'; g.font='bold '+Math.round(H*0.042)+'px '+FONT; g.fillText('바람과 먼지 흐름',x0+16,y0+8+H*0.036); }
   if(st.alert&&Math.sin(st.t*7)>-0.4){ g.fillStyle='rgba(229,72,77,.94)'; g.fillRect(W*0.18,H*0.4,W*0.64,H*0.2); g.fillStyle='#fff'; g.textAlign='center'; g.font='bold '+Math.round(H*0.11)+'px '+FONT; g.fillText('초미세먼지 주의보 발령',W/2,H*0.505); } }
 // 미세먼지분석과 ①: 측정소 점검. 지붕 위 흡입구에 붙은 나뭇잎, 거미줄, 먼지 뭉치를 눌러서 떼어 내요.
-function focusInlet(name,next){ focusUI({hintTop:1,star:'점검 0/6'}); const S=xStage(0x3a4046,0.9), {grp,add,rod,cv,r,s,c,hint}=S, k=Math.min(1,(S.hw-0.5)/2.1); roofBack(grp,add);
-  hint(name+': 흡입구에 붙은 나뭇잎과 거미줄, 먼지를 눌러서 떼어 내요');
+function focusInlet(name,next){ focusUI({hintTop:1,star:'수리 0/6'}); const S=xStage(0x3a4046,0.9), {grp,add,rod,cv,r,s,c,hint}=S, k=Math.min(1,(S.hw-0.5)/2.1); roofBack(grp,add);
+  hint(name+' 수리: 흡입구를 막은 나뭇잎과 거미줄, 먼지를 눌러서 떼어 내요');
   const IXs=[-1.4*k,0,1.4*k]; IXs.forEach((x,i)=>{ const h=1.3+i%2*0.25; rod(0.05,0.05,h,0xdfe6ea,x,-0.6+h/2,0.2,{metalness:.6,roughness:.3}); rod(0.34,0.2,0.26,0xe9eef0,x,-0.6+h+0.1,0.2); rod(0.4,0.4,0.06,0xf4f7f8,x,-0.6+h+0.26,0.2); for(let j=0;j<3;j++) rod(0.3,0.3,0.02,0xb9bec4,x,-0.6+h+0.02+j*0.07,0.2); });
   const junk=[]; IXs.forEach((x,i)=>{ const h=1.3+i%2*0.25; for(const sd of [-1,1]){ const t=(i*2+(sd>0?1:0))%3, geo=t===0?new THREE.BoxGeometry(0.34,0.03,0.2):new THREE.SphereGeometry(t===1?0.2:0.16,8,6), m=new THREE.Mesh(geo,t===1?new THREE.MeshBasicMaterial({color:0xe6e9ec,transparent:true,opacity:.55}):PBR(t===0?0x5fae5a:0x7a6a55,{roughness:1}));
       m.position.set(x+sd*0.26*k,-0.6+h+(sd>0?0.2:0.02),0.52); m.rotation.z=sd*0.5; grp.add(m); junk.push({m,x:m.position.x,on:true,v:0,n:['나뭇잎','거미줄','먼지 뭉치'][t]}); } });
@@ -1811,8 +1815,8 @@ function focusInlet(name,next){ focusUI({hintTop:1,star:'점검 0/6'}); const S=
   let left=6,t=0,alive=true,done=false,dT=0,last=performance.now(),hopT=0;
   const off=()=>{ alive=false; focusOff(grp); };
   cv.onpointerdown=e=>{ if(done) return; const x=S.px(e); let b=null; for(const j of junk) if(j.on&&(!b||Math.abs(j.x-x)<Math.abs(b.x-x))) b=j; if(!b||Math.abs(b.x-x)>0.45) return;
-    b.on=false; b.v=2.4; left--; hopT=0.3; sfx('pop'); fPop(b.n+' 제거!','good'); $('#fstar').textContent=`점검 ${6-left}/6`;
-    if(!left){ done=true; dT=0; sfx('ok'); hint('깨끗해졌어요! 측정값이 본관 TMS 상황실로 전송돼요'); tx.forEach(m=>m.visible=true); setTimeout(()=>{ if(alive){ fPop('전송 정상!','good'); } },900); setTimeout(()=>{ if(alive){ off(); next(); } },2600); } };
+    b.on=false; b.v=2.4; left--; hopT=0.3; sfx('pop'); fPop(b.n+' 제거!','good'); $('#fstar').textContent=`수리 ${6-left}/6`;
+    if(!left){ done=true; dT=0; sfx('ok'); hint('다 고쳤어요! 측정값이 다시 본관 TMS 상황실로 전송돼요'); tx.forEach(m=>m.visible=true); setTimeout(()=>{ if(alive){ fPop('전송 정상!','good'); } },900); setTimeout(()=>{ if(alive){ off(); next(); } },2600); } };
   $('#fclose').onclick=off;
   (function loop(now){ if(!alive) return; const dt=Math.min(0.05,Math.max(0,(now-last)/1000)); last=now; t+=dt; dT+=dt;
     for(const j of junk){ if(j.on){ j.m.position.y+=Math.sin(t*3+j.x*5)*0.002; } else if(j.m.visible){ j.v-=9*dt; j.m.position.y+=j.v*dt; j.m.position.x+=(j.x>0?1:-1)*1.5*dt; j.m.rotation.z+=dt*8; if(j.m.position.y<-0.7) j.m.visible=false; } }
