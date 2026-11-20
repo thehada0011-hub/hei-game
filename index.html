@@ -1405,9 +1405,11 @@ function frame(now){
   let tg=STEPS[G.step].at(); const left=its&&!carFirst?its.filter(i=>!i.got):[];
   if(left.length){ const dd=i=>Math.hypot(i.x-ent.position.x,i.z-ent.position.z), n=left.reduce((a,b)=>dd(a)<dd(b)?a:b); tg=[n.x,n.z]; }
   if(G.inside){ const sp=IN_SPOT[G.inside]; tg=[IX+sp[0],IZ+sp[1]]; const near=Math.abs(player.g.position.z-(IZ-5))<3.4&&Math.abs(player.g.position.x-IX)<2.6?1:0; doorK+=(near-doorK)*Math.min(1,dt*5); DOORL.position.x=-0.77-doorK*1.45; DOORR.position.x=0.77+doorK*1.45; }
-  // 강 건너편으로 가야 하면 곧장 가리키지 않고 다리를 거쳐 가도록 안내해요: 먼저 이쪽 다리 입구, 다리에 들어서면 건너편 끝
+  // 강 건너편으로 가야 하면 곧장 가리키지 않고 다리나 징검다리를 거쳐 가도록 안내해요: 먼저 이쪽 입구, 올라서면 건너편 끝
   if(tg){ const side=x=>x<RIVER_X1?-1:x>RIVER_X2?1:0, ps=side(ent.position.x), ts=side(tg[0]);
-    if(ts!==0&&ps!==ts){ const own=[ps<0?RIVER_X1-4:RIVER_X2+4,ROAD_Z], far=[ts>0?RIVER_X2+4:RIVER_X1-4,ROAD_Z]; tg=(ps===0||Math.hypot(ent.position.x-own[0],ent.position.z-own[1])<6)?far:own; } }
+    if(ts!==0&&ps!==ts){ const ez=ent.position.z, zs=G.driving?[ROAD_Z]:[ROAD_Z,...STONES];   // 차는 큰 다리로만, 걸을 때는 징검다리까지 넣어 가장 가까운 길로 안내해요
+      const cz=ps===0?zs.reduce((p,q)=>Math.abs(q-ez)<Math.abs(p-ez)?q:p):zs.reduce((p,q)=>Math.abs(ez-q)+Math.abs(tg[1]-q)<Math.abs(ez-p)+Math.abs(tg[1]-p)?q:p);
+      const own=[ps<0?RIVER_X1-4:RIVER_X2+4,cz], far=[ts>0?RIVER_X2+4:RIVER_X1-4,cz]; tg=(ps===0||Math.hypot(ent.position.x-own[0],ez-own[1])<6)?far:own; } }
   const qt=left.length?`장비 ${left.length}개가 남았어요. 노란 점선을 따라가 찾으세요`:null; if(qt!==qtCache){ qtCache=qt; $('#qtx').textContent=qt||STEPS[G.step].t; }
   const hideM=!tg||((G.step===1||G.step===9||G.step===17)&&G.driving);
   marker.visible=!hideM; arrow.visible=false;
@@ -1505,7 +1507,7 @@ $('#enter').addEventListener('click',()=>{ const v=nm.value.trim().slice(0,6);
   $('#start').style.display='none'; $('#hud').style.display='block'; setStep(0); G.lock=false;
   say([['안내',`${G.name} 연구원, 첫 출근을 환영해요! 왼쪽 아래 조이스틱으로 걷고, 화면을 좌우로 밀면 둘러볼 수 있어요.`]]);
 });
-window.__G=G; window.__dbg={player,car,car2,carD,carI,carL,P}; window.__t={sampleGame,bottleGame,labGame,climbGame,haulGame,gaugeGame,filterGame,closeMini,focusSample,focusCatch,focusHaul,playTest,setPlay,playReport,doseGame,remeasure,focusDust,focusStrip,focusNoise,xReport,startMission,setStep,focusBOD,focusWeigh,enterLab,exitLab,focusInlet,focusTMS,DSTN,focusClimb,focusGauge,XMS,ITEMS,ITEMS_A,ITEMS_P,ITEMS_X,FISH,CAMP};
+window.__G=G; window.__dbg={player,car,car2,carD,carI,carL,P,marker}; window.__t={sampleGame,bottleGame,labGame,climbGame,haulGame,gaugeGame,filterGame,closeMini,focusSample,focusCatch,focusHaul,playTest,setPlay,playReport,doseGame,remeasure,focusDust,focusStrip,focusNoise,xReport,startMission,setStep,focusBOD,focusWeigh,enterLab,exitLab,focusInlet,focusTMS,DSTN,focusClimb,focusGauge,XMS,ITEMS,ITEMS_A,ITEMS_P,ITEMS_X,FISH,CAMP};
 const DOOR_LIMIT=52;   // 차를 실험동 입구에서 이 거리 안에 세워야 시료를 접수할 수 있어요
 flag.position.set(24,0,-25);
 // 차량 3D 모형. 못 불러오면 상자로 만든 차량을 그대로 써요. rotY로 앞머리 방향을 맞춰요.
