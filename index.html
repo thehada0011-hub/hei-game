@@ -995,9 +995,12 @@ const camEnd=e=>{ if(e.pointerId===camId) camId=null; }; canvas.addEventListener
 const keys={}; addEventListener('keydown',e=>{ if(e.target.tagName==='INPUT') return; keys[e.code]=true; if(e.code==='KeyE'&&curAct&&!G.lock) curAct.fn(); if(e.code==='Space') doJump(); });
 addEventListener('keyup',e=>{ keys[e.code]=false; });
 function doWave(){ if(G.driving||G.lock) return; player.wave=1.4; const p=player.g.position;
-  if(dist(p,P.npc)<7) setTimeout(()=>{ npc.wave=1.4; bubble(npc.g,`안녕하세요, ${G.name} 연구원!`); },400);
-  if(dist(p,P.boss)<7) setTimeout(()=>{ boss.wave=1.4; bubble(boss.g,'반가워요! 오늘도 수고가 많아요.'); },400);
-  for(const a of ANIMALS) if(dist(p,[a.g.position.x,a.g.position.z])<5.5){ a.hop=1.2; bubble(a.g,a.msg,a.fly?1.2:2.4);
+  // 가까이 있는 선배, 원장님, 아이들, 동물이 모두 손을 흔들거나 뛰면서 인사를 받아 줘요
+  const pick=L=>L[Math.floor(Math.random()*L.length)], face=g=>{ g.rotation.y=Math.atan2(p.x-g.position.x,p.z-g.position.z); };
+  if(dist(p,P.npc)<10) setTimeout(()=>{ npc.wave=1.4; face(npc.g); bubble(npc.g,pick([`안녕하세요, ${G.name} 연구원!`,'어서 와요! 오늘도 힘내요.','반가워요! 임무는 잘되고 있어요?'])); },400);
+  if(dist(p,P.boss)<10) setTimeout(()=>{ boss.wave=1.4; face(boss.g); bubble(boss.g,pick(['반가워요! 오늘도 수고가 많아요.',`${G.name} 연구원, 안녕하세요!`,'허허, 인사성이 밝군요. 반가워요!'])); },400);
+  PLAY.kids.forEach((k,i)=>{ if(dist(p,[k.p.g.position.x,k.p.g.position.z])<12) setTimeout(()=>{ k.p.wave=1.4; face(k.p.g); k.sigh=5+Math.random()*4; bubble(k.p.g,pick(['안녕하세요, 연구원님!','연구원님이다! 안녕하세요~','안녕하세요! 반가워요!','우와, 진짜 연구원님이다!','안녕하세요! 멋져요!'])); },300+i*250); });
+  for(const a of ANIMALS) if(dist(p,[a.g.position.x,a.g.position.z])<7){ a.hop=1.2; bubble(a.g,a.msg,a.fly?1.2:2.4);
     if(!a.met){ a.met=true; toast(`${a.name} 친구와 인사했어요! (${ANIMALS.filter(x=>x.met).length}/${ANIMALS.length})`); } } }
 // 버튼은 '누르는 순간'에 반응해요. 휴대폰은 다른 손가락이 조이스틱을 잡고 있으면 click을 만들어 주지 않아서, 걸으면서 누를 수 없었어요.
 function doJump(){ if(!G.driving&&!G.lock&&player.g.position.y<=floorAt(player.g.position.x,player.g.position.z)+0.01) G.vy=8; }
