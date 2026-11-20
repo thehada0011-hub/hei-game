@@ -408,6 +408,8 @@ for(const b of BENCHES){ const g=new THREE.Group(); g.position.set(b.x,0,b.z); g
   for(const z of [-0.18,0.02,0.22]) box(2.2,0.08,0.17,0xa9743f,0,0.5,z,g); for(const y of [0.78,1.0]) box(2.2,0.16,0.07,0xa9743f,0,y,-0.32,g);
   for(const x of [-0.95,0.95]){ box(0.09,0.5,0.5,0x4a4f55,x,0.25,0,g); box(0.09,0.75,0.09,0x4a4f55,x,0.82,-0.32,g); } }
 const PETALS=Array.from({length:18},(_,i)=>{ const m=box(0.14,0.02,0.1,i%2?0xf7b6cf:0xfbdbe8,-83+Math.sin(i*2.4)*4.5,1+i*0.4,-28+Math.cos(i*1.7)*4.5); m.userData.ph=i*1.3; return m; });
+// 영산강 벚꽃길 꽃잎: 연구원이 있는 쪽 벚나무 아래로 계속 떨어져요 (꽃잎 수를 아끼려고 연구원을 따라다녀요)
+const PETALS_R=Array.from({length:56},(_,i)=>{ const m=box(0.14,0.02,0.1,i%2?0xf7b6cf:0xfbdbe8,-30+i*1.1,0.5+(i*37%70)/10,-90+(i*13%70)/10); m.userData.ph=i*1.7; return m; });
 // 큰길에서 각 건물로 이어지는 도로. ROADS는 나무를 심지 않을 자리로도 써요.
 const ROADS=[ [19,25,19,59],[6,27,59,64.6],        // 주민센터
   [44,50,-24,11],                                  // 주차장과 본관
@@ -1220,6 +1222,8 @@ function frame(now){
   // 의자에 앉기: 다리를 굽히고 의자 위에 앉아요. 움직이거나 뛰면 일어나요.
   if(G.sit&&!G.driving){ if(G.vy>0) G.sit=null; else { const b=G.sit; G.vy=0; player.g.position.set(b.x+Math.sin(b.ry)*0.1,0.2,b.z+Math.cos(b.ry)*0.1); player.g.rotation.y=b.ry; player.legL.rotation.x=player.legR.rotation.x=-1.5; player.armL.rotation.x=player.armR.rotation.x=-0.35; } }
   for(const m of PETALS){ m.position.y-=dt*0.7; m.position.x+=Math.sin(time*1.5+m.userData.ph)*dt*0.5; m.rotation.x+=dt*2; m.rotation.z+=dt*1.4; if(m.position.y<0.1){ m.position.y=7+Math.random()*2; m.position.x=-83+(Math.random()-0.5)*9; m.position.z=-28+(Math.random()-0.5)*9; } }
+  for(const m of PETALS_R){ m.position.y-=dt*0.7; m.position.x+=Math.sin(time*1.5+m.userData.ph)*dt*0.5; m.rotation.x+=dt*2; m.rotation.z+=dt*1.4;
+    if(m.position.y<0.1||Math.abs(m.position.x-ent.position.x)>24){ m.position.y=m.position.y<0.1?6+Math.random()*2.5:m.position.y; m.position.x=Math.max(-98,Math.min(118,ent.position.x+(Math.random()-0.5)*40)); m.position.z=-90.5+Math.random()*7.5; } }
   // 말풍선
   for(let i=BUBS.length-1;i>=0;i--){ const o=BUBS[i]; o.userData.bt-=dt; if(o.userData.bt<=0){ o.remove(o.userData.bub); o.userData.bub=null; BUBS.splice(i,1); } }
   // 물놀이터: 적합이면 분수가 나오고 아이들이 뛰어놀고, 부적합이면 앉아서 한숨을 쉬어요
