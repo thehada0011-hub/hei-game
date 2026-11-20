@@ -346,27 +346,23 @@ function fbox(w,h,d,base,cols,seed,x,y,z,fill){ const f=new THREE.MeshLambertMat
 const GLASS=new THREE.MeshLambertMaterial({color:0x5fb3ad,transparent:true,opacity:.84});
 function glass(w,h,d,x,y,z){ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),GLASS); m.position.set(x,y,z); scene.add(m); return m; }
 const WIN_W=['#5f8f86','#7fb6a8','#3d5a60','#9cc7bd','#6c7a80'], WIN_G=['#eef1f0','#cfd6d8','#55636b','#f7f8f7'];
-// 본관과 환경동: 흰 벽에 층마다 창이 가지런히 줄지어 있는 깔끔한 모형이에요.
-function winTex(cols,floors,base,gA,gB){ const cw=48, fh=64, cv=document.createElement('canvas'); cv.width=cols*cw; cv.height=floors*fh; const g=cv.getContext('2d'); g.fillStyle=base; g.fillRect(0,0,cv.width,cv.height);
-  for(let f=0;f<floors;f++) for(let i=0;i<cols;i++){ g.fillStyle=(i+f)%3?gA:gB; g.fillRect(i*cw+7,f*fh+16,cw-14,fh-30); g.fillStyle='rgba(255,255,255,.4)'; g.fillRect(i*cw+7,f*fh+16,cw-14,4); }
-  const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=8; return t; }
-function tower(w,h,d,x,z,floors,base,gA,gB,y0=0){ const f=new THREE.MeshLambertMaterial({map:winTex(Math.round(w/2.2),floors,base,gA,gB)}), s=new THREE.MeshLambertMaterial({map:winTex(Math.max(2,Math.round(d/2.2)),floors,base,gA,gB)}), top=mat(0xe4e7e6);
-  const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),[s,s,top,top,f,f]); m.position.set(x,y0+h/2,z); m.castShadow=true; m.receiveShadow=true; scene.add(m);
-  box(w+0.5,0.4,d+0.5,0xf4f5f3,x,y0+h+0.2,z); if(!y0) box(w+0.2,0.5,d+0.2,0xcfd4d3,x,0.25,z); return m; }
-tower(30,13,16,-5,-42,4,'#f7f7f4','#6fa8a0','#4f8a84');                    // 본관
-tower(11,3.6,8,-10,-43,1,'#f7f7f4','#6fa8a0','#4f8a84',13.4);              // 옥상 위 작은 층
-box(3,1.2,2,0xb9c1c6,3,14.2,-41); box(2,1,2,0xb9c1c6,6,14.1,-45);
-glass(9,4.2,2,-5,2.1,-33); box(10,0.3,3.6,0xf4f5f3,-5,4.45,-32.4); box(2.6,2.8,0.1,0x2f4a52,-5,1.4,-31.94);   // 유리 현관과 차양
-for(const x of [-9.6,-0.4]) cyl(0.2,0.2,4.3,0xf4f5f3,x,2.15,-30.9,scene,12);
-flat(11,3,0xdcdcd6,-5,0.1,-30.2); for(let i=0;i<3;i++) flat(11,0.08,0xb8b8b0,-5,0.11,-29.4-i*0.8);
-sign(CONFIG.ORG,12,1.2,-5,6.6,-33.93,0,{bg:'#f7f7f4',fg:'#c8102e'});
-flat(5,17.5,0xeadfc8,-5,0.08,-21).material=texMat(TEX.slab,1.25,4.4);        // 광장에서 본관 현관까지 길
-tower(18,9,16,21,-38,3,'#e3e7e7','#5d7d86','#3f5f68');                      // 환경동
-glass(6,3,1.2,19,1.5,-29.4); box(7,0.25,2.6,0xf4f5f3,19,3.15,-29); box(2.2,2.6,0.1,0x2f4a52,19,1.3,-28.75);
-sign(`${CONFIG.ENV_BUILDING} · ${CONFIG.DEPT_WATER}`,9,0.9,21,6.9,-29.93,0,{bg:'#f7f7f4',fg:'#0b7d70'});
-glass(2.4,2.8,4,11,6,-40); box(2.6,0.25,4.2,0xf4f5f3,11,7.5,-40);           // 두 건물을 잇는 공중 통로
+// 본관: 실제 청사처럼 흰 상자와 회색 상자 여러 채가 어긋나게 붙어 있고, 네모 창이 불규칙하게 박혀 있어요.
+fbox(16,8,14,'#f7f7f4',WIN_W,23,-15,4,-49);                         // 왼쪽 뒤 넓은 흰 건물
+fbox(18,14,12,'#f7f7f4',WIN_W,17,13,7,-50);                         // 오른쪽 뒤 높은 흰 건물
+box(3,1.2,2,0xb9c1c6,10,14.95,-50); box(2,1,2,0xb9c1c6,16,14.85,-52);
+fbox(20,7.6,10,'#f7f7f4',WIN_W,11,2,7.2,-39);                       // 가운데 앞 흰 건물: 1층은 유리, 그 위에 흰 상자가 얹혀 있어요
+glass(19.4,3.4,9.4,2,1.7,-39); box(20.4,0.3,10.6,0xf4f5f3,2,3.4,-39); for(let x=-7.6;x<=11.6;x+=3.2) box(0.16,3.4,0.16,0xf4f5f3,x,1.7,-34.2);
+box(2.6,2.8,0.1,0x2f4a52,2,1.4,-34.22); box(6,0.25,2.6,0xf4f5f3,2,3.05,-33);
+sign(CONFIG.ORG,8.4,0.95,6.4,9.6,-33.93,0,{bg:'#f7f7f4',fg:'#c8102e'});
+flat(9,2.6,0xdcdcd6,2,0.1,-32.4); for(let i=0;i<3;i++) flat(9,0.08,0xb8b8b0,2,0.11,-31.5-i*0.7);   // 현관 앞 계단
+flat(5,18.5,0xeadfc8,2,0.08,-22).material=texMat(TEX.slab,1.25,4.6);  // 광장에서 본관 현관까지 길
+fbox(16,6,12,'#8d969b',WIN_G,31,22,6.4,-38,0.5);                    // 오른쪽 회색 건물: 기둥 위에 떠 있고 아래가 환경 실험동 입구예요
+box(16.3,0.3,12.3,0xf4f5f3,22,3.4,-38); for(const x of [15,19.7,24.3,29]) for(const z of [-32.7,-43.3]) cyl(0.3,0.3,3.3,0xdfe3e3,x,1.65,z,scene,10);
+glass(8,3.2,6,19,1.6,-37); box(2.2,2.6,0.1,0x2f4a52,19,1.3,-33.95);
+sign(`${CONFIG.ENV_BUILDING} · ${CONFIG.DEPT_WATER}`,8,0.8,22,8.4,-31.93,0,{bg:'#f7f7f4',fg:'#0b7d70'});
+fbox(9,4.5,8,'#8d969b',WIN_G,37,35.5,2.25,-49,0.5);                 // 오른쪽 끝 작은 회색 건물
 flat(6,16,0xeadfc8,19,0.08,-21).material=texMat(TEX.slab,1.5,4); flat(14,4,0xeadfc8,12,0.09,-13.5).material=texMat(TEX.slab,3.5,1);   // 환경동 입구까지 길
-{ const l=label('환경 실험동 입구 (시료 접수)',{bg:'rgba(18,165,148,.95)',fg:'#fff'}); l.scale.set(6.4,1.1,1); l.position.set(19,5.2,-28); scene.add(l); }
+{ const l=label('환경 실험동 입구 (시료 접수)',{bg:'rgba(18,165,148,.95)',fg:'#fff'}); l.scale.set(6.4,1.1,1); l.position.set(19,4.6,-31.5); scene.add(l); }
 // 주차장
 flat(24,16,0x6a747a,44,0.08,-32).material=texMat(TEX.road,6,4); for(let i=0;i<8;i++){ flat(0.15,4.2,0xf4f4f4,34.4+i*2.6,0.12,-37); flat(0.15,4.2,0xf4f4f4,34.4+i*2.6,0.12,-27); }
 const PARKED=[[35.7,-37,0xffffff],[40.9,-37,0x2f3b46],[48.7,-37,0xdfe3e3],[38.3,-27,0x9aa5aa],[46.1,-27,0xffffff]];
@@ -396,8 +392,8 @@ box(0.5,0.5,0.4,0x2b2b2b,FX,15,FZ-1.45);                                        
 flat(6,25,0x59646b,FX+6,0.08,31.5).material=texMat(TEX.road,1.5,6); flat(16,8,0x59646b,FX+1,0.08,FZ-8).material=texMat(TEX.road,4,2);   // 공장 진입로
 const SMOKE=Array.from({length:7},()=>{ const m=new THREE.Mesh(new THREE.SphereGeometry(1.2,10,8),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.5,depthWrite:false})); scene.add(m); return m; });
 // 대기환경측정소(미세먼지분석과), 어린이집(생활환경과), 공장 방류구(산업폐수과)
-// 맵 전체를 쓰도록 남쪽 가운데, 서남쪽, 강 건너 동북쪽에 하나씩 놓았어요. XAT는 플레이어가 서는 자리예요.
-const XAT={ d:[13.8,68.5], l:[-74,46.5], i:[146,-41] };
+// 측정소는 남쪽 가운데, 어린이집은 물놀이터 옆, 방류구는 강 건너 동북쪽에 있어요. XAT는 플레이어가 서는 자리예요.
+const XAT={ d:[13.8,68.5], l:[-45,-66.5], i:[146,-41] };
 // 주민센터 옥상(높이 y)과 바깥 계단. 계단은 x1~sx1 사이에서 z0부터 6칸 동안 올라가요.
 const ROOF={x0:7,x1:17.1,sx1:19.5,z0:65,z1:72.4,y:7.35};
 function floorAt(x,z){ if(z<ROOF.z0||z>ROOF.z1||x<ROOF.x0||x>ROOF.sx1) return 0; return x<=ROOF.x1?ROOF.y:Math.min(ROOF.y,(z-ROOF.z0)/6*ROOF.y); }
@@ -411,7 +407,7 @@ function dustSignal(x,z){ cyl(0.12,0.12,2,0x3a4046,x,1,z,scene,10); box(1,1.9,0.
 function setDust(v,col,name){ for(const d of DSIG){ const g=d.cv.getContext('2d'); g.fillStyle='#0b0f12'; g.fillRect(0,0,256,192); g.textAlign='center'; g.textBaseline='middle'; g.fillStyle='#fff'; g.font=`bold 42px ${FONT}`; g.fillText('초미세',128,36);
     g.fillStyle=col; g.font=`bold 90px ${FONT}`; g.fillText(v,128,104); g.font=`bold 30px ${FONT}`; g.fillText(name,128,166); d.tex.needsUpdate=true; } }
 // 주민센터 앞, 광장, 주차장, 물놀이터, 어린이집, 다리 입구, 공장 진입로
-for(const [x,z] of [[22.5,63.2],[9.5,3],[57,-22],[PGX+10,PGZ+14],[-67.5,45.5],[114,9.3],[FX+10.5,40]]) dustSignal(x,z);
+for(const [x,z] of [[22.5,63.2],[9.5,3],[57,-22],[PGX+10,PGZ+14],[-38.5,-66.5],[114,9.3],[FX+10.5,40]]) dustSignal(x,z);
 setDust('--','#7fd3ff','측정 전');
 // 대기환경측정소는 바람이 잘 통하는 주민센터 옥상에 있어요. 건물 옆 바깥 계단으로 올라가요.
 { fbox(10,7,7,'#f3ead8',['#7fb6a8','#5f8f86','#9cc7bd'],77,12,3.5,68.5,0.6); box(1.6,2.4,0.1,0x2f4a52,12,1.2,64.96); sign('동네 주민센터',5,0.8,12,5.9,64.94,Math.PI,{bg:'#f3ead8',fg:'#17323a'});
@@ -420,7 +416,7 @@ setDust('--','#7fd3ff','측정 전');
   for(let i=0;i<14;i++){ const h=(i+1)*ROOF.y/14; box(2.4,h,6/14+0.02,i%2?0xb9c1c6:0xc7ced2,18.3,h/2,65+(i+0.5)*6/14); } box(2.4,ROOF.y,1.4,0xb9c1c6,18.3,ROOF.y/2,71.7);   // 바깥 계단과 계단참
   box(0.08,0.08,9.5,0x7c878d,19.45,4.7,68).rotation.x=-Math.atan(ROOF.y/6); box(0.08,1,1.4,0x7c878d,19.45,ROOF.y+0.5,71.7); box(2.4,1,0.08,0x7c878d,18.3,ROOF.y+0.5,72.36);
   box(0.15,2.2,0.15,0x7c878d,14.6,1.1,63.4); panel2('옥상 측정소 · 계단으로 올라가요',5.4,0.8,14.6,2.4,63.4,{bg:'#e6f1fb',fg:'#0c447c'}); }
-box(9,3.2,6,0xffe9a8,-74,1.6,52); box(9.4,0.4,6.4,0xff8fa3,-74,3.4,52); for(const x of [-77,-71]) box(1.4,1.4,0.1,0x7fd3e6,x,1.8,48.95); box(1.4,2.2,0.1,0x8a5a2b,-74,1.1,48.95); panel2('정원어린이집',4.4,0.8,-74,2.75,48.9,{bg:'#fff0f5',fg:'#a8326a'});
+box(9,3.2,6,0xffe9a8,-45,1.6,-72); box(9.4,0.4,6.4,0xff8fa3,-45,3.4,-72); for(const x of [-48,-42]) box(1.4,1.4,0.1,0x7fd3e6,x,1.8,-68.95); box(1.4,2.2,0.1,0x8a5a2b,-45,1.1,-68.95); panel2('정원어린이집',4.4,0.8,-45,2.75,-68.9,{bg:'#fff0f5',fg:'#a8326a'});
 { box(12,6,10,0xc9c2b4,160,3,-45); box(12.6,0.5,10.6,0x8d979d,160,6.2,-45); cyl(0.7,0.9,9,0xd9dee1,163,4.5,-47); sign('강 건너 공장',7,0.9,160,4.6,-39.94,0,{bg:'#17323a',fg:'#fff'});
   const m=cyl(0.5,0.5,10.5,0x6b7780,148.75,0.6,-45,scene,14); m.rotation.z=Math.PI/2; flat(2.6,3,0x4f9bb5,142.2,0.09,-45); box(0.15,1.6,0.15,0x7c878d,146,0.8,-43); panel2('방류구',2,0.7,146,1.8,-43,{bg:'#17323a',fg:'#fff'}); }
 // 안내판
@@ -430,8 +426,8 @@ for(let i=0;i<14;i++){ const a=i/14*Math.PI*2+0.3, r=215+(i%3)*18, h=40+(i*37%30
   const m=new THREE.Mesh(new THREE.ConeGeometry(55+(i%4)*10,h,7),new THREE.MeshLambertMaterial({color:i%2?0x6f9f7c:0x7dae86,flatShading:true})); m.position.set(40+Math.cos(a)*r,h/2-2,Math.sin(a)*r); scene.add(m); }
 
 /* 충돌 */
-const WALLS=[ [-20,10,-50,-34],[12,30,-46,-30],[-9.8,-0.2,-34,-31.8],[16,22,-30,-28.6],[-40,-24,-60,-49.6],[FX-21.5,FX-3.5,FZ-6,FZ+6],[FX-2,FX+2,FZ-2,FZ+2],[6.4,9.6,-15.4,-14.6],
-  [52.2,54.6,-33,-25],[7,19.5,65,72.4],[-78.5,-69.5,49,55],[154,166,-50,-40],[143.5,154,-45.6,-44.4], ...PARKED.map(([x,z])=>[x-0.9,x+0.9,z-1.9,z+1.9]) ];
+const WALLS=[ [-8,12,-44,-34],[4,22,-56,-44],[-23,-7,-56,-42],[14,30,-44,-32],[31,40,-53,-45],[-40,-24,-60,-49.6],[FX-21.5,FX-3.5,FZ-6,FZ+6],[FX-2,FX+2,FZ-2,FZ+2],[6.4,9.6,-15.4,-14.6],
+  [52.2,54.6,-33,-25],[7,19.5,65,72.4],[-49.5,-40.5,-75,-69],[154,166,-50,-40],[143.5,154,-45.6,-44.4], ...PARKED.map(([x,z])=>[x-0.9,x+0.9,z-1.9,z+1.9]) ];
 function blocked(x,z,r){
   if(x<-100+r||x>190-r||z<-89.5+r||z>90-r) return true;
   for(const w of WALLS) if(x>w[0]-r&&x<w[1]+r&&z>w[2]-r&&z<w[3]+r) return true;
@@ -599,14 +595,14 @@ const arrow=new THREE.Mesh(arrowGeo,new THREE.MeshBasicMaterial({color:0xffc53d}
 const flag=new THREE.Group(); cyl(0.07,0.07,4,0x7c878d,0,2,0,flag,8); box(1.6,0.9,0.05,0x12a594,0.85,3.5,0,flag); flag.position.set(23,0,-9); flag.visible=false; scene.add(flag);
 
 const flag2=new THREE.Group(); cyl(0.07,0.07,4,0x7c878d,0,2,0,flag2,8); box(1.6,0.9,0.05,0x3b82c4,0.85,3.5,0,flag2); flag2.position.set(FX+4.5,0,FZ-5); flag2.visible=false; scene.add(flag2);
-const P={ npc:[-3,-8], bridge:[130,ROAD_Z], door:[19,-26.5], board:[8,-13], info:[-9,3.6], stack:[FX,FZ-5], boss:[5,-7], play:[PGX,PGZ+12.5] };
+const P={ npc:[-3,-8], bridge:[130,ROAD_Z], door:[19,-29.5], board:[8,-13], info:[-9,3.6], stack:[FX,FZ-5], boss:[5,-7], play:[PGX,PGZ+12.5] };
 // 측정값을 보고 알맞은 깃발을 올리는 세 과의 임무. opts는 [깃발 이름, 색, 이 값까지]예요.
 const XMS={
   d:{name:'미세먼지분석과',job:'미세먼지 측정',ic:'📡',sub:'주민센터 옥상 측정소에서 초미세먼지를 재고 등급 깃발을 올려요',roof:1,at:XAT.d,go:'남쪽 주민센터 옆 계단으로 옥상에 올라가 미세먼지를 재세요',ask:v=>`초미세먼지 ${v}! 알맞은 등급 깃발을 올려요`,lo:3,
     opts:[['좋음','#3b82f6',15],['보통','#22c55e',35],['나쁨','#eab308',75],['매우 나쁨','#ef4444',130]],help:'좋음 15까지 · 보통 35까지 · 나쁨 75까지 · 그보다 높으면 매우 나쁨',fact:'대기환경측정소는 바람이 잘 통하는 건물 옥상에 있어요. 하루 24시간 미세먼지와 오존을 재서 알려 줘요. 나쁨이면 마스크를 쓰고 바깥 활동을 줄여요.'},
   i:{name:'산업폐수과',job:'폐수 검사',ic:'🏭',sub:'공장 방류구에서 나오는 물의 pH를 재고 판정 깃발을 올려요',at:XAT.i,go:'다리를 건너 북쪽 공장 방류구로 가서 폐수를 검사하세요',ask:v=>`폐수의 pH가 ${v}! 알맞은 판정 깃발을 올려요`,lo:3,dec:1,
     opts:[['산성이 강해요','#f97316',5.7],['기준 이내','#22c55e',8.6],['알칼리가 강해요','#8b5cf6',12]],help:'5.8보다 낮으면 산성 · 5.8부터 8.6까지 기준 이내 · 8.6보다 높으면 알칼리',fact:'공장에서 쓴 물은 깨끗하게 처리한 뒤에 내보내야 해요. 연구원은 방류구의 물을 떠서 기준을 지켰는지 검사해요.'},
-  l:{name:'생활환경과',job:'소음 측정',ic:'🔊',sub:'어린이집 앞에서 소음을 재고 알맞은 깃발을 올려요',at:XAT.l,go:'서남쪽 끝 정원어린이집으로 가서 소음을 재세요',ask:v=>`소음이 ${v}데시벨! 알맞은 깃발을 올려요`,lo:30,
+  l:{name:'생활환경과',job:'소음 측정',ic:'🔊',sub:'어린이집 앞에서 소음을 재고 알맞은 깃발을 올려요',at:XAT.l,go:'서북쪽 물놀이터 옆 정원어린이집으로 가서 소음을 재세요',ask:v=>`소음이 ${v}데시벨! 알맞은 깃발을 올려요`,lo:30,
     opts:[['조용해요','#3b82f6',45],['보통이에요','#22c55e',60],['시끄러워요','#eab308',75],['매우 시끄러워요','#ef4444',100]],help:'조용 45까지 · 보통 60까지 · 시끄러움 75까지 · 그보다 크면 매우 시끄러움',fact:'생활환경과는 소음뿐 아니라 실내 공기와 어린이 활동공간이 안전한지도 검사해요.'} };
 let XM=XMS.d;
 const doneCount=()=>Object.values(G.done).filter(Boolean).length, allDone=()=>doneCount()>=6;
