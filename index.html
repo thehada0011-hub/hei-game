@@ -540,10 +540,13 @@ const STEPS=[
   {t:'북서쪽 벚꽃길 옆 물놀이터로! 근처에 흩어진 검사 장비 3개를 찾으세요', at:()=>P.play},
   {t:'아이들이 기다려요. 물놀이터 입구에서 수질 검사를 시작하세요', at:()=>P.play},
   {t:'본관 앞 게시판에 검사 결과를 보고하세요', at:()=>P.board},
+  {t:'부적합! 물놀이터에서 염소 투입량을 늘리세요', at:()=>P.play},
+  {t:'소독약이 퍼지는 중이에요. 30분을 기다려요', at:()=>null},
+  {t:'30분이 지났어요. 물놀이터에서 다시 측정하세요', at:()=>P.play},
 ];
-function setStep(n){ G.step=n; const all=allDone(); $('#qno').textContent=n===0?(all?(G.cert?'완료':'임명장'):'임무 선택'):n<8?`수질 ${n}/7`:n<17?`대기 ${n-8}/7`:`물놀이터 ${n-16}/4`;
+function setStep(n){ G.step=n; const all=allDone(); $('#qno').textContent=n===0?(all?(G.cert?'완료':'임명장'):'임무 선택'):n<8?`수질 ${n}/7`:n<17?`대기 ${n-8}/7`:n>20?'물놀이터 재측정':`물놀이터 ${n-16}/4`;
   $('#qtx').textContent=n===0&&all?(G.cert?'명예 연구원이 되었어요! 마을을 자유롭게 둘러보세요':'도장을 모두 모았어요! 원장님께 가서 임명장을 받으세요'):n===0&&doneCount()>0?'선배 연구원에게 가서 다음 임무를 고르세요':STEPS[n].t;
-  drawChips(); $('#timer').style.display=(n===5||n===13)?'flex':'none'; }
+  drawChips(); $('#timer').style.display=(n===5||n===13||n===22)?'flex':'none'; }
 
 /* ───────── UI 도우미 ───────── */
 let toastT=0; function toast(s,ms=2200){ const t=$('#toast'); t.textContent=s; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),ms); }
@@ -887,7 +890,7 @@ let noClickUntil=0;   // 누른 직후 뒤따라오는 click이 새로 뜬 화�
 document.addEventListener('click',e=>{ if(performance.now()<noClickUntil){ e.stopPropagation(); e.preventDefault(); } },true);
 function press(el,fn){ el.style.touchAction='none'; el.addEventListener('pointerdown',e=>{ e.preventDefault(); e.stopPropagation(); noClickUntil=performance.now()+450; fn(); }); }
 press($('#wave'),doWave); press($('#jump'),doJump); press($('#act'),()=>{ if(curAct&&!G.lock) curAct.fn(); });
-$('#tskip').addEventListener('click',()=>{ if(G.step===5||G.step===13) G.waitLeft=0; });
+$('#tskip').addEventListener('click',()=>{ if(G.step===5||G.step===13||G.step===22) G.waitLeft=0; });
 
 /* ───────── 행동 버튼 ───────── */
 const dist=(p,a)=>Math.hypot(p.x-a[0],p.z-a[1]);
@@ -903,8 +906,9 @@ function getOff(){ const a=drv.rotation.y; for(const s of [1,-1,0]){ const x=drv
 /* ───────── 물놀이터 현장 수질 검사 ───────── */
 const CL_COL=[[0.1,'#fdeef2'],[0.4,'#f9c6d4'],[1.0,'#f29bb5'],[2.0,'#e56a92'],[5.0,'#c2336a']];
 function playTest(done){
-  const bad=Math.random()<0.5?null:['cl','ph','tur','coli'][Math.floor(Math.random()*4)], pick=a=>a[Math.floor(Math.random()*a.length)];
-  const C={ cl:bad==='cl'?0.1:pick([1.0,2.0]), ph:bad==='ph'?9.1:pick([7.0,7.4,7.8]), tur:bad==='tur'?6.3:pick([0.8,1.5]), coli:bad==='coli'?450:pick([0,30]), ok:!bad }; G.playCase=C;
+  // 부적합은 소독약(염소)이 모자란 경우예요. 염소가 모자라면 대장균이 늘어나기도 해요.
+  const bad=Math.random()<0.5, pick=a=>a[Math.floor(Math.random()*a.length)];
+  const C={ cl:bad?0.1:pick([1.0,2.0]), ph:pick([7.0,7.4,7.8]), tur:pick([0.8,1.5]), coli:bad?pick([30,450]):pick([0,30]), ok:!bad, first:!bad, re:0 }; G.playCase=C;
   // 1) 물 뜨기
   openMini(`<div class="card"><h3>물놀이터 물 뜨기</h3><p>아이들이 노는 바닥분수의 물을 떠요.<br>버튼을 꾹 눌러 <b style="color:#e5484d">빨간 눈금선</b>까지 채우고 손을 떼세요.</p>
     <div class="bottles"><div class="bw cur" id="b0"><div class="cap"></div><div class="neck"></div><div class="bottle"><div class="fill"></div><div class="line"></div><div class="lb">물놀이터</div><div class="mk"></div></div></div></div>
@@ -942,11 +946,38 @@ function playTest(done){
     document.querySelectorAll('.opt').forEach(b=>b.addEventListener('click',()=>{ if(b.classList.contains('bad')) return;
       if((b.dataset.o==='1')===C.ok){ G.pl.judge=tries?15:30; closeMini(); done(C.ok); } else { tries++; b.classList.add('bad'); toast('측정값을 기준과 하나씩 다시 비교해 보세요'); } })); }
 }
+// 부적합일 때: 염소 투입 펌프를 알맞게 올려요. 모자라면 그대로 부족, 너무 많으면 기준 초과가 돼요.
+function doseGame(next){ const C=G.playCase; let v=C.dose||0, holding=false, last=0, set=false;
+  openMini(`<div class="card"><h3>염소 투입량 늘리기</h3><p>지금 잔류염소는 <b>${C.cl.toFixed(1)} mg/L</b>예요. (기준 0.4 ~ 4.0)<br>버튼을 꾹 눌러 투입 펌프를 <b style="color:#1f9d63">초록 구간</b>까지 올리고 손을 떼세요.</p>
+    <div class="gauge"><div class="band" style="left:52%;width:22%"></div><div class="needle" id="dn" style="left:${v}%"></div></div>
+    <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:#3c5960;margin:-8px 6px 10px"><span>적게</span><span>많이</span></div>
+    <p id="dmsg" style="min-height:22px;font-weight:700"></p>
+    <div class="opts"><button class="opt" id="dre">처음부터</button><button class="go" id="dup" style="touch-action:none">꾹 눌러 올리기</button></div></div>`);
+  const up=$('#dup');
+  function loop(now){ if(!holding) return; const dt=Math.min(0.05,Math.max(0,(now-last)/1000)); last=now; v=Math.min(100,v+dt*38); $('#dn').style.left=v+'%'; requestAnimationFrame(loop); }
+  function stop(){ if(!holding||set) return; holding=false; if(v<3) return; set=true; C.dose=v; C.next=v<52?0.2:v>74?5.0:1.0; C.coliNext=v<52?C.coli:0;
+    $('#dmsg').textContent='투입량을 맞췄어요. 소독약이 퍼지길 기다려요.'; setTimeout(()=>{ closeMini(); next(); },900); }
+  up.addEventListener('pointerdown',e=>{ e.preventDefault(); if(holding||set) return; holding=true; last=performance.now(); requestAnimationFrame(loop); });
+  for(const ev of ['pointerup','pointercancel','pointerleave']) up.addEventListener(ev,stop);
+  $('#dre').addEventListener('click',()=>{ if(set) return; v=0; $('#dn').style.left='0%'; }); }
+// 30분 뒤 다시 측정: 잔류염소 색을 다시 맞추고 판정해요
+function remeasure(done){ const C=G.playCase; C.re++; C.cl=C.next; C.coli=C.coliNext; C.ok=C.cl>=0.4&&C.cl<=4.0&&C.coli<200; let tries=0; const col=CL_COL.find(c=>c[0]===C.cl)||CL_COL[0];
+  const shown=C.cl===0.2?CL_COL[0]:col;   // 0.2는 색 비교표의 가장 옅은 칸(0.1)에 가까워요
+  openMini(`<div class="card"><h3>${C.re}번째 재측정 · 잔류염소</h3><p>30분이 지났어요. 다시 물을 떠서 시약을 넣었어요.<br>색 비교표에서 같은 색을 고르세요.</p>
+    <div style="width:96px;height:96px;border-radius:50%;margin:6px auto 14px;border:5px solid #c9d3d7;background:${shown[1]}"></div>
+    <div class="opts" style="grid-template-columns:repeat(5,1fr);gap:6px">${CL_COL.map(([v,c])=>`<button class="opt" data-v="${v}" style="background:${c};padding:22px 0 6px;font-size:12px;box-shadow:0 3px 0 #c9a3b0">${v}</button>`).join('')}</div><p style="margin:8px 0 0"><small>단위 mg/L</small></p></div>`);
+  document.querySelectorAll('.opt').forEach(b=>b.addEventListener('click',()=>{ if(+b.dataset.v!==shown[0]){ tries++; b.style.opacity=.3; toast('색을 다시 비교해 보세요'); return; }
+    const val=shown[0]; C.cl=val;
+    openMini(`<div class="card"><h3>${C.re}번째 재측정 · 판정</h3><div class="paper"><table><tr><td><b>항목</b></td><td><b>측정값</b></td><td><b>기준</b></td></tr>
+      <tr><td>잔류염소</td><td>${val.toFixed(1)}</td><td>0.4 ~ 4.0</td></tr><tr><td>대장균</td><td>${C.coli}</td><td>200 미만</td></tr><tr><td>pH</td><td>${C.ph.toFixed(1)}</td><td>5.8 ~ 8.6</td></tr><tr><td>탁도</td><td>${C.tur.toFixed(1)}</td><td>4 NTU 이하</td></tr></table></div>
+      <div class="opts"><button class="opt" data-o="1">✅ 적합</button><button class="opt" data-o="0">⚠️ 부적합</button></div></div>`);
+    document.querySelectorAll('.opt').forEach(o=>o.addEventListener('click',()=>{ if(o.classList.contains('bad')) return;
+      if((o.dataset.o==='1')===C.ok){ closeMini(); done(C.ok); } else { o.classList.add('bad'); toast(val>4?'염소가 너무 많아도 부적합이에요':'측정값을 기준과 다시 비교해 보세요'); } })); })); }
 function playReport(){ const s=G.pl, C=G.playCase, total=s.equip+s.sample+s.cl+s.ph+s.judge, stars=total>=85?3:total>=60?2:1;
   openMini(`<div class="card"><h3>보고 완료!</h3><div class="stars">${'★'.repeat(stars)}<span style="opacity:.2">${'★'.repeat(3-stars)}</span></div>
     <div class="rows"><div><span>검사 장비 챙기기</span><b>${s.equip} / 15</b></div><div><span>물 뜨기</span><b>${s.sample} / 15</b></div><div><span>잔류염소 측정</span><b>${s.cl} / 20</b></div>
     <div><span>pH 측정</span><b>${s.ph} / 20</b></div><div><span>수질 판정</span><b>${s.judge} / 30</b></div><div><span>합계</span><b>${total}점</b></div></div>
-    ${(G.done.p=true,stampsHtml('p'))}<p style="font-weight:800;color:#c8102e">도장 쾅! 물환경조사과 · 물놀이터 수질 검사 완료<br><small style="color:#3c5960">결과: ${C.ok?'적합 · 아이들이 신나게 놀고 있어요':'부적합 · 물을 갈고 소독한 뒤 다시 검사해요'}</small></p>
+    ${(G.done.p=true,stampsHtml('p'))}<p style="font-weight:800;color:#c8102e">도장 쾅! 물환경조사과 · 물놀이터 수질 검사 완료<br><small style="color:#3c5960">결과: ${C.first?'적합 · 아이들이 신나게 놀고 있어요':`처음엔 부적합 → 염소 투입량을 늘리고 ${C.re}번 재측정해서 적합`}</small></p>
     <div class="fact"><b>알고 계셨나요?</b><br>물놀이형 수경시설은 물이 아이들 입과 눈에 닿기 쉬워서, 운영 기간에는 정기적으로 수질 검사를 받아요. 기준을 넘으면 운영을 멈추고 물을 갈아야 해요.</div>
     <button class="go" id="ok">마을 둘러보기</button></div>`);
   $('#ok').addEventListener('click',()=>{ closeMini(); setStep(0); }); }
@@ -1002,8 +1033,12 @@ function getAction(){
   const p=player.g.position;
   if(dist(p,P.boss)<3.6) return {label:allDone()?(G.cert?'임명장 다시 보기':'임명장 받기'):'원장님과 대화',fn:bossTalk};
   if((G.step===18||G.step===19)&&dist(p,P.play)<7) return {label:'수질 검사 시작',fn:()=>{ if(dist(car.position,P.play)>36){ toast('검사 장비가 차에 있어요. 채수차량을 물놀이터 앞까지 몰고 오세요.'); return; }
-    playTest(ok=>{ ITEMS_P.forEach(i=>i.g.visible=false); setPlay(ok?'ok':'bad'); setStep(20);
-      toast(ok?'적합! 아이들이 물놀이터로 달려가요. 본관에 결과를 보고하세요.':'부적합이에요. 아이들이 아쉬워해요. 본관에 결과를 보고하세요.',3200); }); }};
+    playTest(ok=>{ ITEMS_P.forEach(i=>i.g.visible=false); setPlay(ok?'ok':'bad'); setStep(ok?20:21);
+      if(ok) toast('적합! 아이들이 물놀이터로 달려가요. 본관에 결과를 보고하세요.',3200);
+      else say([['안내','부적합이에요. 아이들이 아쉬워해요…'],['안내','현장에서 소독약(염소) 투입량을 늘리고, 30분 뒤에 다시 측정해요. 적합이 나올 때까지 30분마다 되풀이해요.']]); }); }};
+  if(G.step===21&&dist(p,P.play)<7) return {label:'염소 투입량 늘리기',fn:()=>doseGame(()=>{ G.waitLeft=20; setStep(22); toast('소독약이 물에 퍼질 때까지 30분 기다려요. (게임에서는 20초)',3000); })};
+  if(G.step===23&&dist(p,P.play)<7) return {label:'다시 측정하기',fn:()=>remeasure(ok=>{ if(ok){ setPlay('ok'); setStep(20); toast('적합! 아이들이 물놀이터로 달려가요. 본관에 결과를 보고하세요.',3200); }
+      else { setStep(21); toast('아직 부적합이에요. 투입량을 다시 맞추고 30분 뒤에 또 측정해요.',3200); } })};
   if(G.step===20&&dist(p,P.board)<4.5) return {label:'보고하기',fn:playReport};
   if(G.step===0&&dist(p,P.npc)<4.2) return {label:'임무 고르기',fn:missionSelect};
   if((G.step===2||G.step===3)&&dist(p,P.bridge)<8) return {label:'물 채취하기',fn:()=>{ if(dist(car.position,P.bridge)>20){ toast('채수 장비가 차에 있어요. 차를 다리까지 몰고 오세요.'); return; }
@@ -1049,7 +1084,8 @@ function frame(now){
     if(Math.hypot(ent.position.x-it.x,ent.position.z-it.z)<3.4){ it.got=true; it.g.visible=false; if(its===ITEMS) G.score.equip+=10; else if(its===ITEMS_A) G.air.equip+=5; else G.pl.equip+=5; drawChips(); toast(it.n+' 챙김!',1200); } }
   if(G.step===2&&G.driving&&dist(car.position,P.bridge)<6&&!bridgeHint){ bridgeHint=true; toast('다리에 도착! 차에서 내려 물을 채취하세요.'); }
   // 기다리기
-  if(G.step===5||G.step===13){ G.waitLeft-=dt; $('#ttx').textContent='🧪 분석 중 '+Math.max(0,Math.ceil(G.waitLeft))+'초'; if(G.waitLeft<=0){ setStep(G.step+1); toast('띵! 분석이 끝났어요. 환경동으로 가세요.'); } }
+  if(G.step===5||G.step===13||G.step===22){ const pg=G.step===22; G.waitLeft-=dt; $('#ttx').textContent=(pg?'⏱ 30분 기다리는 중 ':'🧪 분석 중 ')+Math.max(0,Math.ceil(G.waitLeft))+'초';
+    if(G.waitLeft<=0){ setStep(G.step+1); toast(pg?'30분이 지났어요. 물놀이터에서 다시 측정하세요.':'띵! 분석이 끝났어요. 환경동으로 가세요.'); } }
   // 길 안내
   const tg=STEPS[G.step].at(); const hideM=!tg||((G.step===1||G.step===9)&&G.driving);
   marker.visible=!hideM; arrow.visible=false;
@@ -1103,7 +1139,7 @@ $('#enter').addEventListener('click',()=>{ const v=nm.value.trim().slice(0,6);
   $('#start').style.display='none'; $('#hud').style.display='block'; setStep(0); G.lock=false;
   say([['안내',`${G.name} 연구원, 첫 출근을 환영해요! 왼쪽 아래 조이스틱으로 걷고, 화면을 좌우로 밀면 둘러볼 수 있어요.`]]);
 });
-window.__G=G; window.__dbg={player,car,car2,P}; window.__t={sampleGame,bottleGame,labGame,climbGame,haulGame,gaugeGame,filterGame,closeMini,playTest,setPlay,playReport};
+window.__G=G; window.__dbg={player,car,car2,P}; window.__t={sampleGame,bottleGame,labGame,climbGame,haulGame,gaugeGame,filterGame,closeMini,playTest,setPlay,playReport,doseGame,remeasure};
 // 실제 청사 3D 모형(hq.glb). 못 불러오면 위에서 만든 상자 건물을 그대로 써요.
 const HQ_MODEL={ file:'hq.glb', width:64, x:10, z:-46.5, rotY:0 };
 let DOOR_LIMIT=34;   // 차를 실험동 입구에서 이 거리 안에 세워야 시료를 접수할 수 있어요
