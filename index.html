@@ -459,6 +459,15 @@ setDust('--','#7fd3ff','측정 전');
 // 대기환경측정소는 바람이 잘 통하는 주민센터 옥상에 있어요. 건물 옆 바깥 계단으로 올라가요.
 { fbox(10,7,7,'#f3ead8',['#7fb6a8','#5f8f86','#9cc7bd'],77,12,3.5,68.5,0.6); box(1.6,2.4,0.1,0x2f4a52,12,1.2,64.96); sign('동네 주민센터',5,0.8,12,5.9,64.94,Math.PI,{bg:'#f3ead8',fg:'#17323a'});
   box(3,2,2.4,0xf4f5f3,10.5,8.35,68.5); box(3.3,0.2,2.7,0x8d979d,10.5,9.45,68.5); cyl(0.05,0.05,3.2,0xdfe6ea,13.5,8.95,68.5,scene,8); box(0.9,0.12,0.12,0xdfe6ea,13.5,10.4,68.5); cyl(0.14,0.14,0.5,0xdfe6ea,9.7,9.8,68.5,scene,8);
+  // 옥상 측정소 장비: 버섯 모양 흡입구 여러 개, 겹겹이 쌓인 흰 센서 덮개, 풍향풍속계. 실제 옥상 측정소 사진을 본떴어요.
+  { const Y=ROOF.y, W=0xf1f4f5, M=0xdfe6ea; box(4.2,0.08,2.5,0x3a4046,14.4,Y+0.04,70.6);
+    for(const [x,z,hh] of [[13.0,70.2,1.7],[14.0,71.1,2.1],[15.0,70.3,1.9],[15.9,71.0,1.6]]){ cyl(0.045,0.045,hh,M,x,Y+hh/2,z,scene,8); cyl(0.24,0.14,0.2,W,x,Y+hh+0.08,z,scene,14); cyl(0.28,0.28,0.05,W,x,Y+hh+0.2,z,scene,14); cyl(0.1,0.16,0.1,M,x,Y+hh-0.06,z,scene,10);
+      for(const a of [0.4,2.5,4.6]){ const m=cyl(0.02,0.02,1.0,M,x+Math.cos(a)*0.28,Y+0.45,z+Math.sin(a)*0.28,scene,5); m.rotation.z=-Math.cos(a)*0.55; m.rotation.x=Math.sin(a)*0.55; } }
+    for(const [x,z,y0] of [[13.5,70.9,0.9],[14.6,70.0,1.1]]){ cyl(0.03,0.03,y0,M,x,Y+y0/2,z,scene,6); for(let j=0;j<6;j++) cyl(0.2,0.2,0.035,W,x,Y+y0+j*0.07,z,scene,14); }
+    cyl(0.04,0.04,3.2,M,16.3,Y+1.6,69.9,scene,8); const an=new THREE.Group(); an.position.set(16.3,Y+3.25,69.9); scene.add(an); for(let i=0;i<3;i++){ const a=i/3*Math.PI*2; box(0.55,0.03,0.03,M,Math.cos(a)*0.27,0,Math.sin(a)*0.27,an).rotation.y=-a; const c=new THREE.Mesh(new THREE.SphereGeometry(0.09,8,6),mat(0x2b3036)); c.position.set(Math.cos(a)*0.55,0,Math.sin(a)*0.55); an.add(c); } ROOF.anemo=an;
+    box(0.6,0.22,0.03,0x2b3036,16.3,Y+2.6,69.9).rotation.y=0.6;
+    sign('주민센터 옥상 대기오염 측정소',6.2,0.6,12,Y+0.95,64.98,Math.PI,{bg:'#2b3036',fg:'#e9eef0'});
+    const l=label('옥상 대기오염 측정소',{bg:'rgba(29,79,208,.95)',fg:'#fff'}); l.scale.set(5.2,0.95,1); l.position.set(14.4,Y+4.6,70.6); scene.add(l); }
   for(const z of [65.1,72.1]) box(10,0.6,0.12,0xe9eef0,12,7.65,z); box(0.12,0.6,7,0xe9eef0,7.1,7.65,68.6); box(0.12,0.6,5.6,0xe9eef0,16.9,7.65,67.9);   // 동쪽 난간은 계단 끝에서 들어오도록 남쪽을 틔웠어요
   for(let i=0;i<14;i++){ const h=(i+1)*ROOF.y/14; box(2.4,h,6/14+0.02,i%2?0xb9c1c6:0xc7ced2,18.3,h/2,65+(i+0.5)*6/14); } box(2.4,ROOF.y,1.4,0xb9c1c6,18.3,ROOF.y/2,71.7);   // 바깥 계단과 계단참
   box(0.08,0.08,9.5,0x7c878d,19.45,4.7,68).rotation.x=-Math.atan(ROOF.y/6); box(0.08,1,1.4,0x7c878d,19.45,ROOF.y+0.5,71.7); box(2.4,1,0.08,0x7c878d,18.3,ROOF.y+0.5,72.36);
@@ -560,7 +569,7 @@ function blocked(x,z,r){
 // 걸어 다니는 연구원용: 주민센터 둘레에서는 바닥 높이 차이로 막아요. 계단은 오를 수 있고, 옥상 가장자리와 벽은 못 지나가요.
 function pBlocked(x,z,cx,cz){ const q=0.35;
   if(x<ROOF.x0-0.6||x>ROOF.sx1+0.6||z<ROOF.z0-0.6||z>ROOF.z1+0.6) return blocked(x,z,0.5);
-  const h=floorAt(cx,cz); if(h>6&&x>8.6&&x<12.4&&z>66.9&&z<70.1) return true;   // 옥상 측정소 상자
+  const h=floorAt(cx,cz); if(h>6&&((x>8.6&&x<12.4&&z>66.9&&z<70.1)||(x>12.2&&x<16.8&&z>69.5&&z<72))) return true;   // 옥상 측정소 상자
   for(const [a,b] of [[-q,-q],[q,-q],[-q,q],[q,q]]) if(Math.abs(floorAt(x+a,z+b)-h)>0.9) return true; return false; }
 // 마을 곳곳의 팻말: 보건환경연구원이 하는 일
 const SIGNS=[
@@ -1415,6 +1424,7 @@ function frame(now){
       else { f.g.position.set(f.len*(k-0.5),Math.sin(k*Math.PI)*f.h-0.15,0); f.g.rotation.z=Math.cos(k*Math.PI)*1.0; } }
     if(f.ring.visible){ const rk=(time-(f.t0<0?f.next-2.5:f.t0))/1.6, q=f.t0<0?1:Math.min(1,(time-f.t0)/1.4); f.ring.scale.setScalar(0.6+q*2.2); f.ring.material.opacity=0.8*(1-q); if(f.t0<0) f.ring.visible=false; } }
   // 측정소: 전광판 숫자가 가끔 바뀌고, 측정값이 본관 TMS 상황실로 날아가요. 주의보는 보고하고 90초 뒤에 해제돼요.
+  if(ROOF.anemo) ROOF.anemo.rotation.y+=dt*3.2;
   stnT-=dt; if(stnT<=0){ stnT=2.5; for(const s of DSTN) if(s.draw) s.draw(G.alertLeft>0?78+Math.floor(Math.random()*18):G.airK===0?7+Math.floor(Math.random()*7):18+Math.floor(Math.random()*15)); }
   STN_TX.forEach((m,i)=>{ const s=DSTN[i], k=(time*0.3+i*0.37)%1, y0=s.roof?10:3.6; m.position.set(s.x+(2-s.x)*k,y0+(13-y0)*k+Math.sin(k*Math.PI)*9,s.z+(-45-s.z)*k); m.scale.setScalar(0.6+Math.sin(k*Math.PI)*0.7); });
   if(G.alertLeft>0){ G.alertLeft-=dt; if(G.alertLeft<=0){ G.airK=1; setDust('28','#22c55e','보통'); setMasks(false); WALKERS.forEach(w=>w.told=false); toast('미세먼지 주의보가 해제됐어요. 이제 마스크를 벗어도 돼요!',3600); } }
