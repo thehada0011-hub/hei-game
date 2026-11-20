@@ -402,7 +402,8 @@ function floorAt(x,z){ if(z<ROOF.z0||z>ROOF.z1||x<ROOF.x0||x>ROOF.sx1) return 0;
   const PINK=[0xf7b6cf,0xf9c9dc,0xf29ebf,0xfbdbe8]; [[0,8.6,0,4.2],[3,7.4,1,3],[-3,7.6,-0.6,3.1],[0.6,7.2,3,2.9],[-0.8,7.4,-3,3],[2,9.8,-1.6,2.6],[-2,10,1.4,2.5]].forEach(([dx,y,dz,r],i)=>{
     const m=new THREE.Mesh(new THREE.IcosahedronGeometry(r,1),new THREE.MeshLambertMaterial({color:PINK[i%4],flatShading:true})); m.position.set(tx+dx,y,tz+dz); m.scale.y=0.8; m.rotation.y=i; m.castShadow=true; scene.add(m); }); }
 // 벚꽃나무 밑 의자: 가까이 가면 앉아서 쉴 수 있어요. ry는 앉았을 때 바라보는 방향이에요.
-const BENCHES=[{x:-83,z:-24.6,ry:0},{x:-79.9,z:-28.6,ry:Math.PI/2},{x:-86,z:-30.6,ry:-2.3}];
+const BENCHES=[{x:-83,z:-24.6,ry:0},{x:-79.9,z:-28.6,ry:Math.PI/2},{x:-86,z:-30.6,ry:-2.3},
+  ...[-75.25,-55.75,-36.25,-10.25,9.25,28.75,54.75,80.75].map(x=>({x,z:-88.3,ry:Math.PI}))];   // 영산강 벚꽃길: 나무 사이에서 강을 바라보는 의자 8개
 for(const b of BENCHES){ const g=new THREE.Group(); g.position.set(b.x,0,b.z); g.rotation.y=b.ry; scene.add(g);
   for(const z of [-0.18,0.02,0.22]) box(2.2,0.08,0.17,0xa9743f,0,0.5,z,g); for(const y of [0.78,1.0]) box(2.2,0.16,0.07,0xa9743f,0,y,-0.32,g);
   for(const x of [-0.95,0.95]){ box(0.09,0.5,0.5,0x4a4f55,x,0.25,0,g); box(0.09,0.75,0.09,0x4a4f55,x,0.82,-0.32,g); } }
