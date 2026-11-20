@@ -397,7 +397,12 @@ const SMOKE=Array.from({length:7},()=>{ const m=new THREE.Mesh(new THREE.SphereG
 // 대기환경측정소(미세먼지분석과), 어린이집(생활환경과), 공장 방류구(산업폐수과)
 // 맵 전체를 쓰도록 남쪽 가운데, 서남쪽, 강 건너 동북쪽에 하나씩 놓았어요. XAT는 플레이어가 서는 자리예요.
 const XAT={ d:[12,60], l:[-74,46.5], i:[146,-41] };
-box(8,3.4,6,0xf4f5f3,12,1.7,68); box(8.4,0.3,6.4,0x8d979d,12,3.55,68); cyl(0.06,0.06,3,0xdfe6ea,14,5.1,68,scene,8); box(1.2,0.9,0.9,0xdfe6ea,10.5,4.1,68); panel2('대기환경측정소',5,0.9,12,2.4,64.9,{bg:'#e6f1fb',fg:'#0c447c'});
+// 대기환경측정소는 바람이 잘 통하는 주민센터 옥상에 있어요. 건물 옆 바깥 계단으로 올라가요.
+{ fbox(10,7,7,'#f3ead8',['#7fb6a8','#5f8f86','#9cc7bd'],77,12,3.5,68.5,0.6); box(1.6,2.4,0.1,0x2f4a52,12,1.2,64.96); sign('동네 주민센터',5,0.8,12,5.9,64.94,Math.PI,{bg:'#f3ead8',fg:'#17323a'});
+  box(3,2,2.4,0xf4f5f3,10.5,8.35,68.5); box(3.3,0.2,2.7,0x8d979d,10.5,9.45,68.5); cyl(0.05,0.05,3.2,0xdfe6ea,13.5,8.95,68.5,scene,8); box(0.9,0.12,0.12,0xdfe6ea,13.5,10.4,68.5); cyl(0.14,0.14,0.5,0xdfe6ea,9.7,9.8,68.5,scene,8);
+  for(const z of [65.1,71.9]) box(10,0.6,0.12,0xe9eef0,12,7.65,z); for(const x of [7.1,16.9]) box(0.12,0.6,7,0xe9eef0,x,7.65,68.5);
+  for(let i=0;i<14;i++) box(1.5,0.25,0.5,0xb9c1c6,17.85,0.5*i+0.38,65.25+i*0.5); box(0.08,0.08,7.6,0x7c878d,18.6,4.6,68.5).rotation.x=-Math.atan(1);
+  box(0.15,2.2,0.15,0x7c878d,16.2,1.1,63.4); panel2('옥상 대기환경측정소 ↑',4.6,0.8,16.2,2.4,63.4,{bg:'#e6f1fb',fg:'#0c447c'}); }
 box(9,3.2,6,0xffe9a8,-74,1.6,52); box(9.4,0.4,6.4,0xff8fa3,-74,3.4,52); for(const x of [-77,-71]) box(1.4,1.4,0.1,0x7fd3e6,x,1.8,48.95); box(1.4,2.2,0.1,0x8a5a2b,-74,1.1,48.95); panel2('해님 어린이집',4.4,0.8,-74,2.75,48.9,{bg:'#fff0f5',fg:'#a8326a'});
 { box(12,6,10,0xc9c2b4,160,3,-45); box(12.6,0.5,10.6,0x8d979d,160,6.2,-45); cyl(0.7,0.9,9,0xd9dee1,163,4.5,-47); sign('강 건너 공장',7,0.9,160,4.6,-39.94,0,{bg:'#17323a',fg:'#fff'});
   const m=cyl(0.5,0.5,10.5,0x6b7780,148.75,0.6,-45,scene,14); m.rotation.z=Math.PI/2; flat(2.6,3,0x4f9bb5,142.2,0.09,-45); box(0.15,1.6,0.15,0x7c878d,146,0.8,-43); panel2('방류구',2,0.7,146,1.8,-43,{bg:'#17323a',fg:'#fff'}); }
@@ -409,7 +414,7 @@ for(let i=0;i<14;i++){ const a=i/14*Math.PI*2+0.3, r=215+(i%3)*18, h=40+(i*37%30
 
 /* 충돌 */
 const WALLS=[ [-12,12,-27,-17],[20,36,-21,-11],[-40,-24,-60,-49.6],[FX-21.5,FX-3.5,FZ-6,FZ+6],[FX-2,FX+2,FZ-2,FZ+2],[6.4,9.6,-15.4,-14.6],
-  [-20,-12,-27,-19],[-4,4,-17,-15.7],[-19.5,-14.5,-5.5,-0.5],[52.2,54.6,-33,-25],[8,16,65,71],[-78.5,-69.5,49,55],[154,166,-50,-40],[143.5,154,-45.6,-44.4], ...PARKED.map(([x,z])=>[x-0.9,x+0.9,z-1.9,z+1.9]) ];
+  [-20,-12,-27,-19],[-4,4,-17,-15.7],[-19.5,-14.5,-5.5,-0.5],[52.2,54.6,-33,-25],[7,18.7,65,72.4],[-78.5,-69.5,49,55],[154,166,-50,-40],[143.5,154,-45.6,-44.4], ...PARKED.map(([x,z])=>[x-0.9,x+0.9,z-1.9,z+1.9]) ];
 function blocked(x,z,r){
   if(x<-100+r||x>190-r||z<-89.5+r||z>90-r) return true;
   for(const w of WALLS) if(x>w[0]-r&&x<w[1]+r&&z>w[2]-r&&z<w[3]+r) return true;
@@ -575,8 +580,8 @@ const flag2=new THREE.Group(); cyl(0.07,0.07,4,0x7c878d,0,2,0,flag2,8); box(1.6,
 const P={ npc:[-3,-8], bridge:[130,ROAD_Z], door:[28,-8.6], board:[8,-13], info:[-9,3.6], stack:[FX,FZ-5], boss:[5,-7], play:[PGX,PGZ+12.5] };
 // 측정값을 보고 알맞은 깃발을 올리는 세 과의 임무. opts는 [깃발 이름, 색, 이 값까지]예요.
 const XMS={
-  d:{name:'미세먼지분석과',job:'미세먼지 측정',ic:'📡',sub:'대기환경측정소에서 초미세먼지를 재고 등급 깃발을 올려요',at:XAT.d,go:'남쪽 대기환경측정소로 가서 미세먼지를 재세요',ask:v=>`초미세먼지 ${v}! 알맞은 등급 깃발을 올려요`,lo:3,
-    opts:[['좋음','#3b82f6',15],['보통','#22c55e',35],['나쁨','#eab308',75],['매우 나쁨','#ef4444',130]],help:'좋음 15까지 · 보통 35까지 · 나쁨 75까지 · 그보다 높으면 매우 나쁨',fact:'대기환경측정소는 하루 24시간 미세먼지와 오존을 재서 알려 줘요. 나쁨이면 마스크를 쓰고 바깥 활동을 줄여요.'},
+  d:{name:'미세먼지분석과',job:'미세먼지 측정',ic:'📡',sub:'주민센터 옥상 측정소에서 초미세먼지를 재고 등급 깃발을 올려요',roof:1,act:'옥상 측정소로 올라가기',at:XAT.d,go:'남쪽 주민센터 옥상의 대기환경측정소로 가서 미세먼지를 재세요',ask:v=>`초미세먼지 ${v}! 알맞은 등급 깃발을 올려요`,lo:3,
+    opts:[['좋음','#3b82f6',15],['보통','#22c55e',35],['나쁨','#eab308',75],['매우 나쁨','#ef4444',130]],help:'좋음 15까지 · 보통 35까지 · 나쁨 75까지 · 그보다 높으면 매우 나쁨',fact:'대기환경측정소는 바람이 잘 통하는 건물 옥상에 있어요. 하루 24시간 미세먼지와 오존을 재서 알려 줘요. 나쁨이면 마스크를 쓰고 바깥 활동을 줄여요.'},
   i:{name:'산업폐수과',job:'폐수 검사',ic:'🏭',sub:'공장 방류구에서 나오는 물의 pH를 재고 판정 깃발을 올려요',at:XAT.i,go:'다리를 건너 북쪽 공장 방류구로 가서 폐수를 검사하세요',ask:v=>`폐수의 pH가 ${v}! 알맞은 판정 깃발을 올려요`,lo:3,dec:1,
     opts:[['산성이 강해요','#f97316',5.7],['기준 이내','#22c55e',8.6],['알칼리가 강해요','#8b5cf6',12]],help:'5.8보다 낮으면 산성 · 5.8부터 8.6까지 기준 이내 · 8.6보다 높으면 알칼리',fact:'공장에서 쓴 물은 깨끗하게 처리한 뒤에 내보내야 해요. 연구원은 방류구의 물을 떠서 기준을 지켰는지 검사해요.'},
   l:{name:'생활환경과',job:'소음 측정',ic:'🔊',sub:'어린이집 앞에서 소음을 재고 알맞은 깃발을 올려요',at:XAT.l,go:'서남쪽 끝 해님 어린이집으로 가서 소음을 재세요',ask:v=>`소음이 ${v}데시벨! 알맞은 깃발을 올려요`,lo:30,
@@ -1109,7 +1114,7 @@ function getAction(){
   if(G.step===23&&dist(p,P.play)<7) return {label:'다시 측정하기',fn:()=>remeasure(ok=>{ if(ok){ setPlay('ok'); setStep(20); toast('적합! 아이들이 물놀이터로 달려가요. 본관에 결과를 보고하세요.',3200); }
       else { setStep(21); toast('아직 부적합이에요. 투입량을 다시 맞추고 30분 뒤에 또 측정해요.',3200); } })};
   if(G.step===20&&dist(p,P.board)<4.5) return {label:'보고하기',fn:playReport};
-  if(G.step===24&&dist(p,XM.at)<7) return {label:XM.job+' 시작',fn:()=>focusPick(XM,()=>{ setStep(25); toast('측정 끝! 본관 게시판에 결과를 보고하세요.',2800); })};
+  if(G.step===24&&dist(p,XM.at)<7) return {label:XM.act||XM.job+' 시작',fn:()=>focusPick(XM,()=>{ setStep(25); toast('측정 끝! 본관 게시판에 결과를 보고하세요.',2800); })};
   if(G.step===25&&dist(p,P.board)<4.5) return {label:'보고하기',fn:xReport};
   if(G.step===0&&dist(p,P.npc)<4.2) return {label:'임무 고르기',fn:missionSelect};
   if((G.step===2||G.step===3)&&dist(p,P.bridge)<8) return {label:'물 채취하기',fn:()=>{ if(needItems(ITEMS)) return; if(dist(car.position,P.bridge)>20){ toast('채수 장비가 차에 있어요. 차를 다리까지 몰고 오세요.'); return; }
@@ -1267,6 +1272,13 @@ const FOC={};
 // 측정값을 보고 알맞은 깃발 올리기 (미세먼지분석과, 산업폐수과, 생활환경과가 같이 써요)
 function focusPick(M,next){ const {s,c,r}=FOC; focusUI({hintTop:1}); const hint=t=>$('#fhint').textContent=t, grp=new THREE.Group(); s.add(grp); c.position.set(0,0.9,9); c.lookAt(0,0.9,0);
   const base=new THREE.Mesh(new THREE.BoxGeometry(9,0.3,3),PBR(0xb9c1c6,{roughness:.9})); base.position.y=-0.75; grp.add(base);
+  if(M.roof){ const add=(w,h,d,c,x,y,z)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),PBR(c,{roughness:.8})); m.position.set(x,y,z); grp.add(m); return m; };   // 옥상 난간과 측정소 상자, 환기구
+    { const cv=document.createElement('canvas'); cv.width=512; cv.height=320; const g=cv.getContext('2d'), gr=g.createLinearGradient(0,0,0,320); gr.addColorStop(0,'#8fc9f2'); gr.addColorStop(.7,'#dff1fb'); g.fillStyle=gr; g.fillRect(0,0,512,320);   // 옥상에서 보이는 하늘과 먼 마을
+      g.fillStyle='#9dc79a'; g.beginPath(); g.moveTo(0,250); for(let x=0;x<=512;x+=64) g.lineTo(x,232+Math.sin(x*0.02)*16); g.lineTo(512,320); g.lineTo(0,320); g.fill();
+      for(let i=0;i<16;i++){ const w=18+(i*7%14), h=26+(i*13%44); g.fillStyle=i%2?'#e9ece9':'#d5dcdd'; g.fillRect(i*33+4,262-h,w,h+60); } g.fillStyle='#b9d8a8'; g.fillRect(0,290,512,30);
+      const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; const sky=new THREE.Mesh(new THREE.PlaneGeometry(34,21),new THREE.MeshBasicMaterial({map:t})); sky.position.set(0,4.1,-7); grp.add(sky); }
+    add(9,0.45,0.25,0xe9eef0,0,-0.38,-1.35); add(9,0.06,0.06,0x8d979d,0,0.25,-1.35); for(let x=-4;x<=4;x+=2) add(0.06,0.6,0.06,0x8d979d,x,-0.05,-1.35);
+    add(1.9,1.5,1.2,0xf4f5f3,-2.9,0.15,-0.5); add(2.1,0.12,1.4,0x8d979d,-2.9,0.96,-0.5); add(0.7,0.5,0.7,0xb9c1c6,3.2,-0.35,-0.6); }
   const pole=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,3.4,10),PBR(0xdfe6ea,{metalness:.8,roughness:.3})); pole.position.set(0.6,1.1,0); grp.add(pole);
   const flag=new THREE.Mesh(new THREE.BoxGeometry(0.75,0.48,0.02),PBR(0xffffff)); flag.position.set(1.0,-0.2,0); grp.add(flag);
   const dev=new THREE.Mesh(new THREE.BoxGeometry(0.8,1.0,0.5),PBR(0xf4f7f8,{roughness:.4})); dev.position.set(-0.75,-0.1,0); grp.add(dev);
