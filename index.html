@@ -400,17 +400,26 @@ const XAT={ d:[13.8,68.5], l:[-74,46.5], i:[146,-41] };
 // 주민센터 옥상(높이 y)과 바깥 계단. 계단은 x1~sx1 사이에서 z0부터 6칸 동안 올라가요.
 const ROOF={x0:7,x1:17.1,sx1:19.5,z0:65,z1:72.4,y:7.35};
 function floorAt(x,z){ if(z<ROOF.z0||z>ROOF.z1||x<ROOF.x0||x>ROOF.sx1) return 0; return x<=ROOF.x1?ROOF.y:Math.min(ROOF.y,(z-ROOF.z0)/6*ROOF.y); }
+// 미세먼지 신호등: 숫자 전광판 아래에 등급 표지 네 개. 미세먼지 임무를 보고하면 모든 신호등에 측정값이 켜져요.
+const DSIG=[], DTAG=[['좋음','#3b82f6'],['보통','#22c55e'],['나쁨','#eab308'],['매우 나쁨','#ef4444']];
+function dustSignal(x,z){ cyl(0.12,0.12,2,0x3a4046,x,1,z,scene,10); box(1,1.9,0.22,0xd9d5c8,x,2.95,z); box(1.3,1.1,0.7,0x20262b,x,4.45,z);
+  const cv=document.createElement('canvas'); cv.width=256; cv.height=192; const tex=new THREE.CanvasTexture(cv); tex.colorSpace=THREE.SRGBColorSpace; const m=new THREE.MeshBasicMaterial({map:tex});
+  for(const s of [1,-1]){ const p=new THREE.Mesh(new THREE.PlaneGeometry(1.14,0.86),m); p.position.set(x,4.45,z+0.36*s); if(s<0) p.rotation.y=Math.PI; scene.add(p);
+    DTAG.forEach(([t,c],i)=>sign(t,0.8,0.34,x,3.6-i*0.43,z+0.12*s,s<0?Math.PI:0,{bg:c,fg:'#fff'})); }
+  DSIG.push({cv,tex}); }
+function setDust(v,col,name){ for(const d of DSIG){ const g=d.cv.getContext('2d'); g.fillStyle='#0b0f12'; g.fillRect(0,0,256,192); g.textAlign='center'; g.textBaseline='middle'; g.fillStyle='#fff'; g.font=`bold 42px ${FONT}`; g.fillText('초미세',128,36);
+    g.fillStyle=col; g.font=`bold 90px ${FONT}`; g.fillText(v,128,104); g.font=`bold 30px ${FONT}`; g.fillText(name,128,166); d.tex.needsUpdate=true; } }
+// 주민센터 앞, 광장, 주차장, 물놀이터, 어린이집, 다리 입구, 공장 진입로
+for(const [x,z] of [[22.5,63.2],[9.5,3],[57,-22],[PGX+10,PGZ+14],[-67.5,45.5],[114,9.3],[FX+10.5,40]]) dustSignal(x,z);
+setDust('--','#7fd3ff','측정 전');
 // 대기환경측정소는 바람이 잘 통하는 주민센터 옥상에 있어요. 건물 옆 바깥 계단으로 올라가요.
 { fbox(10,7,7,'#f3ead8',['#7fb6a8','#5f8f86','#9cc7bd'],77,12,3.5,68.5,0.6); box(1.6,2.4,0.1,0x2f4a52,12,1.2,64.96); sign('동네 주민센터',5,0.8,12,5.9,64.94,Math.PI,{bg:'#f3ead8',fg:'#17323a'});
   box(3,2,2.4,0xf4f5f3,10.5,8.35,68.5); box(3.3,0.2,2.7,0x8d979d,10.5,9.45,68.5); cyl(0.05,0.05,3.2,0xdfe6ea,13.5,8.95,68.5,scene,8); box(0.9,0.12,0.12,0xdfe6ea,13.5,10.4,68.5); cyl(0.14,0.14,0.5,0xdfe6ea,9.7,9.8,68.5,scene,8);
   for(const z of [65.1,72.1]) box(10,0.6,0.12,0xe9eef0,12,7.65,z); box(0.12,0.6,7,0xe9eef0,7.1,7.65,68.6); box(0.12,0.6,5.6,0xe9eef0,16.9,7.65,67.9);   // 동쪽 난간은 계단 끝에서 들어오도록 남쪽을 틔웠어요
   for(let i=0;i<14;i++){ const h=(i+1)*ROOF.y/14; box(2.4,h,6/14+0.02,i%2?0xb9c1c6:0xc7ced2,18.3,h/2,65+(i+0.5)*6/14); } box(2.4,ROOF.y,1.4,0xb9c1c6,18.3,ROOF.y/2,71.7);   // 바깥 계단과 계단참
   box(0.08,0.08,9.5,0x7c878d,19.45,4.7,68).rotation.x=-Math.atan(ROOF.y/6); box(0.08,1,1.4,0x7c878d,19.45,ROOF.y+0.5,71.7); box(2.4,1,0.08,0x7c878d,18.3,ROOF.y+0.5,72.36);
-  // 미세먼지 신호등: 숫자 전광판 아래에 등급 표지 네 개가 붙어 있어요
-  cyl(0.12,0.12,2,0x3a4046,22.5,1,63.2,scene,10); box(1,1.9,0.22,0xd9d5c8,22.5,2.95,63.2); box(1.3,1.1,0.7,0x20262b,22.5,4.45,63.2); sign('초미세 7',1.1,0.8,22.5,4.45,62.84,Math.PI,{bg:'#0b0f12',fg:'#3bd0ff'});
-  [['좋음','#3b82f6'],['보통','#22c55e'],['나쁨','#eab308'],['매우 나쁨','#ef4444']].forEach(([t,c],i)=>sign(t,0.8,0.34,22.5,3.6-i*0.43,63.08,Math.PI,{bg:c,fg:'#fff'}));
   box(0.15,2.2,0.15,0x7c878d,14.6,1.1,63.4); panel2('옥상 측정소 · 계단으로 올라가요',5.4,0.8,14.6,2.4,63.4,{bg:'#e6f1fb',fg:'#0c447c'}); }
-box(9,3.2,6,0xffe9a8,-74,1.6,52); box(9.4,0.4,6.4,0xff8fa3,-74,3.4,52); for(const x of [-77,-71]) box(1.4,1.4,0.1,0x7fd3e6,x,1.8,48.95); box(1.4,2.2,0.1,0x8a5a2b,-74,1.1,48.95); panel2('해님 어린이집',4.4,0.8,-74,2.75,48.9,{bg:'#fff0f5',fg:'#a8326a'});
+box(9,3.2,6,0xffe9a8,-74,1.6,52); box(9.4,0.4,6.4,0xff8fa3,-74,3.4,52); for(const x of [-77,-71]) box(1.4,1.4,0.1,0x7fd3e6,x,1.8,48.95); box(1.4,2.2,0.1,0x8a5a2b,-74,1.1,48.95); panel2('정원어린이집',4.4,0.8,-74,2.75,48.9,{bg:'#fff0f5',fg:'#a8326a'});
 { box(12,6,10,0xc9c2b4,160,3,-45); box(12.6,0.5,10.6,0x8d979d,160,6.2,-45); cyl(0.7,0.9,9,0xd9dee1,163,4.5,-47); sign('강 건너 공장',7,0.9,160,4.6,-39.94,0,{bg:'#17323a',fg:'#fff'});
   const m=cyl(0.5,0.5,10.5,0x6b7780,148.75,0.6,-45,scene,14); m.rotation.z=Math.PI/2; flat(2.6,3,0x4f9bb5,142.2,0.09,-45); box(0.15,1.6,0.15,0x7c878d,146,0.8,-43); panel2('방류구',2,0.7,146,1.8,-43,{bg:'#17323a',fg:'#fff'}); }
 // 안내판
@@ -596,7 +605,7 @@ const XMS={
     opts:[['좋음','#3b82f6',15],['보통','#22c55e',35],['나쁨','#eab308',75],['매우 나쁨','#ef4444',130]],help:'좋음 15까지 · 보통 35까지 · 나쁨 75까지 · 그보다 높으면 매우 나쁨',fact:'대기환경측정소는 바람이 잘 통하는 건물 옥상에 있어요. 하루 24시간 미세먼지와 오존을 재서 알려 줘요. 나쁨이면 마스크를 쓰고 바깥 활동을 줄여요.'},
   i:{name:'산업폐수과',job:'폐수 검사',ic:'🏭',sub:'공장 방류구에서 나오는 물의 pH를 재고 판정 깃발을 올려요',at:XAT.i,go:'다리를 건너 북쪽 공장 방류구로 가서 폐수를 검사하세요',ask:v=>`폐수의 pH가 ${v}! 알맞은 판정 깃발을 올려요`,lo:3,dec:1,
     opts:[['산성이 강해요','#f97316',5.7],['기준 이내','#22c55e',8.6],['알칼리가 강해요','#8b5cf6',12]],help:'5.8보다 낮으면 산성 · 5.8부터 8.6까지 기준 이내 · 8.6보다 높으면 알칼리',fact:'공장에서 쓴 물은 깨끗하게 처리한 뒤에 내보내야 해요. 연구원은 방류구의 물을 떠서 기준을 지켰는지 검사해요.'},
-  l:{name:'생활환경과',job:'소음 측정',ic:'🔊',sub:'어린이집 앞에서 소음을 재고 알맞은 깃발을 올려요',at:XAT.l,go:'서남쪽 끝 해님 어린이집으로 가서 소음을 재세요',ask:v=>`소음이 ${v}데시벨! 알맞은 깃발을 올려요`,lo:30,
+  l:{name:'생활환경과',job:'소음 측정',ic:'🔊',sub:'어린이집 앞에서 소음을 재고 알맞은 깃발을 올려요',at:XAT.l,go:'서남쪽 끝 정원어린이집으로 가서 소음을 재세요',ask:v=>`소음이 ${v}데시벨! 알맞은 깃발을 올려요`,lo:30,
     opts:[['조용해요','#3b82f6',45],['보통이에요','#22c55e',60],['시끄러워요','#eab308',75],['매우 시끄러워요','#ef4444',100]],help:'조용 45까지 · 보통 60까지 · 시끄러움 75까지 · 그보다 크면 매우 시끄러움',fact:'생활환경과는 소음뿐 아니라 실내 공기와 어린이 활동공간이 안전한지도 검사해요.'} };
 let XM=XMS.d;
 const doneCount=()=>Object.values(G.done).filter(Boolean).length, allDone=()=>doneCount()>=6;
@@ -1331,7 +1340,7 @@ function focusDust(M,next){ const NEED=12, O=M.opts; focusUI({hintTop:1,star:`�
       if(hit){ if(p.bad){ miss++; sadT=1; sfx('no'); fPop(p.pink?'앗, 꽃잎!':'앗, 나뭇잎!','warn'); } else { got++; hopT=0.3; sfx('pop'); $('#fstar').textContent=`먼지 ${got}/${NEED}`; } }
       if(hit||m.position.y<-0.6){ grp.remove(m); parts.splice(i,1); } }
     if(!ended&&got>=NEED){ ended=true; const k=Math.floor(Math.random()*3), lo=k?O[k-1][2]+1:M.lo, v=Math.round(lo+Math.random()*(O[k][2]-lo));
-      led.userData.show(String(v),O[k][1],120,'초미세'); tags[k].scale.setScalar(1.3); tags[k].position.z=-0.36; hint(`먼지를 다 모았어요! 신호등에 초미세먼지 ${v}, "${O[k][0]}"이 켜졌어요`); xFinish(Math.max(6,15-miss*2),grp,next,()=>{ alive=false; }); }
+      G.dust={v,k}; led.userData.show(String(v),O[k][1],120,'초미세'); tags[k].scale.setScalar(1.3); tags[k].position.z=-0.36; hint(`먼지를 다 모았어요! 신호등에 초미세먼지 ${v}, "${O[k][0]}"이 켜졌어요`); xFinish(Math.max(6,15-miss*2),grp,next,()=>{ alive=false; }); }
     sadT=Math.max(0,sadT-dt); hopT=Math.max(0,hopT-dt); wk.face(sadT>0); wk.body.position.y=-0.6+Math.sin(hopT/0.3*Math.PI)*0.12; wk.who.armR.rotation.x=-1.3; r.render(s,c); requestAnimationFrame(loop); })(last); }
 // 산업폐수과: 방류구 물에 시험지를 담그고, 변한 색을 색 견본에서 골라요.
 function focusStrip(M,next){ focusUI({hintTop:1,go:'시험지 담그기'}); const S=xStage(0x9fb08a,0.1), {grp,add,rod,r,s,c,hint}=S, go=$('#fgo'), ob=$('#fopts');
@@ -1384,8 +1393,9 @@ function focusNoise(M,next){ focusUI({hintTop:1,go:'여기예요!'}); const S=xS
     if(busy){ src[loud].position.x=SX[loud]+Math.sin(t*45)*0.03; rings.forEach((m,i)=>{ const k=(t*0.9+i/3)%1; m.scale.setScalar(0.6+k*2.2); m.material.opacity=0.8*(1-k); }); }
     sadT=Math.max(0,sadT-dt); hopT=Math.max(0,hopT-dt); wk.face(sadT>0); wk.body.position.y=-0.6+Math.sin(hopT/0.35*Math.PI)*0.15; wk.who.armR.rotation.x=-1.4; r.render(s,c); requestAnimationFrame(loop); })(last); }
 function xGame(k){ return {d:focusDust,i:focusStrip,l:focusNoise}[k]; }
-function xReport(){ const st=G.xStars||0, k=G.xk; G.done[k]=true;
-  openMini(`<div class="card"><h3>보고 완료!</h3><div class="stars" style="font-size:30px">★ ${st} / 15</div>${stampsHtml(k)}<p style="font-weight:800;color:#c8102e">도장 쾅! ${XM.name} · ${XM.job} 완료</p>
+function xReport(){ const st=G.xStars||0, k=G.xk; G.done[k]=true; let extra='';
+  if(k==='d'&&G.dust){ const o=XMS.d.opts[G.dust.k]; setDust(String(G.dust.v),o[1],o[0]); extra=`<p style="font-weight:700">마을 미세먼지 신호등에 <b style="color:${o[1]}">초미세 ${G.dust.v} · ${o[0]}</b>이 켜졌어요!</p>`; }
+  openMini(`<div class="card"><h3>보고 완료!</h3><div class="stars" style="font-size:30px">★ ${st} / 15</div>${stampsHtml(k)}<p style="font-weight:800;color:#c8102e">도장 쾅! ${XM.name} · ${XM.job} 완료</p>${extra}
     <div class="fact"><b>알고 계셨나요?</b><br>${XM.fact}</div><button class="go" id="ok">마을 둘러보기</button></div>`); $('#ok').addEventListener('click',()=>{ closeMini(); setStep(0); }); }
 // 효과음: 파일 없이 소리를 직접 만들어요
 let AC=null;
