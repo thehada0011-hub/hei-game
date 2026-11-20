@@ -565,6 +565,12 @@ const SENIOR='선배 연구원';
 
 /* ───────── 미니게임 1: 다리 위에서 물 긷기 ───────── */
 /* ───────── 그림 도우미 ───────── */
+// 미니게임에 쓰는 일러스트. 못 불러오면 예전처럼 코드로 그린 그림을 써요.
+const IMG={}; for(const f of ['bg_bridge.jpg','bg_play.jpg','sampler.png','researcher.png']){ const im=new Image(); im.src='img/'+f; IMG[f.split('.')[0]]=im; }
+const ready=im=>im.complete&&im.naturalWidth>0;
+// 배경을 세로에 꽉 맞춰 그리고, 옆이 남으면 가장자리 색을 늘려서 채워요
+function fit(g,im,W,H){ const dw=H*im.naturalWidth/im.naturalHeight, dx=(W-dw)/2;
+  if(dx>0){ g.drawImage(im,0,0,2,im.naturalHeight,0,0,dx+1,H); g.drawImage(im,im.naturalWidth-2,0,2,im.naturalHeight,dx+dw-1,0,dx+1,H); } g.drawImage(im,dx,0,dw,H); }
 function rr(g,x,y,w,h,r){ g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
 function cloud(g,x,y,s){ g.fillStyle='rgba(255,255,255,.9)'; g.beginPath(); g.arc(x,y,12*s,0,7); g.arc(x+14*s,y-6*s,15*s,0,7); g.arc(x+30*s,y,12*s,0,7); g.arc(x+15*s,y+4*s,13*s,0,7); g.fill(); }
 function person(g,x,y,s=1,helmet=false,pose=0){ g.save(); g.translate(x,y); g.scale(s,s);
@@ -587,8 +593,17 @@ function sampleGame(done){
   const hold=(el,v)=>{ el.addEventListener('pointerdown',e=>{ e.preventDefault(); dir=v; }); for(const ev of ['pointerup','pointercancel','pointerleave']) el.addEventListener(ev,()=>{ if(dir===v) dir=0; }); };
   hold($('#sup'),-1); hold($('#sdn'),1);
   const fish=[0,1,2,3].map(i=>({x:Math.random()*W,d:0.4+i*0.13,v:(i%2?1:-1)*(16+i*7)}));
-  const geo=()=>{ const bY=H*0.24,wY=H*0.5,dY=H*0.92; return {bY,wY,dY,sy:bY+10+len*(dY-bY-30),sx:W*0.6+Math.sin(t*1.4)*len*W*0.06}; };
-  function draw(dt){ const {bY,wY,dY,sy,sx}=geo(), dk=bY-14; g.setTransform(dpr,0,0,dpr,0,0);
+  const ART=()=>ready(IMG.bg_bridge)&&ready(IMG.sampler);
+  const geo=()=>{ const a=ART(), bY=H*(a?0.115:0.24), wY=H*(a?0.455:0.5), dY=H*(a?0.925:0.92); return {bY,wY,dY,sy:bY+(a?40:10)+len*(dY-bY-(a?70:30)),sx:W*(a?0.5:0.6)+Math.sin(t*1.4)*len*W*0.06}; };
+  function drawArt(sx,sy,bY,wY,dY){ fit(g,IMG.bg_bridge,W,H); const D=Math.min(W*0.27,124), z1=wY+(dY-wY)*0.25, z2=wY+(dY-wY)*0.6, ry=sy-D*0.46;
+    g.fillStyle='rgba(130,255,180,.17)'; g.fillRect(0,z1,W,z2-z1); g.strokeStyle='rgba(215,255,228,.95)'; g.lineWidth=2; g.setLineDash([10,7]); g.beginPath(); g.moveTo(0,z1); g.lineTo(W,z1); g.moveTo(0,z2); g.lineTo(W,z2); g.stroke(); g.setLineDash([]);
+    g.fillStyle='rgba(255,255,255,.93)'; rr(g,10,z1+8,80,24,12); g.fill(); g.fillStyle='#0f6b42'; g.font=`bold 13px ${FONT}`; g.textAlign='center'; g.fillText('적정 깊이',50,z1+25);
+    g.lineCap='round'; g.strokeStyle='#4f3c28'; g.lineWidth=4.5; g.beginPath(); g.moveTo(W*0.5,bY); g.lineTo(sx,ry); g.stroke(); g.strokeStyle='#c9a877'; g.lineWidth=1.6; g.setLineDash([5,6]); g.beginPath(); g.moveTo(W*0.5,bY); g.lineTo(sx,ry); g.stroke(); g.setLineDash([]); g.lineCap='butt';
+    if(sy+D*0.45>wY){ const k=Math.max(0,Math.min(1,(wY-bY)/(ry-bY||1))), x=ry>wY?W*0.5+(sx-W*0.5)*k:sx; for(let i=0;i<2;i++){ const p=(t*0.9+i*0.5)%1; g.strokeStyle=`rgba(255,255,255,${0.8*(1-p)})`; g.lineWidth=2; g.beginPath(); g.ellipse(x,wY,10+p*34,2+p*6,0,0,7); g.stroke(); } }
+    g.drawImage(IMG.sampler,sx-D/2,sy-D/2,D,D);
+    if(filled){ g.fillStyle='rgba(63,159,216,.8)'; rr(g,sx-D*0.075,sy-D*0.025,D*0.15,D*0.25,4); g.fill(); }
+    if(sy>wY&&(dir||filled)){ g.fillStyle='rgba(255,255,255,.75)'; for(let i=0;i<5;i++){ const k=(t*1.5+i*0.2)%1; g.beginPath(); g.arc(sx-D*0.3+i*D*0.15+Math.sin(t*4+i)*3,sy-D*0.4-k*40,1.6+k*2,0,7); g.fill(); } } }
+  function draw(dt){ const {bY,wY,dY,sy,sx}=geo(), dk=bY-14; g.setTransform(dpr,0,0,dpr,0,0); if(ART()){ drawArt(sx,sy,bY,wY,dY); return; }
     let gr=g.createLinearGradient(0,0,0,wY); gr.addColorStop(0,'#9fd4f0'); gr.addColorStop(1,'#e6f6fb'); g.fillStyle=gr; g.fillRect(0,0,W,wY);
     g.fillStyle='rgba(255,232,150,.95)'; g.beginPath(); g.arc(W*0.85,H*0.07,15,0,7); g.fill();
     for(let i=0;i<3;i++) cloud(g,((t*5+i*W*0.45)%(W+90))-70,H*(0.05+i*0.04),0.7+i*0.15);
@@ -917,13 +932,27 @@ function playTest(done){
   openMini(`<div class="full"><div class="ttl">바닥분수 물 받기</div><canvas id="pc"></canvas>
     <div class="msg" id="pmsg">물이 솟는 분수를 재빨리 눌러 채수병에 받아요. 병을 가득 채우세요!</div></div>`);
   { const cv=$('#pc'), g=cv.getContext('2d'), dpr=Math.min(devicePixelRatio,2), W=cv.clientWidth, H=cv.clientHeight; cv.width=W*dpr; cv.height=H*dpr; cv.style.touchAction='none';
-    const N=5, gy=H*0.66, ny=gy+(H-gy)*0.42, nx=i=>W*(0.14+i*0.18), KC=['#ff8fa3','#6ec6ff','#ffd166','#95d98b','#c9a0ff'];
+    const N=5, gy=H*0.66, nx=i=>W*(0.14+i*0.18), KC=['#ff8fa3','#6ec6ff','#ffd166','#95d98b','#c9a0ff']; let ny=gy+(H-gy)*0.42;
+    function gauge(){ g.fillStyle='rgba(255,253,247,.93)'; rr(g,8,8,158,30,10); g.fill(); g.textAlign='left'; g.font=`bold 13px ${FONT}`; g.fillStyle='#17323a'; g.fillText('채수병',16,28); g.fillStyle='#dfe7e9'; rr(g,64,17,94,13,6); g.fill();
+      if(fill>6){ g.fillStyle='#3f9fd8'; rr(g,64,17,94*fill/100,13,6); g.fill(); } }
+    function drawArt(){ fit(g,IMG.bg_play,W,H); ny=H*0.77; const S=Math.min(W*0.62,300), flip=bx>W*0.5, by=ny-S*0.3, y0=by-0.485*S;
+      for(let i=0;i<N;i++){ const x=nx(i); let gr=g.createLinearGradient(x-21,0,x+21,0); gr.addColorStop(0,'#8fa6b0'); gr.addColorStop(.5,'#eef4f6'); gr.addColorStop(1,'#7f97a2'); g.fillStyle=gr; g.beginPath(); g.ellipse(x,ny,21,8,0,0,7); g.fill();
+        g.fillStyle='#24424e'; g.beginPath(); g.ellipse(x,ny,12,4.5,0,0,7); g.fill();
+        if(i===cur){ const h=(ny-by+S*0.04)*Math.min(1,(t-since)*7)*(0.95+Math.sin(t*30)*0.04);
+          g.fillStyle='rgba(255,255,255,.45)'; g.beginPath(); g.ellipse(x,ny,36,11,0,0,7); g.fill();
+          g.strokeStyle=`rgba(255,255,255,${0.55+Math.sin(t*12)*0.3})`; g.lineWidth=3; g.beginPath(); g.ellipse(x,ny,29,11,0,0,7); g.stroke();
+          gr=g.createLinearGradient(x-9,0,x+9,0); gr.addColorStop(0,'rgba(185,230,250,.85)'); gr.addColorStop(.5,'rgba(255,255,255,.98)'); gr.addColorStop(1,'rgba(185,230,250,.85)'); g.fillStyle=gr; rr(g,x-8,ny-h,16,h,8); g.fill();
+          g.fillStyle='rgba(255,255,255,.95)'; for(let j=0;j<8;j++){ const a=j*0.8+t*3, r2=8+((t*90+j*17)%26); g.beginPath(); g.arc(x+Math.cos(a)*r2,ny-h+6+Math.abs(Math.sin(a))*r2,2.4,0,7); g.fill(); } } }
+      g.save(); if(flip){ g.translate(bx+0.053*S,y0); g.scale(-1,1); } else g.translate(bx-0.053*S,y0); g.drawImage(IMG.researcher,0,0,S,S); g.restore();
+      const fh=0.125*S*fill/100; if(fill>2){ g.fillStyle='rgba(63,159,216,.85)'; rr(g,bx-0.027*S,y0+0.553*S-fh,0.054*S,fh,3); g.fill(); }
+      if(splash>0){ const k=(0.3-splash)/0.3; g.fillStyle='rgba(255,255,255,.95)'; for(let j=0;j<8;j++){ g.beginPath(); g.arc(bx+Math.cos(j*0.8)*30*k,by+Math.sin(j*0.8)*22*k,3,0,7); g.fill(); } }
+      gauge(); }
     let t=0,last=performance.now(),alive=true,fill=0,miss=0,cur=-1,since=0,until=0,next=0.7,bx=W/2,splash=0; window.__jet=()=>({cur,x:cur<0?0:nx(cur),y:ny});
     cv.addEventListener('pointerdown',e=>{ e.preventDefault(); if(!alive||fill>=100) return; const r=cv.getBoundingClientRect(), x=e.clientX-r.left; let k=0; for(let i=1;i<N;i++) if(Math.abs(nx(i)-x)<Math.abs(nx(k)-x)) k=i;
       bx=nx(k); if(k===cur&&t<until){ fill=Math.min(100,fill+13); splash=0.3; cur=-1; next=t+0.25; $('#pmsg').textContent=fill>=100?'가득 찼어요! 이제 검사하러 가요.':'좋아요! 계속 받아요.';
         if(fill>=100){ G.pl.sample=Math.max(6,15-miss); setTimeout(()=>{ alive=false; chlorine(); },1000); } }
       else { miss++; $('#pmsg').textContent='물이 솟을 때 그 분수를 눌러야 해요.'; } });
-    function draw(){ g.setTransform(dpr,0,0,dpr,0,0);
+    function draw(){ g.setTransform(dpr,0,0,dpr,0,0); if(ready(IMG.bg_play)&&ready(IMG.researcher)){ drawArt(); return; }
       let gr=g.createLinearGradient(0,0,0,gy); gr.addColorStop(0,'#9fd4f0'); gr.addColorStop(1,'#eaf8fb'); g.fillStyle=gr; g.fillRect(0,0,W,gy);
       cloud(g,W*0.18+Math.sin(t*0.2)*10,H*0.07,0.9); cloud(g,W*0.68,H*0.12,0.7);
       for(let i=0;i<7;i++){ const x=W*(0.02+i*0.16), y=gy-H*0.2; g.fillStyle='#6b4f3a'; g.fillRect(x+10,y+10,5,H*0.2-10); g.fillStyle=['#f7b6cf','#f9c9dc','#f29ebf'][i%3]; g.beginPath(); g.arc(x+12,y,20,0,7); g.arc(x+28,y+8,15,0,7); g.arc(x-2,y+8,15,0,7); g.fill(); }
