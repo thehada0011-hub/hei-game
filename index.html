@@ -1389,7 +1389,13 @@ function frame(now){
   // 캠핑장: 모닥불이 일렁이고 연기가 올라가요. 가까이 가면 캠핑 온 가족이 한마디씩 해요.
   { const fl=1+Math.sin(time*13)*0.12+Math.sin(time*7.3)*0.1; CAMP.flames.forEach((f,i)=>{ const sy=fl+Math.sin(time*9+i*2)*0.14; f.m.scale.set(1+Math.sin(time*11+i)*0.08,sy,1); f.m.position.y=0.3+f.h*sy/2; });
     CAMP.light.intensity=1.6+Math.sin(time*11)*0.35+Math.sin(time*5.3)*0.2; CAMP.smoke.forEach((m,i)=>{ const k=(time*0.22+i/4)%1; m.position.set(CAMP.x+Math.sin(k*5+i)*0.5,1.3+k*4.5,CAMP.z+Math.cos(k*4+i)*0.3); m.scale.setScalar(0.5+k*1.8); m.material.opacity=0.32*(1-k); });
-    for(const p of CAMP.people){ animPerson(p,false,dt); p.g.position.y=p.sitY; p.legL.rotation.x=p.legR.rotation.x=-1.45; p.armL.rotation.x=-0.5; if(!(p.wave>0)) p.armR.rotation.x=-0.5; }
+    for(const p of CAMP.people){
+      if(p.name==='시우'||p.name==='시아'){ const g=p.g; p.wait=(p.wait||0)-dt;   // 아이들은 캠핑장 원 안을 돌아다녀요. 모닥불과 텐트는 피해 가요
+        if(p.wait<=0){ p.wait=1.5+Math.random()*3.5; for(let n=0;n<8;n++){ const an=Math.random()*6.28, rr=1.9+Math.random()*3.8, nx=CAMP.x+Math.cos(an)*rr, nz=CAMP.z+Math.sin(an)*rr; if(!blocked(nx,nz,0.7)){ p.tx=nx; p.tz=nz; break; } } }
+        const dx=(p.tx??g.position.x)-g.position.x, dz=(p.tz??g.position.z)-g.position.z, d=Math.hypot(dx,dz); let mv=d>0.15;
+        if(mv){ const sp=Math.min(d,(p.name==='시우'?2.3:1.9)*dt), nx=g.position.x+dx/d*sp, nz=g.position.z+dz/d*sp; if(Math.hypot(nx-CAMP.x,nz-CAMP.z)<1.5||blocked(nx,nz,0.5)){ mv=false; p.wait=0.2; p.tx=g.position.x; p.tz=g.position.z; } else { g.position.x=nx; g.position.z=nz; g.rotation.y=lerpAng(g.rotation.y,Math.atan2(dx,dz),dt*8); } }
+        animPerson(p,mv,dt); g.position.y=mv?Math.abs(Math.sin(time*9+g.position.x))*0.06:0; }
+      else { animPerson(p,false,dt); p.g.position.y=p.sitY; p.legL.rotation.x=p.legR.rotation.x=-1.45; p.armL.rotation.x=-0.5; if(!(p.wave>0)) p.armR.rotation.x=-0.5; } }
     if(!G.driving&&!G.lock&&Math.hypot(player.g.position.x-CAMP.x,player.g.position.z-CAMP.z)<13){ CAMP.talk-=dt; if(CAMP.talk<=0){ CAMP.talk=3.5+Math.random()*4; const q=CAMP.people[[0,1,2,2,3,3][Math.floor(Math.random()*6)]], L=CAMP_SAY[q.name]||CAMP_TALK; let s; do{ s=L[Math.floor(Math.random()*L.length)]; }while(s===q.said); q.said=s; bubble(q.g,s); } } }
   for(const m of PETALS_R){ m.position.y-=dt*0.7; m.position.x+=Math.sin(time*1.5+m.userData.ph)*dt*0.5; m.rotation.x+=dt*2; m.rotation.z+=dt*1.4;
     if(m.position.y<0.1||Math.abs(m.position.x-ent.position.x)>24){ m.position.y=m.position.y<0.1?6+Math.random()*2.5:m.position.y; m.position.x=Math.max(-98,Math.min(118,ent.position.x+(Math.random()-0.5)*40)); m.position.z=-90.5+Math.random()*7.5; } }
@@ -1447,7 +1453,7 @@ $('#enter').addEventListener('click',()=>{ const v=nm.value.trim().slice(0,6);
   $('#start').style.display='none'; $('#hud').style.display='block'; setStep(0); G.lock=false;
   say([['안내',`${G.name} 연구원, 첫 출근을 환영해요! 왼쪽 아래 조이스틱으로 걷고, 화면을 좌우로 밀면 둘러볼 수 있어요.`]]);
 });
-window.__G=G; window.__dbg={player,car,car2,carD,carI,carL,P}; window.__t={sampleGame,bottleGame,labGame,climbGame,haulGame,gaugeGame,filterGame,closeMini,focusSample,focusCatch,focusHaul,playTest,setPlay,playReport,doseGame,remeasure,focusDust,focusStrip,focusNoise,xReport,startMission,setStep,focusBOD,focusWeigh,enterLab,exitLab,focusClimb,focusGauge,XMS,ITEMS,ITEMS_A,ITEMS_P,ITEMS_X,FISH};
+window.__G=G; window.__dbg={player,car,car2,carD,carI,carL,P}; window.__t={sampleGame,bottleGame,labGame,climbGame,haulGame,gaugeGame,filterGame,closeMini,focusSample,focusCatch,focusHaul,playTest,setPlay,playReport,doseGame,remeasure,focusDust,focusStrip,focusNoise,xReport,startMission,setStep,focusBOD,focusWeigh,enterLab,exitLab,focusClimb,focusGauge,XMS,ITEMS,ITEMS_A,ITEMS_P,ITEMS_X,FISH,CAMP};
 const DOOR_LIMIT=52;   // 차를 실험동 입구에서 이 거리 안에 세워야 시료를 접수할 수 있어요
 flag.position.set(24,0,-25);
 // 차량 3D 모형. 못 불러오면 상자로 만든 차량을 그대로 써요. rotY로 앞머리 방향을 맞춰요.
