@@ -408,6 +408,13 @@ for(const b of BENCHES){ const g=new THREE.Group(); g.position.set(b.x,0,b.z); g
   for(const z of [-0.18,0.02,0.22]) box(2.2,0.08,0.17,0xa9743f,0,0.5,z,g); for(const y of [0.78,1.0]) box(2.2,0.16,0.07,0xa9743f,0,y,-0.32,g);
   for(const x of [-0.95,0.95]){ box(0.09,0.5,0.5,0x4a4f55,x,0.25,0,g); box(0.09,0.75,0.09,0x4a4f55,x,0.82,-0.32,g); } }
 const PETALS=Array.from({length:18},(_,i)=>{ const m=box(0.14,0.02,0.1,i%2?0xf7b6cf:0xfbdbe8,-83+Math.sin(i*2.4)*4.5,1+i*0.4,-28+Math.cos(i*1.7)*4.5); m.userData.ph=i*1.3; return m; });
+// 강에서 뛰어오르는 물고기: 연구원 가까운 강물에서 번갈아 뛰어올라요. 뛰어오른 자리에는 물결 고리가 퍼져요.
+const FISH=Array.from({length:9},(_,i)=>{ const g=new THREE.Group(), col=[0xc7d3da,0xf2a65a,0x9fb7c9][i%3], m=new THREE.MeshLambertMaterial({color:col});
+  const b=new THREE.Mesh(new THREE.SphereGeometry(0.3,12,8),m); b.scale.set(1.7,0.62,0.36); g.add(b); const t=new THREE.Mesh(new THREE.ConeGeometry(0.2,0.34,4),m); t.rotation.z=-Math.PI/2; t.position.x=-0.6; t.scale.z=0.3; g.add(t);
+  const f=new THREE.Mesh(new THREE.ConeGeometry(0.1,0.22,4),m); f.position.y=0.2; f.scale.z=0.3; g.add(f); const e=new THREE.Mesh(new THREE.SphereGeometry(0.04,6,5),mat(0x1b1b1b)); e.position.set(0.36,0.05,0.1); g.add(e);
+  const pv=new THREE.Group(); pv.add(g); pv.scale.setScalar(1.9); pv.visible=false; scene.add(pv);   // 멀리서도 보이게 조금 크게
+  const ring=new THREE.Mesh(new THREE.RingGeometry(0.5,0.62,24),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.8,depthWrite:false})); ring.rotation.x=-Math.PI/2; ring.visible=false; scene.add(ring);
+  return {pv,g,ring,next:1+i*0.7,t0:-1,x:0,z:0,y:0,len:2.4,h:1.4,dur:0.95}; });
 // 영산강 벚꽃길 꽃잎: 연구원이 있는 쪽 벚나무 아래로 계속 떨어져요 (꽃잎 수를 아끼려고 연구원을 따라다녀요)
 const PETALS_R=Array.from({length:56},(_,i)=>{ const m=box(0.14,0.02,0.1,i%2?0xf7b6cf:0xfbdbe8,-30+i*1.1,0.5+(i*37%70)/10,-90+(i*13%70)/10); m.userData.ph=i*1.7; return m; });
 // 큰길에서 각 건물로 이어지는 도로. ROADS는 나무를 심지 않을 자리로도 써요.
@@ -1261,6 +1268,14 @@ function frame(now){
   // 의자에 앉기: 다리를 굽히고 의자 위에 앉아요. 움직이거나 뛰면 일어나요.
   if(G.sit&&!G.driving){ if(G.vy>0) G.sit=null; else { const b=G.sit; G.vy=0; player.g.position.set(b.x+Math.sin(b.ry)*0.1,0.2,b.z+Math.cos(b.ry)*0.1); player.g.rotation.y=b.ry; player.legL.rotation.x=player.legR.rotation.x=-1.5; player.armL.rotation.x=player.armR.rotation.x=-0.35; } }
   for(const m of PETALS){ m.position.y-=dt*0.7; m.position.x+=Math.sin(time*1.5+m.userData.ph)*dt*0.5; m.rotation.x+=dt*2; m.rotation.z+=dt*1.4; if(m.position.y<0.1){ m.position.y=7+Math.random()*2; m.position.x=-83+(Math.random()-0.5)*9; m.position.z=-28+(Math.random()-0.5)*9; } }
+  for(const f of FISH){
+    if(f.t0<0){ if(time>f.next){ f.t0=time; const east=Math.abs(ent.position.x-130)<50&&Math.random()<0.55;   // 동쪽 강 가까이 있으면 그쪽 강에서도 뛰어요
+        if(east){ f.x=123+Math.random()*14; do{ f.z=Math.max(-84,Math.min(100,ent.position.z+(Math.random()-0.5)*70)); }while(Math.abs(f.z-ROAD_Z)<7); f.y=-1.1; f.pv.rotation.y=Math.random()<0.5?Math.PI/2:-Math.PI/2; }
+        else { f.x=Math.max(-112,Math.min(200,ent.position.x+(Math.random()-0.5)*80)); f.z=-97-Math.random()*13; f.y=0.09; f.pv.rotation.y=Math.random()<0.5?0:Math.PI; }
+        f.h=1.0+Math.random()*0.9; f.len=1.8+Math.random()*1.2; f.pv.position.set(f.x,f.y,f.z); f.pv.visible=true; f.ring.position.set(f.x,f.y+0.03,f.z); f.ring.visible=true; } }
+    else { const k=(time-f.t0)/f.dur; if(k>=1){ f.t0=-1; f.next=time+1.2+Math.random()*4; f.pv.visible=false; }
+      else { f.g.position.set(f.len*(k-0.5),Math.sin(k*Math.PI)*f.h-0.15,0); f.g.rotation.z=Math.cos(k*Math.PI)*1.0; } }
+    if(f.ring.visible){ const rk=(time-(f.t0<0?f.next-2.5:f.t0))/1.6, q=f.t0<0?1:Math.min(1,(time-f.t0)/1.4); f.ring.scale.setScalar(0.6+q*2.2); f.ring.material.opacity=0.8*(1-q); if(f.t0<0) f.ring.visible=false; } }
   for(const m of PETALS_R){ m.position.y-=dt*0.7; m.position.x+=Math.sin(time*1.5+m.userData.ph)*dt*0.5; m.rotation.x+=dt*2; m.rotation.z+=dt*1.4;
     if(m.position.y<0.1||Math.abs(m.position.x-ent.position.x)>24){ m.position.y=m.position.y<0.1?6+Math.random()*2.5:m.position.y; m.position.x=Math.max(-98,Math.min(118,ent.position.x+(Math.random()-0.5)*40)); m.position.z=-90.5+Math.random()*7.5; } }
   // 말풍선
@@ -1306,7 +1321,7 @@ $('#enter').addEventListener('click',()=>{ const v=nm.value.trim().slice(0,6);
   $('#start').style.display='none'; $('#hud').style.display='block'; setStep(0); G.lock=false;
   say([['안내',`${G.name} 연구원, 첫 출근을 환영해요! 왼쪽 아래 조이스틱으로 걷고, 화면을 좌우로 밀면 둘러볼 수 있어요.`]]);
 });
-window.__G=G; window.__dbg={player,car,car2,carD,carI,carL,P}; window.__t={sampleGame,bottleGame,labGame,climbGame,haulGame,gaugeGame,filterGame,closeMini,focusSample,focusCatch,focusHaul,playTest,setPlay,playReport,doseGame,remeasure,focusDust,focusStrip,focusNoise,xReport,startMission,setStep,XMS,ITEMS,ITEMS_A,ITEMS_P,ITEMS_X};
+window.__G=G; window.__dbg={player,car,car2,carD,carI,carL,P}; window.__t={sampleGame,bottleGame,labGame,climbGame,haulGame,gaugeGame,filterGame,closeMini,focusSample,focusCatch,focusHaul,playTest,setPlay,playReport,doseGame,remeasure,focusDust,focusStrip,focusNoise,xReport,startMission,setStep,XMS,ITEMS,ITEMS_A,ITEMS_P,ITEMS_X,FISH};
 const DOOR_LIMIT=52;   // 차를 실험동 입구에서 이 거리 안에 세워야 시료를 접수할 수 있어요
 flag.position.set(24,0,-25);
 // 차량 3D 모형. 못 불러오면 상자로 만든 차량을 그대로 써요. rotY로 앞머리 방향을 맞춰요.
