@@ -552,7 +552,7 @@ const SIGNS=[
 // 나무
 { let seed=7; const rnd=()=>{ seed=(seed*16807)%2147483647; return seed/2147483647; };
   const spots=[]; while(spots.length<120){ const x=-95+rnd()*280, z=-85+rnd()*170;
-    if(ROADS.some(r=>x>r[0]-3.5&&x<r[1]+3.5&&z>r[2]-3.5&&z<r[3]+3.5)||Math.hypot(x+83,z+28)<7||Object.values(XAT).some(a=>Math.hypot(x-a[0],z-a[1])<11)||Math.abs(z-ROAD_Z)<8||Math.hypot(x,z+3)<16||(x>-42&&x<62&&z>-13&&z<8)||(z<-82)||(x>-44&&x<60&&z<-14&&z>-82)||SIGNS.some(s=>Math.hypot(x-s.x,z-s.z)<5)||Math.hypot(x-FX,z-FZ)<16||Math.hypot(x-PGX,z-PGZ-6)<25||(x>FX-2&&x<FX+12&&z>18&&z<50)||blocked(x,z,4)||(x>114&&x<146)||(Math.abs(x)<5&&z>0&&z<14)||(x>4&&x<32&&z>-12&&z<-4)) continue;
+    if(Math.hypot(x+86,z-76)<11||ROADS.some(r=>x>r[0]-3.5&&x<r[1]+3.5&&z>r[2]-3.5&&z<r[3]+3.5)||Math.hypot(x+83,z+28)<7||Object.values(XAT).some(a=>Math.hypot(x-a[0],z-a[1])<11)||Math.abs(z-ROAD_Z)<8||Math.hypot(x,z+3)<16||(x>-42&&x<62&&z>-13&&z<8)||(z<-82)||(x>-44&&x<60&&z<-14&&z>-82)||SIGNS.some(s=>Math.hypot(x-s.x,z-s.z)<5)||Math.hypot(x-FX,z-FZ)<16||Math.hypot(x-PGX,z-PGZ-6)<25||(x>FX-2&&x<FX+12&&z>18&&z<50)||blocked(x,z,4)||(x>114&&x<146)||(Math.abs(x)<5&&z>0&&z<14)||(x>4&&x<32&&z>-12&&z<-4)) continue;
     spots.push([x,z,0.85+rnd()*0.9,rnd()]); }
   // 줄기와 잎 뭉치를 한꺼번에 그려서 휴대폰에서도 가볍게 (단풍 든 나무와 소나무)
   const d=new THREE.Object3D(), col=new THREE.Color(), PAL=[0x4f9d58,0x5fae62,0x3f8a4f,0x7fb857,0xd9a43a,0xd8742f,0xc9492f,0xe0b84a];
@@ -568,7 +568,7 @@ const SIGNS=[
   // 풀숲과 꽃
   const bush=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshLambertMaterial({flatShading:true}),170); let bi=0;
   const FL=[0x5fae62,0x4f9d58,0x7fb857,0xf2a7c3,0xf6d55c,0xffffff];
-  while(bi<170){ const x=-95+rnd()*280, z=-85+rnd()*170; if(ROADS.some(r=>x>r[0]-1.5&&x<r[1]+1.5&&z>r[2]-1.5&&z<r[3]+1.5)||Object.values(XAT).some(a=>Math.hypot(x-a[0],z-a[1])<7)||Math.abs(z-ROAD_Z)<5||blocked(x,z,2)||(x>114&&x<146)||(x>-44&&x<60&&z<-12&&z>-82)||(z<-84)||Math.hypot(x-PGX,z-PGZ-3)<16||(x>FX-2&&x<FX+12&&z>18&&z<50)||SIGNS.some(s=>Math.hypot(x-s.x,z-s.z)<3)||Math.hypot(x,z+3)<12||(x>36&&x<61&&z>-12&&z<6)) continue;
+  while(bi<170){ const x=-95+rnd()*280, z=-85+rnd()*170; if(Math.hypot(x+86,z-76)<8||ROADS.some(r=>x>r[0]-1.5&&x<r[1]+1.5&&z>r[2]-1.5&&z<r[3]+1.5)||Object.values(XAT).some(a=>Math.hypot(x-a[0],z-a[1])<7)||Math.abs(z-ROAD_Z)<5||blocked(x,z,2)||(x>114&&x<146)||(x>-44&&x<60&&z<-12&&z>-82)||(z<-84)||Math.hypot(x-PGX,z-PGZ-3)<16||(x>FX-2&&x<FX+12&&z>18&&z<50)||SIGNS.some(s=>Math.hypot(x-s.x,z-s.z)<3)||Math.hypot(x,z+3)<12||(x>36&&x<61&&z>-12&&z<6)) continue;
     const fl=rnd()<0.3, s=fl?0.18+rnd()*0.12:0.5+rnd()*0.6; d.position.set(x,s*0.5,z); d.scale.set(s,s*0.7,s); d.rotation.set(0,rnd()*6,0); d.updateMatrix(); bush.setMatrixAt(bi,d.matrix);
     col.setHex(fl?FL[3+Math.floor(rnd()*3)]:FL[Math.floor(rnd()*3)]); bush.setColorAt(bi,col); bi++; }
   bush.castShadow=true; bush.receiveShadow=true; scene.add(bush); }
@@ -891,7 +891,7 @@ function reportGame(grade){
   $('#ok').addEventListener('click',()=>{ closeMini(); flag.visible=true; G.done.w=true; setStep(0); toast('환경동 앞에 완료 깃발이 꽂혔어요!'); });
 }
 /* ───────── 대기 임무: 굴뚝 측정 ───────── */
-function airField(done){ gearGame(()=>climbGame(()=>focusHaul(()=>gaugeGame(()=>filterGame(done))))); }
+function airField(done){ gearGame(()=>focusClimb(()=>focusHaul(()=>focusGauge(()=>filterGame(done))))); }
 function gearGame(next){
   const items=shuffle([['⛑️','안전모',1],['🪢','안전대',1],['🩴','슬리퍼',0],['🕶️','선글라스',0]]); let need=2;
   openMini(`<div class="card"><h3>안전장비 착용</h3><p>굴뚝은 아주 높아요. 올라가기 전에 꼭 필요한 장비 2개를 고르세요.</p><div class="opts">${items.map(t=>`<button class="opt" data-ok="${t[2]}">${t[0]} ${t[1]}</button>`).join('')}</div></div>`);
@@ -1089,6 +1089,7 @@ function doWave(){ if(G.driving||G.lock) return; player.wave=1.4; const p=player
   if(dist(p,P.npc)<10) setTimeout(()=>{ npc.wave=1.4; face(npc.g); bubble(npc.g,pick([`안녕하세요, ${G.name} 연구원!`,'어서 와요! 오늘도 힘내요.','반가워요! 임무는 잘되고 있어요?'])); },400);
   if(dist(p,P.boss)<10) setTimeout(()=>{ boss.wave=1.4; face(boss.g); bubble(boss.g,pick(['반가워요! 오늘도 수고가 많아요.',`${G.name} 연구원, 안녕하세요!`,'허허, 인사성이 밝군요. 반가워요!'])); },400);
   PLAY.kids.forEach((k,i)=>{ if(dist(p,[k.p.g.position.x,k.p.g.position.z])<12) setTimeout(()=>{ k.p.wave=1.4; face(k.p.g); k.sigh=5+Math.random()*4; bubble(k.p.g,pick(['안녕하세요, 연구원님!','연구원님이다! 안녕하세요~','안녕하세요! 반가워요!','우와, 진짜 연구원님이다!','안녕하세요! 멋져요!'])); },300+i*250); });
+  CAMP.people.forEach((q,i)=>{ if(dist(p,[q.g.position.x,q.g.position.z])<11) setTimeout(()=>{ q.wave=1.4; CAMP.talk=5; bubble(q.g,pick(['안녕하세요! 캠핑 왔어요','연구원님 안녕하세요~','같이 불멍 할래요?','반가워요!'])); },300+i*250); });
   for(const a of ANIMALS) if(dist(p,[a.g.position.x,a.g.position.z])<7){ a.hop=1.2; bubble(a.g,a.msg,a.fly?1.2:2.4);
     if(!a.met){ a.met=true; toast(`${a.name} 친구와 인사했어요! (${ANIMALS.filter(x=>x.met).length}/${ANIMALS.length})`); } } }
 // 버튼은 '누르는 순간'에 반응해요. 휴대폰은 다른 손가락이 조이스틱을 잡고 있으면 click을 만들어 주지 않아서, 걸으면서 누를 수 없었어요.
@@ -1279,6 +1280,26 @@ function getAction(){
 }
 let curAct=null; const actEl=$('#act');
 
+// 서남쪽 구석의 작은 캠핑장: 텐트 두 동, 모닥불, 불 앞에 앉은 가족. 모닥불은 일렁이고 연기가 올라가요.
+const CAMP={x:-86,z:76,flames:[],smoke:[],people:[],talk:3};
+const CAMP_TALK=['불멍 최고!','쓰레기는 꼭 되가져가요','여기 공기 진짜 좋아요','마시멜로 구워 먹을래요?','불은 꼭 끄고 갈 거예요','별이 잘 보였으면 좋겠다','연구원님 덕분에 공기가 맑아요','캠핑 오길 잘했다!'];
+{ const cx=CAMP.x, cz=CAMP.z, L=c=>new THREE.MeshLambertMaterial({color:c,flatShading:true});
+  { const m=new THREE.Mesh(new THREE.CircleGeometry(6.5,28),L(0xd8c7a0)); m.rotation.x=-Math.PI/2; m.position.set(cx,0.06,cz); scene.add(m); }
+  const tent=(x,z,ry,col,s)=>{ const g=new THREE.Group(); g.position.set(x,0,z); g.rotation.y=ry; g.scale.setScalar(s); scene.add(g); const m=new THREE.Mesh(new THREE.ConeGeometry(2.4,2.3,4),L(col)); m.rotation.y=Math.PI/4; m.position.y=1.15; m.castShadow=true; g.add(m);
+    const d=new THREE.Mesh(new THREE.ConeGeometry(0.7,1.5,3),L(0x3a2c26)); d.position.set(0,0.72,0.98); d.rotation.x=-0.63; d.scale.z=0.12; g.add(d); cyl(0.04,0.04,2.7,0x8d979d,0,1.35,0,g,6); };
+  tent(cx-4.6,cz-3.2,0.75,0xff8a3d,1); tent(cx+4.3,cz-3.8,-0.65,0x3b82c4,0.82);
+  for(let i=0;i<9;i++){ const a=i/9*6.28, m=new THREE.Mesh(new THREE.IcosahedronGeometry(0.22,0),L(i%2?0x8d979d:0x7c878d)); m.position.set(cx+Math.cos(a)*0.8,0.15,cz+Math.sin(a)*0.8); scene.add(m); }   // 모닥불 돌 테두리
+  for(const a of [0.3,1.4,2.5]){ const m=cyl(0.1,0.1,1.25,0x6b4a2b,cx,0.22,cz,scene,7); m.rotation.z=Math.PI/2-0.25; m.rotation.y=a; }
+  for(const [r,h,c,o] of [[0.38,1.1,0xff7a1a,.85],[0.26,0.8,0xffc53d,.9],[0.14,0.5,0xfff3b0,.95]]){ const m=new THREE.Mesh(new THREE.ConeGeometry(r,h,7),new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:o,depthWrite:false})); m.position.set(cx,0.3+h/2,cz); scene.add(m); CAMP.flames.push({m,h}); }
+  CAMP.light=new THREE.PointLight(0xffa64d,1.8,14); CAMP.light.position.set(cx,1.2,cz); scene.add(CAMP.light);
+  for(let i=0;i<4;i++){ const m=new THREE.Mesh(new THREE.SphereGeometry(0.4,8,6),new THREE.MeshBasicMaterial({color:0xdde2e4,transparent:true,opacity:.3,depthWrite:false})); scene.add(m); CAMP.smoke.push(m); }
+  for(const [x,z,ry] of [[cx-2.1,cz+0.9,0.4],[cx+2.1,cz+0.8,-0.4]]){ const m=cyl(0.27,0.27,1.9,0x8a6f52,x,0.27,z,scene,9); m.rotation.z=Math.PI/2; m.rotation.y=ry+Math.PI/2; }   // 통나무 의자
+  for(const [x,z,coat,pants,s] of [[cx-2.0,cz+0.8,0xe5484d,0x2c3e63,1],[cx+2.0,cz+0.7,0x3ecf8e,0x4a4f55,1],[cx+0.2,cz-2.0,0xffd84d,0x3b82c4,0.72]]){ const p=makePerson({coat,pants}); p.g.scale.setScalar(s); p.g.position.set(x,s<1?-0.2:0.22,z); p.g.rotation.y=Math.atan2(cx-x,cz-z); p.sitY=p.g.position.y; CAMP.people.push(p); }
+  box(1.3,0.06,0.75,0xc9a26b,cx+3.6,0.62,cz+2.4); for(const [x,z] of [[-0.55,-0.3],[0.55,-0.3],[-0.55,0.3],[0.55,0.3]]) box(0.06,0.6,0.06,0x8a6f52,cx+3.6+x,0.3,cz+2.4+z);   // 탁자와 랜턴, 아이스박스
+  cyl(0.12,0.12,0.28,0xffe38a,cx+3.3,0.8,cz+2.4,scene,10); cyl(0.14,0.1,0.06,0x2b2f36,cx+3.3,0.97,cz+2.4,scene,10); box(0.8,0.5,0.5,0x3b82c4,cx+5.0,0.25,cz+1.6); box(0.84,0.1,0.54,0xf4f7f8,cx+5.0,0.55,cz+1.6);
+  { const m=cyl(0.015,0.015,1.5,0x6b4a2b,cx-1.25,0.95,cz+0.5,scene,5); m.rotation.z=1.15; m.rotation.y=-0.4; box(0.12,0.12,0.12,0xffffff,cx-0.6,0.66,cz+0.2); }   // 마시멜로 꼬치
+  box(0.15,1.6,0.15,0x7a5b3a,cx+8.5,0.8,cz-6); panel2('캠핑장 · 쓰레기는 되가져가요',4.6,0.65,cx+8.5,1.9,cz-6,{bg:'#fff7e0',fg:'#7a4b00'});
+  WALLS.push([cx-6.1,cx-3.1,cz-4.7,cz-1.7],[cx+3.1,cx+5.5,cz-5,cz-2.6],[cx-0.9,cx+0.9,cz-0.9,cz+0.9]); }
 // 물놀이터 아이들이 하는 말: 검사를 기다릴 때, 부적합일 때, 적합이라 놀 때
 const KID_TALK={
   wait:['언제 들어갈 수 있어요?','연구원님, 물 깨끗해요?','빨리 놀고 싶어요!','검사는 어떻게 하는 거예요?','수영복 입고 왔어요!','물총도 가져왔는데…','오늘 진짜 더워요','검사 끝나면 알려 주세요!','저도 크면 연구원 될래요','물에 뭐가 들어 있는지 궁금해요','조금만 더 기다릴게요','연구원님 힘내세요!'],
@@ -1355,6 +1376,11 @@ function frame(now){
     else { const k=(time-f.t0)/f.dur; if(k>=1){ f.t0=-1; f.next=time+1.2+Math.random()*4; f.pv.visible=false; }
       else { f.g.position.set(f.len*(k-0.5),Math.sin(k*Math.PI)*f.h-0.15,0); f.g.rotation.z=Math.cos(k*Math.PI)*1.0; } }
     if(f.ring.visible){ const rk=(time-(f.t0<0?f.next-2.5:f.t0))/1.6, q=f.t0<0?1:Math.min(1,(time-f.t0)/1.4); f.ring.scale.setScalar(0.6+q*2.2); f.ring.material.opacity=0.8*(1-q); if(f.t0<0) f.ring.visible=false; } }
+  // 캠핑장: 모닥불이 일렁이고 연기가 올라가요. 가까이 가면 캠핑 온 가족이 한마디씩 해요.
+  { const fl=1+Math.sin(time*13)*0.12+Math.sin(time*7.3)*0.1; CAMP.flames.forEach((f,i)=>{ const sy=fl+Math.sin(time*9+i*2)*0.14; f.m.scale.set(1+Math.sin(time*11+i)*0.08,sy,1); f.m.position.y=0.3+f.h*sy/2; });
+    CAMP.light.intensity=1.6+Math.sin(time*11)*0.35+Math.sin(time*5.3)*0.2; CAMP.smoke.forEach((m,i)=>{ const k=(time*0.22+i/4)%1; m.position.set(CAMP.x+Math.sin(k*5+i)*0.5,1.3+k*4.5,CAMP.z+Math.cos(k*4+i)*0.3); m.scale.setScalar(0.5+k*1.8); m.material.opacity=0.32*(1-k); });
+    for(const p of CAMP.people){ animPerson(p,false,dt); p.g.position.y=p.sitY; p.legL.rotation.x=p.legR.rotation.x=-1.45; p.armL.rotation.x=-0.5; if(!(p.wave>0)) p.armR.rotation.x=-0.5; }
+    if(!G.driving&&!G.lock&&Math.hypot(player.g.position.x-CAMP.x,player.g.position.z-CAMP.z)<13){ CAMP.talk-=dt; if(CAMP.talk<=0){ CAMP.talk=5+Math.random()*5; bubble(CAMP.people[Math.floor(Math.random()*CAMP.people.length)].g,CAMP_TALK[Math.floor(Math.random()*CAMP_TALK.length)]); } } }
   for(const m of PETALS_R){ m.position.y-=dt*0.7; m.position.x+=Math.sin(time*1.5+m.userData.ph)*dt*0.5; m.rotation.x+=dt*2; m.rotation.z+=dt*1.4;
     if(m.position.y<0.1||Math.abs(m.position.x-ent.position.x)>24){ m.position.y=m.position.y<0.1?6+Math.random()*2.5:m.position.y; m.position.x=Math.max(-98,Math.min(118,ent.position.x+(Math.random()-0.5)*40)); m.position.z=-90.5+Math.random()*7.5; } }
   // 말풍선
@@ -1411,7 +1437,7 @@ $('#enter').addEventListener('click',()=>{ const v=nm.value.trim().slice(0,6);
   $('#start').style.display='none'; $('#hud').style.display='block'; setStep(0); G.lock=false;
   say([['안내',`${G.name} 연구원, 첫 출근을 환영해요! 왼쪽 아래 조이스틱으로 걷고, 화면을 좌우로 밀면 둘러볼 수 있어요.`]]);
 });
-window.__G=G; window.__dbg={player,car,car2,carD,carI,carL,P}; window.__t={sampleGame,bottleGame,labGame,climbGame,haulGame,gaugeGame,filterGame,closeMini,focusSample,focusCatch,focusHaul,playTest,setPlay,playReport,doseGame,remeasure,focusDust,focusStrip,focusNoise,xReport,startMission,setStep,focusBOD,focusWeigh,enterLab,exitLab,XMS,ITEMS,ITEMS_A,ITEMS_P,ITEMS_X,FISH};
+window.__G=G; window.__dbg={player,car,car2,carD,carI,carL,P}; window.__t={sampleGame,bottleGame,labGame,climbGame,haulGame,gaugeGame,filterGame,closeMini,focusSample,focusCatch,focusHaul,playTest,setPlay,playReport,doseGame,remeasure,focusDust,focusStrip,focusNoise,xReport,startMission,setStep,focusBOD,focusWeigh,enterLab,exitLab,focusClimb,focusGauge,XMS,ITEMS,ITEMS_A,ITEMS_P,ITEMS_X,FISH};
 const DOOR_LIMIT=52;   // 차를 실험동 입구에서 이 거리 안에 세워야 시료를 접수할 수 있어요
 flag.position.set(24,0,-25);
 // 차량 3D 모형. 못 불러오면 상자로 만든 차량을 그대로 써요. rotY로 앞머리 방향을 맞춰요.
@@ -1631,6 +1657,76 @@ function focusWeigh(done){ G.receipt='A-'+new Date().getFullYear()+'-'+String(10
     filt.position.lerp(fT,Math.min(1,dt*5)); if(phase==='settle'&&pt<0.6) filt.position.y+=Math.sin(pt/0.6*Math.PI)*0.04;
     if(phase==='settle'){ showT-=dt; if(showT<=0){ showT=0.09; const amp=Math.max(0,3*(1-pt/2.1)), on=pt>0.5; scr.userData.show((on?after+(Math.random()-0.5)*2*amp:0).toFixed(1)+' mg',pt>2.2?'#ffe14d':'#7ff0b8',52); } }
     sadT=Math.max(0,sadT-dt); hopT=Math.max(0,hopT-dt); wk.face(sadT>0); wk.body.position.y=-0.6+Math.sin(hopT/0.35*Math.PI)*0.15; r.render(s,c); requestAnimationFrame(loop); })(last); }
+// 대기환경과: 굴뚝 사다리 오르기. 쉬는 곳(발판)마다 안전고리를 걸어야 계속 올라갈 수 있어요. 올라갈수록 마을이 발아래로 멀어져요.
+function focusClimb(next){ const {s,c,r}=FOC; focusUI({hintTop:1,go:'⬆ 오르기',sub:1,star:'높이 0 m'}); const hint=t=>$('#fhint').textContent=t, go=$('#fgo'), sub=$('#fsub'), grp=new THREE.Group(); s.add(grp);
+  const subOld=sub.textContent; sub.textContent='🪝 안전고리 걸기';
+  const put=(geo,m,x,y,z,p=grp)=>{ const k=new THREE.Mesh(geo,m); k.position.set(x,y,z); p.add(k); return k; }, B=(w,h,d)=>new THREE.BoxGeometry(w,h,d), TOP=12, U=1.1, R=1.7, STEEL=PBR(0x5d6b71,{metalness:.5,roughness:.5});
+  // 하늘, 땅, 멀리 보이는 마을
+  const skyC=document.createElement('canvas'); skyC.width=8; skyC.height=256; { const g=skyC.getContext('2d'), gr=g.createLinearGradient(0,0,0,256); gr.addColorStop(0,'#6fb6ea'); gr.addColorStop(1,'#e6f6fb'); g.fillStyle=gr; g.fillRect(0,0,8,256); }
+  const skyT=new THREE.CanvasTexture(skyC); skyT.colorSpace=THREE.SRGBColorSpace; const sky=put(new THREE.PlaneGeometry(160,90),new THREE.MeshBasicMaterial({map:skyT}),0,10,-38);
+  const gnd=put(new THREE.CircleGeometry(90,40),new THREE.MeshBasicMaterial({color:0x9fd18b}),0,-0.05,-10); gnd.rotation.x=-Math.PI/2; put(B(120,0.05,3),new THREE.MeshBasicMaterial({color:0x59646b}),0,0,-9);
+  for(let i=0;i<22;i++){ const w=1.6+(i*7%5)*0.5, h=1.5+(i*13%9)*0.6; put(B(w,h,w),PBR(i%3?0xeef0ef:0xcfd6d8,{roughness:.9}),-26+i*2.5+(i%2)*0.6,h/2,-13-(i*5%4)*4); }
+  for(let i=0;i<14;i++) put(new THREE.ConeGeometry(0.8,2,7),PBR(i%2?0x5fae5a:0x4f8a4a,{roughness:1}),-24+i*3.7,1,-5-(i%3)*1.4);
+  put(B(9,3.4,6),PBR(0xb9c1c6,{roughness:.9}),-6.5,1.7,-1);   // 공장 건물
+  const clouds=[0,1,2,3,4].map(i=>{ const g=new THREE.Group(); for(let j=0;j<3;j++) put(new THREE.SphereGeometry(1.2-j*0.2,10,8),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.92}),j*1.2-1.2,j%2*0.3,0,g); g.position.set(-14+i*7,7+i*2.4,-16-i*2); grp.add(g); return g; });
+  // 굴뚝, 사다리, 등받이 고리, 발판
+  put(new THREE.CylinderGeometry(R,R*1.1,30,36),PBR(0xe9ecee,{roughness:.85}),0,13,0); for(const y of [5.5,11.2]) put(new THREE.CylinderGeometry(R+0.02,R+0.03,1.3,36),PBR(0xe5484d,{roughness:.8}),0,y,0);
+  for(const x of [-0.3,0.3]) put(B(0.06,30,0.06),STEEL,x,13,R+0.14); for(let y=0.2;y<TOP*U+3;y+=0.37) put(B(0.6,0.045,0.045),STEEL,0,y,R+0.14);
+  for(let y=2.4;y<TOP*U+2.5;y+=1.1){ const m=put(new THREE.TorusGeometry(0.56,0.025,6,20,Math.PI),STEEL,0,y,R+0.14); m.rotation.x=Math.PI/2; }
+  for(const p of [4,8,12]){ const y=p*U-0.06; put(new THREE.CylinderGeometry(R+1.15,R+1.15,0.1,30),PBR(0x4f5a60,{roughness:.7}),0,y,0); const rail=put(new THREE.TorusGeometry(R+1.1,0.035,6,30),STEEL,0,y+1.0,0); rail.rotation.x=Math.PI/2;
+    for(let i=0;i<10;i++){ const a=i/10*Math.PI*2+0.3; put(B(0.05,1.0,0.05),STEEL,Math.cos(a)*(R+1.1),y+0.5,Math.sin(a)*(R+1.1)); } put(new THREE.TorusGeometry(0.09,0.03,6,12),PBR(0xff7a45),0.42,y+1.5,R+0.16); }
+  // 안전모를 쓴 연구원과 주황색 안전줄
+  const wk=fxWorker(grp,{hat:0xffc53d,scale:0.5}); wk.body.position.set(0,0,R+0.5); wk.body.rotation.y=Math.PI;
+  const rope=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]),new THREE.LineBasicMaterial({color:0xff7a45})); grp.add(rope); const hook=put(new THREE.SphereGeometry(0.07,10,8),new THREE.MeshBasicMaterial({color:0xff7a45}),0,0,0);
+  const hp=new THREE.Vector3(0.3,1.5,R+0.14), ht=hp.clone(), T=Math.tan(17.5*Math.PI/180), dist=Math.max(9.5,Math.min(15,2.6/(T*c.aspect)));
+  let pos=0,shown=0,hooked=true,t=0,alive=true,last=performance.now(),hop=0;
+  const off=()=>{ alive=false; sub.textContent=subOld; focusOff(grp); };
+  hint('오르기를 눌러 사다리를 올라가요. 쉬는 곳마다 안전고리를 걸어야 해요.');
+  go.onclick=()=>{ if(pos>=TOP) return; if(!hooked){ sfx('no'); fPop('안전고리 먼저!','warn'); hint('잠깐! 안전고리를 먼저 걸어요.'); return; }
+    pos++; sfx('pop'); if(pos===4||pos===8){ hooked=false; hint('쉬는 곳이에요. 안전고리를 걸어요.'); } else if(pos<TOP) hint('좋아요! 계속 올라가요.');
+    if(pos===TOP){ hint('측정 발판에 도착했어요!'); sfx('ok'); fPop('도착!','good'); hop=0.5; setTimeout(()=>{ if(alive){ off(); next(); } },1700); } };
+  sub.onclick=()=>{ if(hooked) return; hooked=true; sfx('good'); fPop('찰칵!','good'); hint('찰칵! 안전고리를 걸었어요. 계속 올라가요.'); };
+  $('#fclose').onclick=off;
+  (function loop(now){ if(!alive) return; const dt=Math.min(0.05,Math.max(0,(now-last)/1000)); last=now; t+=dt; shown+=(pos-shown)*Math.min(1,dt*7); hop=Math.max(0,hop-dt);
+    const y=shown*U, ph=shown*Math.PI, moving=Math.abs(pos-shown)>0.03; wk.body.position.y=y+(moving?Math.abs(Math.sin(t*16))*0.04:0)+Math.sin(hop/0.5*Math.PI)*0.2;
+    wk.who.armL.rotation.x=-2.3+Math.sin(ph)*0.55; wk.who.armR.rotation.x=-2.3-Math.sin(ph)*0.55; wk.who.legL.rotation.x=-0.45-Math.sin(ph)*0.5; wk.who.legR.rotation.x=-0.45+Math.sin(ph)*0.5;
+    ht.set(hooked?0.3:0.5,hooked?y+1.55:y+0.15+Math.sin(t*3)*0.06,hooked?R+0.14:R+0.75); hp.lerp(ht,Math.min(1,dt*9)); hook.position.copy(hp);
+    const a=rope.geometry.attributes.position; a.setXYZ(0,0.12,y+0.6,R+0.42); a.setXYZ(1,hp.x,hp.y,hp.z); a.needsUpdate=true;
+    c.position.set(dist*0.45,y+1.7,R+dist*0.9); c.lookAt(0,y+1.0,R*0.6); sky.position.y=y+8; clouds.forEach((g,i)=>{ g.position.x+=dt*(0.25+i*0.05); if(g.position.x>18) g.position.x=-18; });
+    $('#fstar').textContent='높이 '+Math.round(shown*1.5)+' m'; r.render(s,c); requestAnimationFrame(loop); })(last); }
+// 대기환경과: 굴뚝 안 시료 채취. 일자 채취관 끝을 굴뚝 한가운데에 넣고, 연기와 같은 속도로 빨아들이도록 펌프 바늘을 초록 구간에 맞춰요.
+function focusGauge(next){ focusUI({hintTop:1,go:'꾹 누르면 펌프 세게',star:'채취 0%'}); const S=xStage(0x6f7a80,1.05), {grp,add,rod,r,s,c,hint}=S, go=$('#fgo'), k=Math.min(1,(S.hw-0.15)/2.75), X=v=>v*k;
+  hint('연기와 같은 속도로 빨아들여요. 버튼을 눌렀다 떼며 바늘을 초록 구간에 맞춰요!');
+  // 굴뚝 벽을 잘라 본 모습: 왼쪽은 바깥 발판, 오른쪽은 연기가 올라가는 굴뚝 안
+  add(3.3*k,5.6,0.2,0x2c3338,X(1.1),1.7,-1.05,{roughness:1}); add(3.3*k,0.34,3.02,0x23292d,X(1.1),-0.74,0,{roughness:1}); add(0.3,5.6,2.2,0x565f65,X(2.75),1.7,0,{roughness:1});
+  add(0.42,1.42,2.2,0xd9dee1,X(-0.72),0.11,0,{roughness:.9}); add(0.42,3.35,2.2,0xd9dee1,X(-0.72),2.83,0,{roughness:.9}); add(0.44,0.55,2.22,0xe5484d,X(-0.72),2.7,0,{roughness:.8});
+  { const m=new THREE.Mesh(new THREE.TorusGeometry(0.2,0.05,8,20),PBR(0x5d6b71,{metalness:.6,roughness:.4})); m.rotation.y=Math.PI/2; m.position.set(X(-0.95),1.0,0.4); grp.add(m); }
+  for(const x of [-2.6,-1.9,-1.2]) add(0.05,1.1,0.05,0x5d6b71,X(x),-0.05,-0.9); add(1.6*k,0.05,0.05,0x5d6b71,X(-1.9),0.5,-0.9);
+  // 일자 채취관, 끝의 흡입구, 바깥쪽 필터, 펌프와 계기판
+  const pL=X(1.0)-X(-1.75), probe=rod(0.05,0.05,pL,0xe3e8ea,(X(1.0)+X(-1.75))/2,1.0,0.4,{metalness:.7,roughness:.3}); probe.rotation.z=Math.PI/2;
+  const tip=new THREE.Mesh(new THREE.SphereGeometry(0.1,14,10),new THREE.MeshBasicMaterial({color:0xffc53d})); tip.position.set(X(1.0)+0.06,1.0,0.4); grp.add(tip);
+  const filt=rod(0.24,0.24,0.14,0xfafafa,X(-1.45),1.0,0.4,{roughness:.9}); filt.rotation.z=Math.PI/2; const clean=new THREE.Color(0xfafafa), dirty=new THREE.Color(0x6b665e);
+  add(0.8,0.55,0.6,0xf4f7f8,X(-2.25),-0.32,1.0); { const h=rod(0.03,0.03,1.5,0x3a3f45,X(-1.85),0.35,0.7); h.rotation.x=-0.42; h.rotation.z=0.5; }
+  const dc=document.createElement('canvas'); dc.width=256; dc.height=160; const dt2=new THREE.CanvasTexture(dc); dt2.colorSpace=THREE.SRGBColorSpace; const dial=new THREE.Mesh(new THREE.PlaneGeometry(1.15,0.72),new THREE.MeshBasicMaterial({map:dt2})); dial.position.set(X(-2.25),0.45,1.32); grp.add(dial);
+  const drawDial=(v,ok)=>{ const g=dc.getContext('2d'); g.fillStyle='#f4f7f8'; g.fillRect(0,0,256,160); g.strokeStyle='#55636b'; g.lineWidth=4; g.strokeRect(2,2,252,156); g.textAlign='center'; g.fillStyle='#17323a'; g.font='bold 22px '+FONT; g.fillText('흡인 속도',128,26);
+    g.lineWidth=20; g.strokeStyle='#cfd9dc'; g.beginPath(); g.arc(128,142,92,Math.PI,Math.PI*2); g.stroke(); g.strokeStyle='#3ecf8e'; g.beginPath(); g.arc(128,142,92,Math.PI*1.42,Math.PI*1.62); g.stroke();
+    const a=Math.PI*(1+v); g.strokeStyle=ok?'#0b7d70':'#17323a'; g.lineWidth=6; g.beginPath(); g.moveTo(128,142); g.lineTo(128+Math.cos(a)*88,142+Math.sin(a)*88); g.stroke(); g.fillStyle='#17323a'; g.beginPath(); g.arc(128,142,9,0,7); g.fill(); dt2.needsUpdate=true; };
+  const wk=fxWorker(grp,{hat:0xffc53d,scale:0.45}); wk.body.position.set(X(-1.3),-0.6,-0.15); wk.body.rotation.y=0.7;
+  const x0=X(-0.45), x1=X(2.55), smoke=[...Array(46)].map(()=>{ const m=new THREE.Mesh(new THREE.SphereGeometry(0.07+Math.random()*0.1,8,6),new THREE.MeshBasicMaterial({color:0xe2e5e7,transparent:true,opacity:0.25+Math.random()*0.3,depthWrite:false})); m.position.set(x0+Math.random()*(x1-x0),-0.5+Math.random()*4.6,Math.random()*0.8); grp.add(m); return {m,sp:0.7+Math.random()*0.8}; });
+  let v=0.1,holding=false,prog=0,T=0,t=0,alive=true,ended=false,last=performance.now();
+  const clr=()=>{ alive=false; go.onpointerdown=go.onpointerup=go.onpointerleave=go.onpointercancel=null; }, off=()=>{ clr(); focusOff(grp); };
+  go.onpointerdown=e=>{ e.preventDefault(); holding=true; }; go.onpointerup=go.onpointerleave=go.onpointercancel=()=>{ holding=false; };
+  $('#fclose').onclick=off;
+  (function loop(now){ if(!alive) return; const dt=Math.min(0.05,Math.max(0,(now-last)/1000)); last=now; t+=dt; if(!ended) T+=dt;
+    v=Math.max(0,Math.min(1,v+(holding?0.55:-0.45)*dt+Math.sin(t*2.3)*0.12*dt)); window.__gv=v; const ok=v>=0.42&&v<=0.62; drawDial(v,ok);
+    tip.material.color.setHex(ok?0x3ecf8e:0xffc53d); tip.scale.setScalar(ok?1.25+Math.sin(t*10)*0.15:1);
+    for(const p of smoke){ const m=p.m; m.position.y+=p.sp*1.5*dt; m.position.x+=Math.sin(t*2+m.position.y*2)*0.12*dt; const dx=tip.position.x-m.position.x, dy=tip.position.y-m.position.y;
+      if(dy>0&&dy<1.4&&Math.abs(dx)<0.4+v*0.9) m.position.x+=dx*dt*(0.6+v*5); if(Math.hypot(dx,dy)<0.14||m.position.y>4.3){ m.position.y=-0.55; m.position.x=x0+Math.random()*(x1-x0); } }
+    if(!ended&&ok) prog+=dt/7; filt.material.color.lerpColors(clean,dirty,Math.min(1,prog)); $('#fstar').textContent='채취 '+Math.min(100,Math.floor(prog*100))+'%';
+    if(!ended) hint(ok?'✔ 연기와 같은 속도! 그대로 유지해요':v<0.42?'너무 약해요. 버튼을 눌러요':'너무 세요. 버튼에서 손을 떼요');
+    wk.who.armR.rotation.x=-1.4; wk.who.armL.rotation.x=-1.2;
+    if(!ended&&prog>=1){ ended=true; holding=false; go.style.display='none'; G.air.gauge=Math.max(8,Math.min(25,Math.round(25*Math.min(1,7/T*1.4)))); hint('채취 완료! 필터에 먼지가 모였어요.'); sfx('ok'); fPop('채취 완료!','good'); setTimeout(()=>{ if(alive){ off(); next(); } },1500); }
+    r.render(s,c); requestAnimationFrame(loop); })(last); }
 function xGame(k){ return {d:focusDust,i:focusStrip,l:focusNoise}[k]; }
 function xReport(){ const st=G.xStars||0, k=G.xk; G.done[k]=true; let extra='';
   if(k==='d'&&G.dust){ const o=XMS.d.opts[G.dust.k]; setDust(String(G.dust.v),o[1],o[0]); G.airK=G.dust.k; setMasks(G.airK>=2); WALKERS.forEach(w=>w.told=false);
