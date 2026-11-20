@@ -305,11 +305,11 @@ function label(text,o={}){
 
 /* ───────── 마을 ───────── */
 const RIVER_X1=120, RIVER_X2=140, ROAD_Z=15, ROAD_W=8;
-flat(260,380,0x9fd18b,-10,0,-40).material=texMat(TEX.grass,52,76);   // 서쪽 땅
+flat(300,380,0x9fd18b,-30,0,-40).material=texMat(TEX.grass,60,76);   // 서쪽 땅
 flat(70,380,0x9fd18b,175,0,-40).material=texMat(TEX.grass,14,76);    // 강 건너 땅
 // 북쪽 영산강과 벚꽃길
-const nriver=flat(330,24,0x4fa8e0,45,0.09,-104); nriver.material=texMat(TEX.water,30,2,{transparent:true,opacity:.95});
-flat(330,2.4,0xd8cba6,45,0.06,-91); flat(330,2.4,0xd8cba6,45,0.06,-117);
+const nriver=flat(380,24,0x4fa8e0,20,0.09,-104); nriver.material=texMat(TEX.water,34.5,2,{transparent:true,opacity:.95});
+flat(380,2.4,0xd8cba6,20,0.06,-91); flat(380,2.4,0xd8cba6,20,0.06,-117);
 // 남쪽 끝에도 강과 벚꽃길이 있어요
 const sriver=flat(330,24,0x4fa8e0,45,0.09,104); sriver.material=texMat(TEX.water,30,2,{transparent:true,opacity:.95}); flat(330,2.4,0xd8cba6,45,0.06,91); flat(330,2.4,0xd8cba6,45,0.06,117);
 { const d=new THREE.Object3D(), col=new THREE.Color(), PINK=[0xf7b6cf,0xf9c9dc,0xf29ebf,0xfbdbe8], spots=[];
@@ -505,7 +505,7 @@ box(9,3.2,6,0xffe9a8,-90,1.6,-26); box(9.4,0.4,6.4,0xff8fa3,-90,3.4,-26); for(co
 // 안내판
 box(0.2,1.3,0.2,0x7a5b3a,-9,0.65,2); panel2('연구원 이야기',2.7,1.2,-9,1.9,2,{bg:'#fff7e0',fg:'#7a4b00'});
 // 산
-for(let i=0;i<14;i++){ const a=i/14*Math.PI*2+0.3, r=215+(i%3)*18, h=40+(i*37%30);
+for(let i=0;i<14;i++){ const a=i/14*Math.PI*2+0.3, r=215+(i%3)*18+(i===7?34:0), h=40+(i*37%30);
   const m=new THREE.Mesh(new THREE.ConeGeometry(55+(i%4)*10,h,7),new THREE.MeshLambertMaterial({color:i%2?0x6f9f7c:0x7dae86,flatShading:true})); m.position.set(40+Math.cos(a)*r,h/2-2,Math.sin(a)*r); scene.add(m); }
 
 /* ───────── 건물 안: 계단 홀 → 복도 → 유리문은 모든 과가 같이 쓰고, 문 안쪽 시험실 장비만 과에 따라 바뀌어요 ───────── */
@@ -599,7 +599,7 @@ const WALLS=[ [-8,12,-44,-34],[12,14,-45,-36],[6,22,-57,-45],[-27,-5,-58,-45],[-
   [52.2,54.6,-33,-25],[7,19.5,65,72.4],[-94.5,-85.5,-29,-23],[-83.7,-82.3,-28.7,-27.3],[154,166,-50,-40],[143.5,154,-45.6,-44.4], [MK.bx-5,MK.bx+5,MK.bz-4,MK.bz+4], ...MK.rows.map(d=>[MK.x-9.4,MK.x+9.4,MK.z+d-0.6,MK.z+d+0.6]), ...MK.trucks.map(([x,z])=>[x-1.1,x+1.1,z-2.9,z+2.7]), ...DSTN.filter(s=>!s.roof).map(s=>[s.x-2.4,s.x+2.4,s.z-1.5,s.z+1.5]), ...PARKED.map(([x,z])=>[x-0.9,x+0.9,z-1.9,z+1.9]) ];
 function blocked(x,z,r){
   if(x<-300) return inBlocked(x,z,r);   // 건물 안
-  if(x<-100+r||x>190-r||z<-89.5+r||z>90-r) return true;
+  if((x<-100+r&&!(x>-128.5+r&&z<-48-r))||x>190-r||z<-89.5+r||z>90-r) return true;
   for(const w of WALLS) if(x>w[0]-r&&x<w[1]+r&&z>w[2]-r&&z<w[3]+r) return true;
   if(x>RIVER_X1-r&&x<RIVER_X2+r){ const half=ROAD_W/2-0.25-r; if(Math.abs(z-ROAD_Z)>half&&!(r<0.8&&STONES.some(s=>Math.abs(z-s)<1.35-r))) return true; }   // 강은 다리와 징검다리(사람만)로만 건너요
   return false;
@@ -1166,6 +1166,7 @@ function doWave(){ if(G.driving||G.lock) return; player.wave=1.4; const p=player
   if(dist(p,P.boss)<10) setTimeout(()=>{ boss.wave=1.4; face(boss.g); bubble(boss.g,pick(['반가워요! 오늘도 수고가 많아요.',`${G.name} 연구원, 안녕하세요!`,'허허, 인사성이 밝군요. 반가워요!'])); },400);
   PLAY.kids.forEach((k,i)=>{ if(dist(p,[k.p.g.position.x,k.p.g.position.z])<12) setTimeout(()=>{ k.p.wave=1.4; face(k.p.g); k.sigh=5+Math.random()*4; bubble(k.p.g,pick(['안녕하세요, 연구원님!','연구원님이다! 안녕하세요~','안녕하세요! 반가워요!','우와, 진짜 연구원님이다!','안녕하세요! 멋져요!'])); },300+i*250); });
   CAMP.people.forEach((q,i)=>{ if(dist(p,[q.g.position.x,q.g.position.z])<11) setTimeout(()=>{ q.wave=1.4; CAMP.talk=5; bubble(q.g,CAMP_HI[q.name]?pick(CAMP_HI[q.name]):q.name==='아빠'?pick(['안녕하세요! 캠핑 왔어요','같이 불멍 할래요?']):pick(['연구원님 안녕하세요~','반가워요!'])); },300+i*250); });
+  FP.all.forEach((k,i)=>{ if(dist(p,[k.x,k.z])<12) setTimeout(()=>{ k.p.wave=1.4; FP.talk=5; bubble(k.p.g,pick(['안녕하세요, 연구원님!','연구원님이다! 안녕하세요~','같이 놀아요!','우와, 진짜 연구원님이다!','안녕하세요! 히히'])); },300+i*200); });
   for(const a of ANIMALS) if(dist(p,[a.g.position.x,a.g.position.z])<7){ a.hop=1.2; bubble(a.g,a.msg,a.fly?1.2:2.4);
     if(!a.met){ a.met=true; toast(`${a.name} 친구와 인사했어요! (${ANIMALS.filter(x=>x.met).length}/${ANIMALS.length})`); } } }
 // 버튼은 '누르는 순간'에 반응해요. 휴대폰은 다른 손가락이 조이스틱을 잡고 있으면 click을 만들어 주지 않아서, 걸으면서 누를 수 없었어요.
@@ -1409,6 +1410,68 @@ const CAMP_TALK=['불멍 최고!','쓰레기는 꼭 되가져가요','여기 공
   cyl(0.12,0.12,0.28,0xffe38a,cx+3.3,0.8,cz+2.4,scene,10); cyl(0.14,0.1,0.06,0x2b2f36,cx+3.3,0.97,cz+2.4,scene,10); box(0.8,0.5,0.5,0x3b82c4,cx+5.0,0.25,cz+1.6); box(0.84,0.1,0.54,0xf4f7f8,cx+5.0,0.55,cz+1.6);
   { const m=cyl(0.015,0.015,1.5,0x6b4a2b,cx-1.25,0.95,cz+0.5,scene,5); m.rotation.z=1.15; m.rotation.y=-0.4; box(0.12,0.12,0.12,0xffffff,cx-0.6,0.66,cz+0.2); }   // 마시멜로 꼬치
   WALLS.push([cx-6.1,cx-3.1,cz-4.7,cz-1.7],[cx+3.1,cx+5.5,cz-5,cz-2.6],[cx-0.9,cx+0.9,cz-0.9,cz+0.9]); }
+// 서북쪽 산자락의 어린이 숲 놀이터: 숲 언덕에서 내려오는 긴 미끄럼틀, 그네, 작은 미끄럼틀, 모래밭. 아이들이 타고, 뛰고, 흙장난을 해요.
+const FP={x:-114,z:-68,sliders:[],swings:[],diggers:[],runners:[],all:[],talk:3,ra:0};
+const FP_SAY={
+  slide:['숲 미끄럼틀 진짜 빨라요!','또 탈래요! 또!','야호~ 내려간다!','줄 서서 차례차례 타요','나무 사이로 슝!','하나도 안 무서워요!'],
+  swing:['더 높이! 더 높이!','하늘까지 닿을 것 같아요','바람이 시원해요~','꽉 잡고 타야 해요','구름이 가까워졌어요!','다음엔 누가 탈래?'],
+  dig:['두껍아 두껍아 헌 집 줄게~','모래성 만드는 중이에요','흙이 보들보들해요','여기 터널 뚫을 거예요','놀고 나면 손 꼭 씻을게요!','연구원님, 이 흙도 검사해요?'],
+  run:['나 잡아 봐라~','네가 술래야!','기다려, 같이 가!','꺄르르!','숲 냄새가 좋아요','한 바퀴 더 돌자!'] };
+{ const L=c=>new THREE.MeshLambertMaterial({color:c,flatShading:true}), HX=-144, HZ=-72, HR=16, HH=10, hillH=(x,z)=>Math.max(0,(1-Math.hypot(x-HX,z-HZ)/HR)*HH);
+  const kid=(coat,pants,s,girl,role)=>{ const p=makePerson({coat,pants}); p.g.scale.setScalar(s); if(girl) for(const sx of [-1,1]){ const m=new THREE.Mesh(new THREE.SphereGeometry(0.16,10,8),mat(0x2b2622)); m.position.set(sx*0.44,1.95,-0.05); p.g.add(m); } const k={p,role,x:0,z:0}; FP.all.push(k); return k; };
+  // 숲 언덕과 소나무
+  { const m=new THREE.Mesh(new THREE.ConeGeometry(HR,HH,18),L(0x5f9f6a)); m.position.set(HX,HH/2,HZ); scene.add(m); }
+  const pine=(x,z,s,c=0x2f6f4a)=>{ const y=hillH(x,z)-0.1; cyl(0.18*s,0.3*s,1.3*s,0x7a5a3c,x,y+0.65*s,z,scene,6);
+    for(const [r,h,yy] of [[1.6,2.5,2.3],[1.15,2.1,3.8]]){ const m=new THREE.Mesh(new THREE.ConeGeometry(r*s,h*s,7),L(c)); m.position.set(x,y+yy*s,z); m.castShadow=true; scene.add(m); } };
+  [[-131,-76.5,1.1],[-134.5,-79,1.3],[-139,-76.5,1.2],[-131.5,-66,1.2],[-135.5,-64,1.4],[-140,-66.5,1.1],[-141.5,-73.5,1.5],[-130,-82.5,1.2],[-134,-86,1.1],[-130,-60.5,1.3],[-133.5,-57,1.1],[-130.5,-53,1.2],[-138,-84,1.3],[-138.5,-59,1.2]].forEach(([x,z,s],i)=>pine(x,z,s,i%3?0x2f6f4a:0x3f8a4f));
+  [[-125,-45.6,1.2],[-117,-44.8,1],[-109.5,-45.4,1.3],[-102.5,-44.6,1.1]].forEach(([x,z,s])=>pine(x,z,s,0x3f8a4f));
+  // 남쪽 통나무 울타리와 입구 팻말
+  for(let x=-128;x<=-101;x+=3) cyl(0.12,0.14,1.1,0x8a6f52,x,0.55,-47.6,scene,6); for(const y of [0.45,0.9]) box(27.4,0.1,0.1,0x9a7d5c,-114.5,y,-47.6);
+  for(const z of [-73.4,-66.6]) cyl(0.2,0.24,3.8,0x8a6f52,-100.6,1.9,z,scene,7); box(0.3,0.3,7.6,0x7a5b3a,-100.6,3.85,-70); panel2('🌲 어린이 숲 놀이터',6.6,1,-100.5,3.05,-70,{bg:'#2f6f4f',fg:'#fff'});
+  flat(5,4.4,0xd8c7a0,-102.6,0.05,-70); for(const [x,z,r] of [[-108,-80,4.6],[-126,-71.6,2.6],[-108.9,-56.6,1.7]]){ const m=new THREE.Mesh(new THREE.CircleGeometry(r,22),L(0xdccba2)); m.rotation.x=-Math.PI/2; m.position.set(x,0.055,z); scene.add(m); }
+  // 숲속에서 내려오는 긴 미끄럼틀: 통나무 계단으로 올라가 나무 사이로 내려와요
+  { const x0=-136, x1=-128, y0=hillH(x0,HZ)+0.4, y1=0.45, len=Math.hypot(x1-x0,y0-y1), ang=-Math.atan2(y0-y1,x1-x0), cx=(x0+x1)/2, cy=(y0+y1)/2;
+    box(len,0.12,1.1,0xffc53d,cx,cy,HZ).rotation.z=ang; for(const s of [-1,1]) box(len,0.42,0.12,0xe5484d,cx,cy+0.2,HZ+s*0.6).rotation.z=ang;
+    box(2.8,0.12,1.1,0xffc53d,x1+1.35,y1-0.03,HZ); for(const s of [-1,1]) box(2.8,0.42,0.12,0xe5484d,x1+1.35,y1+0.17,HZ+s*0.6); for(const x of [x1+0.4,x1+2.4]) box(0.2,0.4,1,0x7c878d,x,0.2,HZ);
+    for(const s of [-1,1]) cyl(0.11,0.13,2.6,0x8a6f52,x0-0.2,y0+0.9,HZ+s*0.85,scene,6); box(0.9,0.18,2.2,0x7a5b3a,x0-0.2,y0+2.2,HZ); { const m=new THREE.Mesh(new THREE.ConeGeometry(1.7,1.1,4),L(0xc9492f)); m.rotation.y=Math.PI/4; m.position.set(x0-0.2,y0+2.85,HZ); scene.add(m); }
+    for(let i=0;i<9;i++){ const x=-128.4-i*0.95, m=cyl(0.16,0.16,1.5,0x9a7d5c,x,hillH(x,-69.4)+0.1,-69.4,scene,7); m.rotation.x=Math.PI/2; }
+    const WP=[[-124.6,0,-70.2,'walk'],[-128.2,0,-69.4,'walk'],[-136.4,hillH(-136.4,-69.4)+0.1,-69.4,'walk'],[-136.7,hillH(-136.7,HZ)+0.1,HZ,'walk'],[x1,y1+0.1,HZ,'slide'],[x1+2.4,y1+0.1,HZ,'slide'],[x1+3.6,0,HZ-0.4,'walk']];
+    for(const [coat,pants,s,girl,i0] of [[0x3b82c4,0x4a4f55,0.66,false,1],[0xff8fa3,0x6b4a8a,0.62,true,3],[0x7fd36b,0x2c3e63,0.7,false,6]]){ const k=kid(coat,pants,s,girl,'slide'); k.wp=WP; k.i=i0; const a=WP[i0-1]; k.p.g.position.set(a[0],a[1],a[2]); k.y=a[1]; k.wait=0; FP.sliders.push(k); } }
+  // 작은 미끄럼틀
+  { const sx=-104, sz=-56; for(const [a,b] of [[-0.6,-0.6],[0.6,-0.6],[-0.6,0.6],[0.6,0.6]]) cyl(0.09,0.09,3.4,0x3b82c4,sx+a,1.7,sz+b,scene,6); box(1.5,0.12,1.5,0x9a7d5c,sx,2,sz);
+    { const m=new THREE.Mesh(new THREE.ConeGeometry(1.35,0.9,4),L(0xe5484d)); m.rotation.y=Math.PI/4; m.position.set(sx,3.85,sz); scene.add(m); }
+    const len=Math.hypot(3.8,1.7), ang=Math.atan2(1.7,3.8); box(len,0.1,0.95,0x7fd3e6,sx-0.7-1.9,1.2,sz).rotation.z=ang; for(const s of [-1,1]) box(len,0.36,0.1,0x3b82c4,sx-0.7-1.9,1.37,sz+s*0.5).rotation.z=ang;
+    for(const s of [-1,1]) cyl(0.05,0.05,2.1,0x8d979d,sx+0.95,1.05,sz+s*0.3,scene,6); for(let y=0.4;y<2;y+=0.4) box(0.08,0.06,0.6,0x8d979d,sx+0.95,y,sz);
+    WALLS.push([sx-4.6,sx+1.1,sz-0.8,sz+0.8]);
+    const k=kid(0xffd84d,0x3b82c4,0.58,false,'slide'); k.wp=[[sx+1.7,0,sz,'walk'],[sx+0.5,2.06,sz,'climb'],[sx-0.6,2.06,sz,'walk'],[sx-4.5,0.42,sz,'slide'],[sx-5.6,0,sz,'walk'],[sx-5.4,0,sz-2.2,'walk'],[sx+1.6,0,sz-2.2,'walk']]; k.i=1; k.y=0; k.wait=0; k.p.g.position.set(sx+1.7,0,sz); FP.sliders.push(k); }
+  // 그네 두 개
+  { const sx=-108, sz=-80; for(const ex of [-3.1,3.1]) for(const s of [-1,1]){ const m=cyl(0.1,0.1,3.7,0xe5484d,sx+ex,1.72,sz+s*0.95,scene,6); m.rotation.x=-s*0.52; } const bar=cyl(0.09,0.09,6.4,0xe5484d,sx,3.3,sz,scene,6); bar.rotation.z=Math.PI/2;
+    WALLS.push([sx-3.5,sx+3.5,sz-1.6,sz+1.6]);
+    [[-1.45,0xff8a3d,0x2c3e63,0.64,true],[1.45,0x8b5cf6,0x4a4f55,0.68,false]].forEach(([ox,coat,pants,s,girl],i)=>{ const pv=new THREE.Group(); pv.position.set(sx+ox,3.3,sz); scene.add(pv);
+      for(const r of [-0.34,0.34]) cyl(0.025,0.025,2.5,0x6b7780,r,-1.25,0,pv,5); box(0.86,0.08,0.36,0x3a2c26,0,-2.5,0,pv);
+      const k=kid(coat,pants,s,girl,'swing'); pv.add(k.p.g); k.p.g.position.set(0,-2.46-0.6*s,0); k.pv=pv; k.ph=i*1.9; k.x=sx+ox; k.z=sz; FP.swings.push(k); }); }
+  // 모래밭: 모래성과 양동이, 흙장난하는 아이들
+  { const bx=-120, bz=-57; flat(6,5,0xe8d5a0,bx,0.07,bz); for(const s of [-1,1]){ box(6.4,0.28,0.26,0x8a6f52,bx,0.14,bz+s*2.6); box(0.26,0.28,5.2,0x8a6f52,bx+s*3.1,0.14,bz); }
+    cyl(0.42,0.5,0.5,0xdcc48c,bx,0.32,bz,scene,9); { const m=new THREE.Mesh(new THREE.ConeGeometry(0.36,0.5,8),L(0xdcc48c)); m.position.set(bx,0.82,bz); scene.add(m); } box(0.03,0.4,0.03,0x7a5b3a,bx,1.2,bz); box(0.22,0.14,0.02,0xe5484d,bx+0.11,1.32,bz);
+    for(const [x,z,r] of [[-1.9,1.4,0.5],[2.1,1.2,0.38],[1.6,-1.7,0.45],[-2.2,-1.3,0.3]]){ const m=new THREE.Mesh(new THREE.ConeGeometry(r,r*0.9,8),L(0xdcc48c)); m.position.set(bx+x,0.07+r*0.45,bz+z); scene.add(m); }
+    cyl(0.2,0.15,0.3,0xe5484d,bx+0.9,0.22,bz+1,scene,9); cyl(0.2,0.15,0.3,0x3b82c4,bx-1,0.22,bz-1.6,scene,9);
+    for(const [x,z,coat,pants,s,girl] of [[-1.25,0.5,0x3ecf8e,0x4a4f55,0.6,false],[1.3,-0.5,0xff8fa3,0x2c3e63,0.64,true],[0.3,1.5,0xffd84d,0x6b4a8a,0.56,true]]){ const k=kid(coat,pants,s,girl,'dig'); k.x=bx+x; k.z=bz+z; k.p.g.position.set(k.x,-0.17,k.z); k.p.g.rotation.y=Math.atan2(-x,-z); k.ph=x*3; box(0.05,0.34,0.05,0x7a5b3a,0,-0.72,0,k.p.armR); box(0.14,0.16,0.03,0xffc53d,0,-0.95,0,k.p.armR); FP.diggers.push(k); } }
+  // 뛰어노는 아이들: 놀이터 가운데를 빙글빙글 돌며 잡기 놀이를 해요
+  for(const [coat,pants,s,girl] of [[0xe5484d,0x2c3e63,0.68,false],[0x7fd3e6,0x6b4a8a,0.6,true],[0xff8a3d,0x4a4f55,0.64,false]]){ const k=kid(coat,pants,s,girl,'run'); k.ph=FP.runners.length*1.25; FP.runners.push(k); }
+}
+function forestTick(dt,time){ if(Math.abs(camera.position.x-FP.x)>80||Math.abs(camera.position.z-FP.z)>80) return;   // 멀리 있을 때는 쉬어요
+  for(const k of FP.sliders){ const g=k.p.g, W=k.wp, b=W[k.i]; if(k.wait>0){ k.wait-=dt; animPerson(k.p,false,dt); k.p.armL.rotation.x=-2.9; if(!(k.p.wave>0)) k.p.armR.rotation.x=-2.9; continue; }
+    const dx=b[0]-g.position.x, dy=b[1]-k.y, dz=b[2]-g.position.z, d=Math.hypot(dx,dy,dz), sl=b[3]==='slide', sp=(sl?6:b[3]==='climb'?1.5:2.3)*dt;
+    if(d<=sp){ g.position.x=b[0]; g.position.z=b[2]; k.y=b[1]; k.i=(k.i+1)%W.length; if(W[k.i][3]==='slide'&&!sl) k.wait=0.8; }
+    else { g.position.x+=dx/d*sp; k.y+=dy/d*sp; g.position.z+=dz/d*sp; }
+    if(Math.hypot(dx,dz)>0.05) g.rotation.y=lerpAng(g.rotation.y,Math.atan2(dx,dz),dt*10);
+    animPerson(k.p,!sl,dt); g.position.y=k.y-(sl?0.3:0); k.x=g.position.x; k.z=g.position.z;
+    if(sl){ k.p.legL.rotation.x=k.p.legR.rotation.x=-1.35; k.p.armL.rotation.x=-2.9; if(!(k.p.wave>0)) k.p.armR.rotation.x=-2.9; } }
+  for(const k of FP.swings){ const a=Math.sin(time*2.1+k.ph)*0.6; k.pv.rotation.x=a; animPerson(k.p,false,dt); k.p.legL.rotation.x=k.p.legR.rotation.x=-1.3+a*0.7; k.p.armL.rotation.x=-1.1; if(!(k.p.wave>0)) k.p.armR.rotation.x=-1.1; }
+  for(const k of FP.diggers){ animPerson(k.p,false,dt); k.p.legL.rotation.x=k.p.legR.rotation.x=-1.45; k.p.armL.rotation.x=-0.7; if(!(k.p.wave>0)) k.p.armR.rotation.x=-0.9+Math.sin(time*5+k.ph)*0.45; }
+  FP.ra+=dt*0.55; for(const k of FP.runners){ const a=FP.ra+k.ph+Math.sin(time*0.8+k.ph)*0.25, g=k.p.g; k.x=-113+Math.cos(a)*6.2; k.z=-68.5+Math.sin(a)*4.6; g.position.set(k.x,Math.abs(Math.sin(time*9+k.ph))*0.08,k.z); g.rotation.y=Math.atan2(-Math.sin(a)*6.2,Math.cos(a)*4.6); animPerson(k.p,true,dt); }
+  if(!G.driving&&!G.lock&&Math.hypot(player.g.position.x-FP.x,player.g.position.z-FP.z)<24){ FP.talk-=dt; if(FP.talk<=0){ FP.talk=2.8+Math.random()*3.5; const k=FP.all[Math.floor(Math.random()*FP.all.length)], Ls=FP_SAY[k.role]; let s; do{ s=Ls[Math.floor(Math.random()*Ls.length)]; }while(s===k.said); k.said=s; bubble(k.p.g,s); } } }
+
 // 물놀이터 아이들이 하는 말: 검사를 기다릴 때, 부적합일 때, 적합이라 놀 때
 const KID_TALK={
   wait:['언제 들어갈 수 있어요?','연구원님, 물 깨끗해요?','빨리 놀고 싶어요!','검사는 어떻게 하는 거예요?','수영복 입고 왔어요!','물총도 가져왔는데…','오늘 진짜 더워요','검사 끝나면 알려 주세요!','저도 크면 연구원 될래요','물에 뭐가 들어 있는지 궁금해요','조금만 더 기다릴게요','연구원님 힘내세요!'],
@@ -1429,7 +1492,7 @@ function strollers(dt){ for(const w of WALKERS){ const g=w.p.g, px=player.g.posi
 const AIR_TALK={ boss:['공기가 너무 좋다, 그치?','오늘 공기는 보통이군요. 산책하기 괜찮아요.','미세먼지가 나쁘네요. 마스크 꼭 써요!','미세먼지가 매우 나빠요. 바깥 활동은 줄여요!'],
   npc:['오늘은 하늘이 참 맑네요!','공기가 보통이에요. 측정 고마워요!','마스크 썼죠? 잘했어요!','오늘은 실내에 있는 게 좋겠어요.'] };
 // 미세먼지가 나쁨 이상이면 연구원, 선배, 원장님, 아이들이 모두 마스크를 써요
-function setMasks(on){ for(const p of [player,npc,boss,...PLAY.kids.map(k=>k.p)]){ if(!p.mask){ p.mask=new THREE.Group(); p.g.add(p.mask); box(0.4,0.2,0.06,0xffffff,0,1.77,0.35,p.mask); for(const s of [-1,1]) box(0.03,0.03,0.36,0xdfe6ea,s*0.21,1.8,0.17,p.mask); } p.mask.visible=on; } }
+function setMasks(on){ for(const p of [player,npc,boss,...PLAY.kids.map(k=>k.p),...FP.all.map(k=>k.p)]){ if(!p.mask){ p.mask=new THREE.Group(); p.g.add(p.mask); box(0.4,0.2,0.06,0xffffff,0,1.77,0.35,p.mask); for(const s of [-1,1]) box(0.03,0.03,0.36,0xdfe6ea,s*0.21,1.8,0.17,p.mask); } p.mask.visible=on; } }
 const PANO_P=new THREE.Vector3(), PANO_L=new THREE.Vector3();
 const camPos=new THREE.Vector3(0,6,16); let last=performance.now(),time=0,bridgeHint=false,camLook=0,sitK=0,stnT=0;
 function frame(now){
@@ -1505,6 +1568,7 @@ function frame(now){
         animPerson(p,mv,dt); g.position.y=mv?Math.abs(Math.sin(time*9+g.position.x))*0.06:0; }
       else { animPerson(p,false,dt); p.g.position.y=p.sitY; p.legL.rotation.x=p.legR.rotation.x=-1.45; p.armL.rotation.x=-0.5; if(!(p.wave>0)) p.armR.rotation.x=-0.5; } }
     if(!G.driving&&!G.lock&&Math.hypot(player.g.position.x-CAMP.x,player.g.position.z-CAMP.z)<13){ CAMP.talk-=dt; if(CAMP.talk<=0){ CAMP.talk=3.5+Math.random()*4; const q=CAMP.people[[0,1,2,2,3,3][Math.floor(Math.random()*6)]], L=CAMP_SAY[q.name]||CAMP_TALK; let s; do{ s=L[Math.floor(Math.random()*L.length)]; }while(s===q.said); q.said=s; bubble(q.g,s); } } }
+  forestTick(dt,time);
   for(const m of PETALS_R){ m.position.y-=dt*0.7; m.position.x+=Math.sin(time*1.5+m.userData.ph)*dt*0.5; m.rotation.x+=dt*2; m.rotation.z+=dt*1.4;
     if(m.position.y<0.1||Math.abs(m.position.x-ent.position.x)>24){ m.position.y=m.position.y<0.1?6+Math.random()*2.5:m.position.y; m.position.x=Math.max(-98,Math.min(118,ent.position.x+(Math.random()-0.5)*40)); m.position.z=ent.position.z>0?83+Math.random()*7.5:-90.5+Math.random()*7.5; } }
   // 말풍선
@@ -1561,7 +1625,7 @@ $('#enter').addEventListener('click',()=>{ const v=nm.value.trim().slice(0,6);
   $('#start').style.display='none'; $('#hud').style.display='block'; setStep(0); G.lock=false;
   say([['안내',`${G.name} 연구원, 첫 출근을 환영해요! 왼쪽 아래 조이스틱으로 걷고, 화면을 좌우로 밀면 둘러볼 수 있어요.`]]);
 });
-window.__G=G; window.__dbg={player,car,car2,carD,carI,carL,carG,P,marker}; window.__t={sampleGame,bottleGame,labGame,climbGame,haulGame,gaugeGame,filterGame,closeMini,focusSample,focusCatch,focusHaul,playTest,setPlay,playReport,doseGame,remeasure,focusDust,focusStrip,focusNoise,xReport,startMission,setStep,focusBOD,focusWeigh,enterLab,exitLab,focusInlet,focusTMS,focusVeg,focusGC,DSTN,focusClimb,focusGauge,XMS,ITEMS,ITEMS_A,ITEMS_P,ITEMS_X,FISH,CAMP};
+window.__G=G; window.__dbg={player,car,car2,carD,carI,carL,carG,P,marker}; window.__t={sampleGame,bottleGame,labGame,climbGame,haulGame,gaugeGame,filterGame,closeMini,focusSample,focusCatch,focusHaul,playTest,setPlay,playReport,doseGame,remeasure,focusDust,focusStrip,focusNoise,xReport,startMission,setStep,focusBOD,focusWeigh,enterLab,exitLab,focusInlet,focusTMS,focusVeg,focusGC,FP,DSTN,focusClimb,focusGauge,XMS,ITEMS,ITEMS_A,ITEMS_P,ITEMS_X,FISH,CAMP};
 const DOOR_LIMIT=52;   // 차를 실험동 입구에서 이 거리 안에 세워야 시료를 접수할 수 있어요
 flag.position.set(24,0,-25);
 // 차량 3D 모형. 못 불러오면 상자로 만든 차량을 그대로 써요. rotY로 앞머리 방향을 맞춰요.
