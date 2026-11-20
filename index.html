@@ -1179,6 +1179,11 @@ function getAction(){
 }
 let curAct=null; const actEl=$('#act');
 
+// 물놀이터 아이들이 하는 말: 검사를 기다릴 때, 부적합일 때, 적합이라 놀 때
+const KID_TALK={
+  wait:['언제 들어갈 수 있어요?','연구원님, 물 깨끗해요?','빨리 놀고 싶어요!','검사는 어떻게 하는 거예요?','수영복 입고 왔어요!','물총도 가져왔는데…','오늘 진짜 더워요','검사 끝나면 알려 주세요!','저도 크면 연구원 될래요','물에 뭐가 들어 있는지 궁금해요','조금만 더 기다릴게요','연구원님 힘내세요!'],
+  bad:['하아… 놀고 싶었는데…','물이 아야 했대…','언제 깨끗해져요?','30분만 기다리면 돼요?','다시 검사해 주세요…','약을 넣으면 깨끗해진대','그래도 안전한 게 좋아요','힝, 덥다…','기다릴게요, 연구원님','깨끗한 물에서 놀래요'],
+  ok:['와, 시원하다!','연구원님 고마워요!','물이 진짜 깨끗해요!','나 잡아 봐라~','분수 또 나온다!','꺄르르!','물놀이 최고!','연구원님도 같이 놀아요!','내일도 올 거예요!','깨끗한 물이라 안심이에요','앗, 차가워!','우리 동네 물놀이터 짱!'] };
 /* ───────── 메인 루프 ───────── */
 const lerpAng=(a,b,t)=>{ let d=(b-a)%(Math.PI*2); if(d>Math.PI) d-=Math.PI*2; if(d<-Math.PI) d+=Math.PI*2; return a+d*Math.min(1,t); };
 const camPos=new THREE.Vector3(0,6,16); let last=performance.now(),time=0,bridgeHint=false,camLook=0;
@@ -1236,7 +1241,7 @@ function frame(now){
       g.position.y=on?Math.abs(Math.sin(time*7+k.wx))*0.5:sit?-0.3:(!mv?Math.abs(Math.sin(time*2.5+k.wx))*0.05:0);
       k.p.armL.rotation.z=on?-2.4:0; if(on) k.p.armR.rotation.z=2.4;
       if(sit){ k.p.legL.rotation.x=k.p.legR.rotation.x=-1.45; k.p.armL.rotation.x=k.p.armR.rotation.x=-0.35; }
-      if(!on&&!mv&&!G.driving&&Math.hypot(player.g.position.x-g.position.x,player.g.position.z-g.position.z)<22){ k.sigh-=dt; if(k.sigh<=0){ k.sigh=6+Math.random()*6; bubble(g,sit?'하아… 놀고 싶었는데…':'언제 들어갈 수 있어요?',3.5); } } } }
+      if((on||!mv)&&!G.driving&&Math.hypot(player.g.position.x-g.position.x,player.g.position.z-g.position.z)<22){ k.sigh-=dt; if(k.sigh<=0){ k.sigh=6+Math.random()*6; const L=KID_TALK[on?'ok':sit?'bad':'wait']; let s; do{ s=L[Math.floor(Math.random()*L.length)]; }while(s===k.said); k.said=s; bubble(g,s,3.5); } } } }
   // 동물 친구들: 집 근처를 어슬렁거리다가 연구원이 다가오면 쳐다봐요
   for(const a of ANIMALS){ const g=a.g; a.wait-=dt;
     if(a.wait<=0){ a.wait=2+Math.random()*4; const ang=Math.random()*6.28, r=1+Math.random()*4, nx=a.hx+Math.cos(ang)*r, nz=a.hz+Math.sin(ang)*r; if(!blocked(nx,nz,1.5)&&Math.abs(nz-ROAD_Z)>6){ a.tx=nx; a.tz=nz; } }
