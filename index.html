@@ -1242,6 +1242,9 @@ function frame(now){
   // 아직 못 찾은 장비가 있으면 가장 가까운 장비 쪽으로 안내해요
   let tg=STEPS[G.step].at(); const left=its&&!carFirst?its.filter(i=>!i.got):[];
   if(left.length){ const dd=i=>Math.hypot(i.x-ent.position.x,i.z-ent.position.z), n=left.reduce((a,b)=>dd(a)<dd(b)?a:b); tg=[n.x,n.z]; }
+  // 강 건너편으로 가야 하면 곧장 가리키지 않고 다리를 거쳐 가도록 안내해요: 먼저 이쪽 다리 입구, 다리에 들어서면 건너편 끝
+  if(tg){ const side=x=>x<RIVER_X1?-1:x>RIVER_X2?1:0, ps=side(ent.position.x), ts=side(tg[0]);
+    if(ts!==0&&ps!==ts){ const own=[ps<0?RIVER_X1-4:RIVER_X2+4,ROAD_Z], far=[ts>0?RIVER_X2+4:RIVER_X1-4,ROAD_Z]; tg=(ps===0||Math.hypot(ent.position.x-own[0],ent.position.z-own[1])<6)?far:own; } }
   const qt=left.length?`장비 ${left.length}개가 남았어요. 노란 점선을 따라가 찾으세요`:null; if(qt!==qtCache){ qtCache=qt; $('#qtx').textContent=qt||STEPS[G.step].t; }
   const hideM=!tg||((G.step===1||G.step===9||G.step===17)&&G.driving);
   marker.visible=!hideM; arrow.visible=false;
