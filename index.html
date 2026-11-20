@@ -392,11 +392,21 @@ box(0.5,0.5,0.4,0x2b2b2b,FX,15,FZ-1.45);                                        
 flat(6,25,0x59646b,FX+6,0.08,31.5).material=texMat(TEX.road,1.5,6); flat(16,8,0x59646b,FX+1,0.08,FZ-8).material=texMat(TEX.road,4,2);   // 공장 진입로
 const SMOKE=Array.from({length:7},()=>{ const m=new THREE.Mesh(new THREE.SphereGeometry(1.2,10,8),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.5,depthWrite:false})); scene.add(m); return m; });
 // 대기환경측정소(미세먼지분석과), 어린이집(생활환경과), 공장 방류구(산업폐수과)
-// 측정소는 남쪽 가운데, 어린이집은 물놀이터 옆, 방류구는 강 건너 동북쪽에 있어요. XAT는 플레이어가 서는 자리예요.
-const XAT={ d:[13.8,68.5], l:[-45,-66.5], i:[146,-41] };
+// 측정소는 남쪽 가운데, 어린이집은 서쪽 끝, 방류구는 강 건너 동북쪽에 있어요. XAT는 플레이어가 서는 자리예요.
+const XAT={ d:[13.8,68.5], l:[-90,-20.5], i:[146,-41] };
 // 주민센터 옥상(높이 y)과 바깥 계단. 계단은 x1~sx1 사이에서 z0부터 6칸 동안 올라가요.
 const ROOF={x0:7,x1:17.1,sx1:19.5,z0:65,z1:72.4,y:7.35};
 function floorAt(x,z){ if(z<ROOF.z0||z>ROOF.z1||x<ROOF.x0||x>ROOF.sx1) return 0; return x<=ROOF.x1?ROOF.y:Math.min(ROOF.y,(z-ROOF.z0)/6*ROOF.y); }
+// 어린이집 옆 큰 벚꽃나무
+{ const tx=-83, tz=-28; cyl(0.55,0.85,5.5,0x5a4636,tx,2.75,tz,scene,8); for(const [a,l] of [[0.6,2.6],[2.5,2.3],[4.4,2.5]]){ const m=cyl(0.2,0.32,l,0x5a4636,tx+Math.cos(a)*1.1,5.6,tz+Math.sin(a)*1.1,scene,6); m.rotation.z=-Math.cos(a)*0.7; m.rotation.x=Math.sin(a)*0.7; }
+  const PINK=[0xf7b6cf,0xf9c9dc,0xf29ebf,0xfbdbe8]; [[0,8.6,0,4.2],[3,7.4,1,3],[-3,7.6,-0.6,3.1],[0.6,7.2,3,2.9],[-0.8,7.4,-3,3],[2,9.8,-1.6,2.6],[-2,10,1.4,2.5]].forEach(([dx,y,dz,r],i)=>{
+    const m=new THREE.Mesh(new THREE.IcosahedronGeometry(r,1),new THREE.MeshLambertMaterial({color:PINK[i%4],flatShading:true})); m.position.set(tx+dx,y,tz+dz); m.scale.y=0.8; m.rotation.y=i; m.castShadow=true; scene.add(m); }); }
+// 큰길에서 각 건물로 이어지는 도로. ROADS는 나무를 심지 않을 자리로도 써요.
+const ROADS=[ [19,25,19,59],[6,27,59,64.6],        // 주민센터
+  [44,50,-24,11],                                  // 주차장과 본관
+  [-80,-74,-52.5,11],[-92,-80,-22.6,-17.4],[-74,-60,-52.5,-47.5],   // 서쪽: 어린이집, 물놀이터
+  [147,153,-37,11],[143,166,-39.6,-37] ];          // 강 건너 공장
+for(const [x0,x1,z0,z1] of ROADS) flat(x1-x0,z1-z0,0x59646b,(x0+x1)/2,0.085,(z0+z1)/2).material=texMat(TEX.road,Math.max(1,(x1-x0)/4),Math.max(1,(z1-z0)/4));
 // 미세먼지 신호등: 숫자 전광판 아래에 등급 표지 네 개. 미세먼지 임무를 보고하면 모든 신호등에 측정값이 켜져요.
 const DSIG=[], DTAG=[['좋음','#3b82f6'],['보통','#22c55e'],['나쁨','#eab308'],['매우 나쁨','#ef4444']];
 function dustSignal(x,z){ cyl(0.12,0.12,2,0x3a4046,x,1,z,scene,10); box(1,1.9,0.22,0xd9d5c8,x,2.95,z); box(1.3,1.1,0.7,0x20262b,x,4.45,z);
@@ -407,7 +417,7 @@ function dustSignal(x,z){ cyl(0.12,0.12,2,0x3a4046,x,1,z,scene,10); box(1,1.9,0.
 function setDust(v,col,name){ for(const d of DSIG){ const g=d.cv.getContext('2d'); g.fillStyle='#0b0f12'; g.fillRect(0,0,256,192); g.textAlign='center'; g.textBaseline='middle'; g.fillStyle='#fff'; g.font=`bold 42px ${FONT}`; g.fillText('초미세',128,36);
     g.fillStyle=col; g.font=`bold 90px ${FONT}`; g.fillText(v,128,104); g.font=`bold 30px ${FONT}`; g.fillText(name,128,166); d.tex.needsUpdate=true; } }
 // 주민센터 앞, 광장, 주차장, 물놀이터, 어린이집, 다리 입구, 공장 진입로
-for(const [x,z] of [[22.5,63.2],[9.5,3],[57,-22],[PGX+10,PGZ+14],[-38.5,-66.5],[114,9.3],[FX+10.5,40]]) dustSignal(x,z);
+for(const [x,z] of [[22.5,63.2],[9.5,3],[57,-22],[PGX+10,PGZ+14],[-82.5,-16.5],[114,9.3],[FX+10.5,40]]) dustSignal(x,z);
 setDust('--','#7fd3ff','측정 전');
 // 대기환경측정소는 바람이 잘 통하는 주민센터 옥상에 있어요. 건물 옆 바깥 계단으로 올라가요.
 { fbox(10,7,7,'#f3ead8',['#7fb6a8','#5f8f86','#9cc7bd'],77,12,3.5,68.5,0.6); box(1.6,2.4,0.1,0x2f4a52,12,1.2,64.96); sign('동네 주민센터',5,0.8,12,5.9,64.94,Math.PI,{bg:'#f3ead8',fg:'#17323a'});
@@ -416,7 +426,7 @@ setDust('--','#7fd3ff','측정 전');
   for(let i=0;i<14;i++){ const h=(i+1)*ROOF.y/14; box(2.4,h,6/14+0.02,i%2?0xb9c1c6:0xc7ced2,18.3,h/2,65+(i+0.5)*6/14); } box(2.4,ROOF.y,1.4,0xb9c1c6,18.3,ROOF.y/2,71.7);   // 바깥 계단과 계단참
   box(0.08,0.08,9.5,0x7c878d,19.45,4.7,68).rotation.x=-Math.atan(ROOF.y/6); box(0.08,1,1.4,0x7c878d,19.45,ROOF.y+0.5,71.7); box(2.4,1,0.08,0x7c878d,18.3,ROOF.y+0.5,72.36);
   box(0.15,2.2,0.15,0x7c878d,14.6,1.1,63.4); panel2('옥상 측정소 · 계단으로 올라가요',5.4,0.8,14.6,2.4,63.4,{bg:'#e6f1fb',fg:'#0c447c'}); }
-box(9,3.2,6,0xffe9a8,-45,1.6,-72); box(9.4,0.4,6.4,0xff8fa3,-45,3.4,-72); for(const x of [-48,-42]) box(1.4,1.4,0.1,0x7fd3e6,x,1.8,-68.95); box(1.4,2.2,0.1,0x8a5a2b,-45,1.1,-68.95); panel2('정원어린이집',4.4,0.8,-45,2.75,-68.9,{bg:'#fff0f5',fg:'#a8326a'});
+box(9,3.2,6,0xffe9a8,-90,1.6,-26); box(9.4,0.4,6.4,0xff8fa3,-90,3.4,-26); for(const x of [-93,-87]) box(1.4,1.4,0.1,0x7fd3e6,x,1.8,-22.95); box(1.4,2.2,0.1,0x8a5a2b,-90,1.1,-22.95); panel2('정원어린이집',4.4,0.8,-90,2.75,-22.9,{bg:'#fff0f5',fg:'#a8326a'});
 { box(12,6,10,0xc9c2b4,160,3,-45); box(12.6,0.5,10.6,0x8d979d,160,6.2,-45); cyl(0.7,0.9,9,0xd9dee1,163,4.5,-47); sign('강 건너 공장',7,0.9,160,4.6,-39.94,0,{bg:'#17323a',fg:'#fff'});
   const m=cyl(0.5,0.5,10.5,0x6b7780,148.75,0.6,-45,scene,14); m.rotation.z=Math.PI/2; flat(2.6,3,0x4f9bb5,142.2,0.09,-45); box(0.15,1.6,0.15,0x7c878d,146,0.8,-43); panel2('방류구',2,0.7,146,1.8,-43,{bg:'#17323a',fg:'#fff'}); }
 // 안내판
@@ -427,7 +437,7 @@ for(let i=0;i<14;i++){ const a=i/14*Math.PI*2+0.3, r=215+(i%3)*18, h=40+(i*37%30
 
 /* 충돌 */
 const WALLS=[ [-8,12,-44,-34],[4,22,-56,-44],[-23,-7,-56,-42],[14,30,-44,-32],[31,40,-53,-45],[-40,-24,-60,-49.6],[FX-21.5,FX-3.5,FZ-6,FZ+6],[FX-2,FX+2,FZ-2,FZ+2],[6.4,9.6,-15.4,-14.6],
-  [52.2,54.6,-33,-25],[7,19.5,65,72.4],[-49.5,-40.5,-75,-69],[154,166,-50,-40],[143.5,154,-45.6,-44.4], ...PARKED.map(([x,z])=>[x-0.9,x+0.9,z-1.9,z+1.9]) ];
+  [52.2,54.6,-33,-25],[7,19.5,65,72.4],[-94.5,-85.5,-29,-23],[-83.7,-82.3,-28.7,-27.3],[154,166,-50,-40],[143.5,154,-45.6,-44.4], ...PARKED.map(([x,z])=>[x-0.9,x+0.9,z-1.9,z+1.9]) ];
 function blocked(x,z,r){
   if(x<-100+r||x>190-r||z<-89.5+r||z>90-r) return true;
   for(const w of WALLS) if(x>w[0]-r&&x<w[1]+r&&z>w[2]-r&&z<w[3]+r) return true;
@@ -452,7 +462,7 @@ const SIGNS=[
 // 나무
 { let seed=7; const rnd=()=>{ seed=(seed*16807)%2147483647; return seed/2147483647; };
   const spots=[]; while(spots.length<120){ const x=-95+rnd()*280, z=-85+rnd()*170;
-    if(Object.values(XAT).some(a=>Math.hypot(x-a[0],z-a[1])<11)||Math.abs(z-ROAD_Z)<8||Math.hypot(x,z+3)<16||(x>-42&&x<62&&z>-13&&z<8)||(z<-82)||(x>-44&&x<60&&z<-14&&z>-82)||SIGNS.some(s=>Math.hypot(x-s.x,z-s.z)<5)||Math.hypot(x-FX,z-FZ)<16||Math.hypot(x-PGX,z-PGZ-6)<25||(x>FX-2&&x<FX+12&&z>18&&z<50)||blocked(x,z,4)||(x>114&&x<146)||(Math.abs(x)<5&&z>0&&z<14)||(x>4&&x<32&&z>-12&&z<-4)) continue;
+    if(ROADS.some(r=>x>r[0]-3.5&&x<r[1]+3.5&&z>r[2]-3.5&&z<r[3]+3.5)||Math.hypot(x+83,z+28)<7||Object.values(XAT).some(a=>Math.hypot(x-a[0],z-a[1])<11)||Math.abs(z-ROAD_Z)<8||Math.hypot(x,z+3)<16||(x>-42&&x<62&&z>-13&&z<8)||(z<-82)||(x>-44&&x<60&&z<-14&&z>-82)||SIGNS.some(s=>Math.hypot(x-s.x,z-s.z)<5)||Math.hypot(x-FX,z-FZ)<16||Math.hypot(x-PGX,z-PGZ-6)<25||(x>FX-2&&x<FX+12&&z>18&&z<50)||blocked(x,z,4)||(x>114&&x<146)||(Math.abs(x)<5&&z>0&&z<14)||(x>4&&x<32&&z>-12&&z<-4)) continue;
     spots.push([x,z,0.85+rnd()*0.9,rnd()]); }
   // 줄기와 잎 뭉치를 한꺼번에 그려서 휴대폰에서도 가볍게 (단풍 든 나무와 소나무)
   const d=new THREE.Object3D(), col=new THREE.Color(), PAL=[0x4f9d58,0x5fae62,0x3f8a4f,0x7fb857,0xd9a43a,0xd8742f,0xc9492f,0xe0b84a];
@@ -468,7 +478,7 @@ const SIGNS=[
   // 풀숲과 꽃
   const bush=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshLambertMaterial({flatShading:true}),170); let bi=0;
   const FL=[0x5fae62,0x4f9d58,0x7fb857,0xf2a7c3,0xf6d55c,0xffffff];
-  while(bi<170){ const x=-95+rnd()*280, z=-85+rnd()*170; if(Object.values(XAT).some(a=>Math.hypot(x-a[0],z-a[1])<7)||Math.abs(z-ROAD_Z)<5||blocked(x,z,2)||(x>114&&x<146)||(x>-44&&x<60&&z<-12&&z>-82)||(z<-84)||Math.hypot(x-PGX,z-PGZ-3)<16||(x>FX-2&&x<FX+12&&z>18&&z<50)||SIGNS.some(s=>Math.hypot(x-s.x,z-s.z)<3)||Math.hypot(x,z+3)<12||(x>36&&x<61&&z>-12&&z<6)) continue;
+  while(bi<170){ const x=-95+rnd()*280, z=-85+rnd()*170; if(ROADS.some(r=>x>r[0]-1.5&&x<r[1]+1.5&&z>r[2]-1.5&&z<r[3]+1.5)||Object.values(XAT).some(a=>Math.hypot(x-a[0],z-a[1])<7)||Math.abs(z-ROAD_Z)<5||blocked(x,z,2)||(x>114&&x<146)||(x>-44&&x<60&&z<-12&&z>-82)||(z<-84)||Math.hypot(x-PGX,z-PGZ-3)<16||(x>FX-2&&x<FX+12&&z>18&&z<50)||SIGNS.some(s=>Math.hypot(x-s.x,z-s.z)<3)||Math.hypot(x,z+3)<12||(x>36&&x<61&&z>-12&&z<6)) continue;
     const fl=rnd()<0.3, s=fl?0.18+rnd()*0.12:0.5+rnd()*0.6; d.position.set(x,s*0.5,z); d.scale.set(s,s*0.7,s); d.rotation.set(0,rnd()*6,0); d.updateMatrix(); bush.setMatrixAt(bi,d.matrix);
     col.setHex(fl?FL[3+Math.floor(rnd()*3)]:FL[Math.floor(rnd()*3)]); bush.setColorAt(bi,col); bi++; }
   bush.castShadow=true; bush.receiveShadow=true; scene.add(bush); }
@@ -602,7 +612,7 @@ const XMS={
     opts:[['좋음','#3b82f6',15],['보통','#22c55e',35],['나쁨','#eab308',75],['매우 나쁨','#ef4444',130]],help:'좋음 15까지 · 보통 35까지 · 나쁨 75까지 · 그보다 높으면 매우 나쁨',fact:'대기환경측정소는 바람이 잘 통하는 건물 옥상에 있어요. 하루 24시간 미세먼지와 오존을 재서 알려 줘요. 나쁨이면 마스크를 쓰고 바깥 활동을 줄여요.'},
   i:{name:'산업폐수과',job:'폐수 검사',ic:'🏭',sub:'공장 방류구에서 나오는 물의 pH를 재고 판정 깃발을 올려요',at:XAT.i,go:'다리를 건너 북쪽 공장 방류구로 가서 폐수를 검사하세요',ask:v=>`폐수의 pH가 ${v}! 알맞은 판정 깃발을 올려요`,lo:3,dec:1,
     opts:[['산성이 강해요','#f97316',5.7],['기준 이내','#22c55e',8.6],['알칼리가 강해요','#8b5cf6',12]],help:'5.8보다 낮으면 산성 · 5.8부터 8.6까지 기준 이내 · 8.6보다 높으면 알칼리',fact:'공장에서 쓴 물은 깨끗하게 처리한 뒤에 내보내야 해요. 연구원은 방류구의 물을 떠서 기준을 지켰는지 검사해요.'},
-  l:{name:'생활환경과',job:'소음 측정',ic:'🔊',sub:'어린이집 앞에서 소음을 재고 알맞은 깃발을 올려요',at:XAT.l,go:'서북쪽 물놀이터 옆 정원어린이집으로 가서 소음을 재세요',ask:v=>`소음이 ${v}데시벨! 알맞은 깃발을 올려요`,lo:30,
+  l:{name:'생활환경과',job:'소음 측정',ic:'🔊',sub:'어린이집 앞에서 소음을 재고 알맞은 깃발을 올려요',at:XAT.l,go:'서쪽 끝 큰 벚꽃나무 옆 정원어린이집으로 가서 소음을 재세요',ask:v=>`소음이 ${v}데시벨! 알맞은 깃발을 올려요`,lo:30,
     opts:[['조용해요','#3b82f6',45],['보통이에요','#22c55e',60],['시끄러워요','#eab308',75],['매우 시끄러워요','#ef4444',100]],help:'조용 45까지 · 보통 60까지 · 시끄러움 75까지 · 그보다 크면 매우 시끄러움',fact:'생활환경과는 소음뿐 아니라 실내 공기와 어린이 활동공간이 안전한지도 검사해요.'} };
 let XM=XMS.d;
 const doneCount=()=>Object.values(G.done).filter(Boolean).length, allDone=()=>doneCount()>=6;
