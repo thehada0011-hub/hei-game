@@ -365,7 +365,7 @@ flat(6,16,0xeadfc8,19,0.08,-21).material=texMat(TEX.slab,1.5,4); flat(14,4,0xead
 { const l=label('환경 실험동 입구 (시료 접수)',{bg:'rgba(18,165,148,.95)',fg:'#fff'}); l.scale.set(6.4,1.1,1); l.position.set(19,4.6,-31.5); scene.add(l); }
 // 주차장
 flat(24,16,0x6a747a,44,0.08,-32).material=texMat(TEX.road,6,4); for(let i=0;i<8;i++){ flat(0.15,4.2,0xf4f4f4,34.4+i*2.6,0.12,-37); flat(0.15,4.2,0xf4f4f4,34.4+i*2.6,0.12,-27); }
-const PARKED=[[35.7,-37,0xffffff],[40.9,-37,0x2f3b46],[48.7,-37,0xdfe3e3],[38.3,-27,0x9aa5aa],[46.1,-27,0xffffff]];
+const PARKED=[[35.7,-37,0xffffff],[40.9,-37,0x2f3b46],[48.7,-37,0xdfe3e3],[38.3,-27,0x9aa5aa]];   // 43.5와 48.7 자리는 임무 차량 두 대가 써요
 for(const [x,z,c] of PARKED){ box(1.8,0.7,3.8,c,x,0.65,z); box(1.6,0.6,2,0x2a3f55,x,1.3,z-0.2); }
 box(2.4,2.4,8,0xffffff,53.4,1.5,-29); box(2.42,0.5,8.02,0x2e9e6b,53.4,1.1,-29); box(2.42,0.7,7,0x2a3f55,53.4,2.1,-29);   // 버스
 // 정원 정자
@@ -572,7 +572,7 @@ for(const x of [-0.6,0.6]) box(0.4,0.2,0.06,0xffe38a,x,0.95,2.01,car);
 sign('수질 채수차량',2.6,0.42,0.962,0.98,0,Math.PI/2,{bg:'#ffffff',fg:'#0b7d70'},car);
 sign('수질 채수차량',2.6,0.42,-0.962,0.98,0,-Math.PI/2,{bg:'#ffffff',fg:'#0b7d70'},car);
 const iceBox=box(1.1,0.6,0.8,0x3b82c4,0,2.3,-0.4,car); iceBox.visible=false;
-car.position.set(9,0,ROAD_Z+1.5); car.rotation.y=Math.PI/2;
+car.position.set(43.5,0,-27.5); car.rotation.y=0;
 function makeCar(text){ const c=new THREE.Group(); scene.add(c);
   box(1.9,0.8,4,0xffffff,0,0.85,0,c); box(1.92,0.2,4.02,0x3b82c4,0,0.72,0,c);
   box(1.75,0.8,2.3,0xffffff,0,1.6,-0.35,c); box(1.77,0.45,2.0,0x2a3f55,0,1.65,-0.35,c); box(1.5,0.45,0.06,0x2a3f55,0,1.65,0.79,c);
@@ -580,7 +580,7 @@ function makeCar(text){ const c=new THREE.Group(); scene.add(c);
   for(const x of [-0.6,0.6]) box(0.4,0.2,0.06,0xffe38a,x,0.95,2.01,c);
   sign(text,2.6,0.42,0.962,0.98,0,Math.PI/2,{bg:'#ffffff',fg:'#1f5f99'},c); sign(text,2.6,0.42,-0.962,0.98,0,-Math.PI/2,{bg:'#ffffff',fg:'#1f5f99'},c);
   cyl(0.05,0.05,1.4,0x7c878d,0.6,2.6,-1,c,6); return c; }
-const car2=makeCar('대기 측정차량'); car2.position.set(-7,0,ROAD_Z+1.5); car2.rotation.y=Math.PI/2;
+const car2=makeCar('대기 측정차량'); car2.position.set(48.7,0,-27.5); car2.rotation.y=0;
 function blob(r,parent,sy=1){ const m=new THREE.Mesh(new THREE.CircleGeometry(r,20),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.2,depthWrite:false})); m.rotation.x=-Math.PI/2; m.scale.y=sy; m.position.y=0.07; parent.add(m); }
 
 /* ───────── 줍는 장비 ───────── */
@@ -617,13 +617,14 @@ const flag2=new THREE.Group(); cyl(0.07,0.07,4,0x7c878d,0,2,0,flag2,8); box(1.6,
 const P={ npc:[-3,-8], bridge:[130,ROAD_Z], door:[19,-29.5], board:[8,-13], info:[-9,3.6], stack:[FX,FZ-5], boss:[5,-7], play:[PGX,PGZ+12.5] };
 // 측정값을 보고 알맞은 깃발을 올리는 세 과의 임무. opts는 [깃발 이름, 색, 이 값까지]예요.
 const XMS={
-  d:{name:'미세먼지분석과',job:'미세먼지 측정',ic:'📡',sub:'주민센터 옥상 측정소에서 먼지를 모아 미세먼지 신호등을 켜요',roof:1,at:XAT.d,go:'남쪽 주민센터 옆 계단으로 옥상에 올라가 미세먼지를 재세요',ask:v=>`초미세먼지 ${v}! 알맞은 등급 깃발을 올려요`,lo:3,
+  d:{name:'미세먼지분석과',job:'미세먼지 측정',ic:'📡',sub:'주민센터 옥상 측정소에서 먼지를 모아 미세먼지 신호등을 켜요',roof:1,car:'a',at:XAT.d,go:'남쪽 주민센터 옆 계단으로 옥상에 올라가 미세먼지를 재세요',ask:v=>`초미세먼지 ${v}! 알맞은 등급 깃발을 올려요`,lo:3,
     opts:[['좋음','#3b82f6',15],['보통','#22c55e',35],['나쁨','#eab308',75],['매우 나쁨','#ef4444',130]],help:'좋음 15까지 · 보통 35까지 · 나쁨 75까지 · 그보다 높으면 매우 나쁨',fact:'대기환경측정소는 바람이 잘 통하는 건물 옥상에 있어요. 하루 24시간 미세먼지와 오존을 재서 알려 줘요. 나쁨이면 마스크를 쓰고 바깥 활동을 줄여요.'},
-  i:{name:'산업폐수과',job:'폐수 검사',ic:'🏭',sub:'공장 방류구 물에 시험지를 담가 pH 색을 맞춰요',at:XAT.i,go:'다리를 건너 북쪽 공장 방류구로 가서 폐수를 검사하세요',ask:v=>`폐수의 pH가 ${v}! 알맞은 판정 깃발을 올려요`,lo:3,dec:1,
+  i:{name:'산업폐수과',job:'폐수 검사',ic:'🏭',sub:'공장 방류구 물에 시험지를 담가 pH 색을 맞춰요',car:'w',at:XAT.i,go:'다리를 건너 북쪽 공장 방류구로 가서 폐수를 검사하세요',ask:v=>`폐수의 pH가 ${v}! 알맞은 판정 깃발을 올려요`,lo:3,dec:1,
     opts:[['산성이 강해요','#f97316',5.7],['기준 이내','#22c55e',8.6],['알칼리가 강해요','#8b5cf6',12]],help:'5.8보다 낮으면 산성 · 5.8부터 8.6까지 기준 이내 · 8.6보다 높으면 알칼리',fact:'공장에서 쓴 물은 깨끗하게 처리한 뒤에 내보내야 해요. 연구원은 방류구의 물을 떠서 기준을 지켰는지 검사해요.'},
-  l:{name:'생활환경과',job:'소음 측정',ic:'🔊',sub:'어린이집 앞에서 소음계로 가장 시끄러운 곳을 찾아요',at:XAT.l,go:'서쪽 끝 큰 벚꽃나무 옆 정원어린이집으로 가서 소음을 재세요',ask:v=>`소음이 ${v}데시벨! 알맞은 깃발을 올려요`,lo:30,
+  l:{name:'생활환경과',job:'소음 측정',ic:'🔊',sub:'어린이집 앞에서 소음계로 가장 시끄러운 곳을 찾아요',car:'a',at:XAT.l,go:'서쪽 끝 큰 벚꽃나무 옆 정원어린이집으로 가서 소음을 재세요',ask:v=>`소음이 ${v}데시벨! 알맞은 깃발을 올려요`,lo:30,
     opts:[['조용해요','#3b82f6',45],['보통이에요','#22c55e',60],['시끄러워요','#eab308',75],['매우 시끄러워요','#ef4444',100]],help:'조용 45까지 · 보통 60까지 · 시끄러움 75까지 · 그보다 크면 매우 시끄러움',fact:'생활환경과는 소음뿐 아니라 실내 공기와 어린이 활동공간이 안전한지도 검사해요.'} };
 let XM=XMS.d;
+const XCAR_NEAR=34, xCar=()=>XM.car==='w'?car:car2, xCarName=()=>XM.car==='w'?'초록 줄 채수차량':'파란 줄 측정차량';   // 이 세 임무도 장비를 실은 차를 현장 가까이 몰고 가야 해요
 const doneCount=()=>Object.values(G.done).filter(Boolean).length, allDone=()=>doneCount()>=6;
 
 /* ───────── 게임 상태 ───────── */
@@ -632,7 +633,7 @@ const G={ name:'', step:0, driving:false, yaw:0, lock:true, waitLeft:0,
   air:{equip:0,haul:0,gauge:0,filter:0,weigh:0,judge:0}, dust:0, done:{w:false,a:false,p:false,d:false,i:false,l:false}, xStars:0, cert:false, vy:0, pl:{equip:0,sample:0,cl:0,ph:0,judge:0}, playCase:null };
 const STEPS=[
   {t:'선배 연구원에게 가서 임무를 고르세요', at:()=>G.cert?null:allDone()?P.boss:P.npc},
-  {t:'도로에 세워 둔 수질 채수차량에 타세요', at:()=>[car.position.x,car.position.z]},
+  {t:'주차장에 세워 둔 수질 채수차량에 타세요', at:()=>[car.position.x,car.position.z]},
   {t:'차를 몰고 동쪽 강의 다리로! 다리 근처에 흩어진 장비 3개를 찾으세요', at:()=>P.bridge},
   {t:'다리 위에서 강물을 채취하세요', at:()=>P.bridge},
   {t:'차를 타고 환경동으로 돌아가 시료를 접수하세요', at:()=>P.door},
@@ -640,7 +641,7 @@ const STEPS=[
   {t:'분석 끝! 환경동에서 결과를 확인하세요', at:()=>P.door},
   {t:'본관 앞 게시판에 결과를 보고하세요', at:()=>P.board},
   {t:'수질 임무 완료! 선배 연구원에게 다음 임무를 받으세요', at:()=>P.npc},
-  {t:'도로에 세워 둔 대기 측정차량에 타세요', at:()=>[car2.position.x,car2.position.z]},
+  {t:'주차장에 세워 둔 대기 측정차량에 타세요', at:()=>[car2.position.x,car2.position.z]},
   {t:'차를 몰고 동남쪽 공장 굴뚝으로! 공장 근처에 흩어진 안전장비 3개를 찾으세요', at:()=>P.stack},
   {t:'굴뚝 아래에서 측정을 시작하세요', at:()=>P.stack},
   {t:'차를 타고 환경동으로 돌아가 필터를 접수하세요', at:()=>P.door},
@@ -655,7 +656,7 @@ const STEPS=[
   {t:'부적합! 물놀이터에서 염소 투입량을 늘리세요', at:()=>P.play},
   {t:'소독약이 퍼지는 중이에요. 30분을 기다려요', at:()=>null},
   {t:'30분이 지났어요. 물놀이터에서 다시 측정하세요', at:()=>P.play},
-  {t:'', at:()=>XM.roof&&player.g.position.y<0.3?[18.3,63.8]:XM.at},   // 옥상 임무는 먼저 계단 아래로 안내해요
+  {t:'', at:()=>{ const c=xCar(); if(!G.driving&&dist(c.position,XM.at)>XCAR_NEAR) return [c.position.x,c.position.z]; return XM.roof&&player.g.position.y<0.3?[18.3,63.8]:XM.at; }},   // 옥상 임무는 먼저 계단 아래로 안내해요
   {t:'본관 앞 게시판에 결과를 보고하세요', at:()=>P.board},
 ];
 function setStep(n){ G.step=n; qtCache=null; const all=allDone(); $('#qno').textContent=n===0?(all?(G.cert?'완료':'임명장'):'임무 선택'):n<8?`수질 ${n}/7`:n<17?`대기 ${n-8}/7`:n>20?'물놀이터 재측정':`물놀이터 ${n-16}/4`;
@@ -1132,13 +1133,14 @@ function missionSelect(){ const d=G.done, tag=x=>x?'<span class="dn">완료 ✓<
 function scatter(list,ok){ const used=[]; for(const it of list){ let x,z,n=0; do{ [x,z]=ok(); n++; } while(n<300&&(blocked(x,z,2)||used.some(u=>Math.hypot(u[0]-x,u[1]-z)<6)));
     used.push([x,z]); it.x=x; it.z=z; it.g.position.x=x; it.g.position.z=z; it.got=false; it.g.visible=false; } }
 function startMission(k){
-  if(XMS[k]){ XM=XMS[k]; G.xk=k; say([[SENIOR,`${XM.name} 임무예요, {n} 연구원! ${XM.sub}.`],[SENIOR,XM.go+'. 걸어가도 되고 차를 타고 가도 돼요.']],()=>setStep(24)); return; }
+  if(!G.driving){ car.position.set(43.5,0,-27.5); car.rotation.y=0; car2.position.set(48.7,0,-27.5); car2.rotation.y=0; }   // 출장은 늘 주차장에서 출발해요
+  if(XMS[k]){ XM=XMS[k]; G.xk=k; say([[SENIOR,`${XM.name} 임무예요, {n} 연구원! ${XM.sub}.`],[SENIOR,'주차장의 '+xCarName()+'을 타고 출장을 나가요. '+XM.go+'.']],()=>setStep(24)); return; }
   if(k==='w'){ scatter(ITEMS,()=>[86+Math.random()*31,-14+Math.random()*44]); G.score={equip:0,depth:0,bottle:0,order:0,grade:0}; bridgeHint=false; iceBox.visible=false;
-    say([[SENIOR,'수질 임무예요, {n} 연구원! 강물이 깨끗한지 검사해 달라는 의뢰가 들어왔어요.'],[SENIOR,'도로의 초록 줄 채수차량을 타고 동쪽 강의 다리로 가세요. 장비 3개가 다리 근처 어딘가에 흩어져 있으니 꼭 찾아서 챙기고요!']],()=>setStep(1)); }
+    say([[SENIOR,'수질 임무예요, {n} 연구원! 강물이 깨끗한지 검사해 달라는 의뢰가 들어왔어요.'],[SENIOR,'주차장의 초록 줄 채수차량을 타고 동쪽 강의 다리로 가세요. 장비 3개가 다리 근처 어딘가에 흩어져 있으니 꼭 찾아서 챙기고요!']],()=>setStep(1)); }
   else if(k==='p'){ scatter(ITEMS_P,()=>{ const a=Math.random()*6.28, r=13+Math.random()*14; return [PGX+Math.cos(a)*r,Math.max(-82,PGZ+Math.sin(a)*r)]; }); G.pl={equip:0,sample:0,cl:0,ph:0,judge:0}; setPlay('wait');
-    say([[SENIOR,'물놀이터 검사 임무예요, {n} 연구원! 아이들이 뛰어노는 물놀이터의 물이 안전한지 검사해야 해요.'],[SENIOR,'초록 줄 채수차량을 타고 북서쪽 벚꽃길 옆 물놀이터로 가세요. 아이들이 검사 결과를 기다리고 있어요!']],()=>setStep(17)); }
+    say([[SENIOR,'물놀이터 검사 임무예요, {n} 연구원! 아이들이 뛰어노는 물놀이터의 물이 안전한지 검사해야 해요.'],[SENIOR,'주차장의 초록 줄 채수차량을 타고 북서쪽 벚꽃길 옆 물놀이터로 가세요. 아이들이 검사 결과를 기다리고 있어요!']],()=>setStep(17)); }
   else { scatter(ITEMS_A,()=>{ const a=Math.random()*6.28, r=9+Math.random()*17; return [Math.min(116,FX+Math.cos(a)*r),Math.max(24,FZ+Math.sin(a)*r)]; }); G.air={equip:0,haul:0,gauge:0,filter:0,weigh:0,judge:0};
-    say([[SENIOR,'대기 임무예요, {n} 연구원! 공장 굴뚝에서 나오는 연기에 먼지가 얼마나 있는지 검사해야 해요.'],[SENIOR,'도로의 파란 줄 측정차량을 타고 도로 건너 동남쪽 공장으로 가세요. 안전장비 3개가 공장 근처에 흩어져 있으니 꼭 찾아서 챙기고요!']],()=>setStep(9)); }
+    say([[SENIOR,'대기 임무예요, {n} 연구원! 공장 굴뚝에서 나오는 연기에 먼지가 얼마나 있는지 검사해야 해요.'],[SENIOR,'주차장의 파란 줄 측정차량을 타고 도로 건너 동남쪽 공장으로 가세요. 안전장비 3개가 공장 근처에 흩어져 있으니 꼭 찾아서 챙기고요!']],()=>setStep(9)); }
 }
 // 장비를 다 찾지 못했으면 측정을 시작할 수 없어요
 function needItems(list){ const n=list.filter(i=>!i.got); if(!n.length) return false; toast(`아직 못 찾은 장비: ${n.map(i=>i.n).join(', ')}. 노란 점선을 따라가 먼저 찾으세요.`,3000); return true; }
@@ -1154,7 +1156,7 @@ function getAction(){
   if(G.step===23&&dist(p,P.play)<7) return {label:'다시 측정하기',fn:()=>remeasure(ok=>{ if(ok){ setPlay('ok'); setStep(20); toast('적합! 아이들이 물놀이터로 달려가요. 본관에 결과를 보고하세요.',3200); }
       else { setStep(21); toast('아직 부적합이에요. 투입량을 다시 맞추고 30분 뒤에 또 측정해요.',3200); } })};
   if(G.step===20&&dist(p,P.board)<4.5) return {label:'보고하기',fn:playReport};
-  if(G.step===24&&dist(p,XM.at)<(XM.roof?4:7)&&(!XM.roof||player.g.position.y>6)) return {label:XM.job+' 시작',fn:()=>xGame(G.xk)(XM,()=>{ setStep(25); toast('측정 끝! 본관 게시판에 결과를 보고하세요.',2800); })};
+  if(G.step===24&&dist(p,XM.at)<(XM.roof?4:7)&&(!XM.roof||player.g.position.y>6)) return {label:XM.job+' 시작',fn:()=>{ if(dist(xCar().position,XM.at)>XCAR_NEAR){ toast('측정 장비가 차에 있어요. 주차장의 '+xCarName()+'을 타고 오세요.',3000); return; } xGame(G.xk)(XM,()=>{ setStep(25); toast('측정 끝! 본관 게시판에 결과를 보고하세요.',2800); }); }};
   if(G.step===25&&dist(p,P.board)<4.5) return {label:'보고하기',fn:xReport};
   if(G.step===0&&dist(p,P.npc)<4.2) return {label:'임무 고르기',fn:missionSelect};
   if((G.step===2||G.step===3)&&dist(p,P.bridge)<8) return {label:'물 채취하기',fn:()=>{ if(needItems(ITEMS)) return; if(dist(car.position,P.bridge)>20){ toast('채수 장비가 차에 있어요. 차를 다리까지 몰고 오세요.'); return; }
