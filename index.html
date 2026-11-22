@@ -1153,9 +1153,9 @@ joyEl.addEventListener('pointerdown',e=>{ joy.id=e.pointerId; joyEl.setPointerCa
 joyEl.addEventListener('pointermove',e=>{ if(e.pointerId===joy.id) joyMove(e); });
 const joyEnd=e=>{ if(e.pointerId!==joy.id) return; joy.id=null; joy.x=joy.y=0; knob.style.transform=''; };
 joyEl.addEventListener('pointerup',joyEnd); joyEl.addEventListener('pointercancel',joyEnd);
-let camId=null,camX=0;
-canvas.addEventListener('pointerdown',e=>{ camId=e.pointerId; camX=e.clientX; canvas.setPointerCapture(e.pointerId); });
-canvas.addEventListener('pointermove',e=>{ if(e.pointerId!==camId) return; G.yaw-=(e.clientX-camX)*0.006; camX=e.clientX; });
+let camId=null,camX=0,camY0=0;
+canvas.addEventListener('pointerdown',e=>{ camId=e.pointerId; camX=e.clientX; camY0=e.clientY; canvas.setPointerCapture(e.pointerId); });
+canvas.addEventListener('pointermove',e=>{ if(e.pointerId!==camId) return; G.yaw-=(e.clientX-camX)*0.006; camX=e.clientX; G.pitch=Math.max(-0.6,Math.min(1,(G.pitch||0)-(e.clientY-camY0)*0.005)); camY0=e.clientY; });   // 위아래로 밀면 올려다보거나 내려다봐요 (범위 안에서만)
 const camEnd=e=>{ if(e.pointerId===camId) camId=null; }; canvas.addEventListener('pointerup',camEnd); canvas.addEventListener('pointercancel',camEnd);
 const keys={}; addEventListener('keydown',e=>{ if(e.target.tagName==='INPUT') return; keys[e.code]=true; if(e.code==='KeyE'&&curAct&&!G.lock) curAct.fn(); if(e.code==='Space') doJump(); });
 addEventListener('keyup',e=>{ keys[e.code]=false; });
@@ -1606,11 +1606,11 @@ function frame(now){
     if(t<22){ const off=t<12?Math.sin(t/12*Math.PI*2)*1.15*Math.min(1,t/1.5):t<15?2.05*ss((t-12)/3):t<19?2.05+Math.sin((t-15)*0.8)*0.12:2.05*(1-ss((t-19)/3)); sitUp=t<12?0:t<15?ss((t-12)/3):t<19?1:1-ss((t-19)/3); G.yaw=G.sit.ry+Math.PI+off; } }
   if(nameTag) nameTag.visible=pano<0.2;
   sitK+=((sitting?1:0)-sitK)*Math.min(1,dt*2.5);
-  const cd2=cd*(1-0.22*sitK), ch2=ch*(1-0.4*sitK);   // 벚나무 가지에 가리지 않게 머리 바로 뒤, 낮은 자리에서 봐요
+  const pk=(G.pitch||0)*(1-sitK), cd2=cd*(1-0.22*sitK)*(1-0.3*Math.max(0,pk)), ch2=Math.max(1.1,ch*(1-0.4*sitK)*(pk>0?1+pk*1.5:1+pk*0.8));   // 벚나무 가지에 가리지 않게 머리 바로 뒤, 낮은 자리에서 봐요
   const want=new THREE.Vector3(ent.position.x+Math.sin(G.yaw)*cd2,ch2+py,ent.position.z+Math.cos(G.yaw)*cd2);
-  camPos.lerp(want,1-Math.exp(-9*dt)); camera.position.copy(camPos); camLook+=(py-camLook)*(1-Math.exp(-9*dt)); PANO_L.set(ent.position.x,1.7+camLook+0.3*sitK,ent.position.z);
+  camPos.lerp(want,1-Math.exp(-9*dt)); camera.position.copy(camPos); camLook+=(py-camLook)*(1-Math.exp(-9*dt)); PANO_L.set(ent.position.x,1.7+camLook+0.3*sitK-Math.min(0,pk)*5,ent.position.z);
   if(pano>0){ const a=G.yaw+Math.PI, e=pano*pano*(3-2*pano);   // 앉아 있는 동안은 연구원 눈으로 봐요. 처음 14초는 좌우로 천천히 둘러보고, 그 뒤에는 화면을 밀어 직접 둘러봐요
-    PANO_P.set(ent.position.x+Math.sin(a)*0.5,2.35+py,ent.position.z+Math.cos(a)*0.5); camera.position.lerp(PANO_P,e); PANO_P.set(ent.position.x+Math.sin(a)*20,1.9+py+sitUp*10,ent.position.z+Math.cos(a)*20); PANO_L.lerp(PANO_P,e); }
+    PANO_P.set(ent.position.x+Math.sin(a)*0.5,2.35+py,ent.position.z+Math.cos(a)*0.5); camera.position.lerp(PANO_P,e); PANO_P.set(ent.position.x+Math.sin(a)*20,1.9+py+sitUp*10-(G.sitT>=22?(G.pitch||0)*12:0),ent.position.z+Math.cos(a)*20); PANO_L.lerp(PANO_P,e); }
   camera.lookAt(PANO_L);
   renderer.render(scene,camera); requestAnimationFrame(frame);
 }
