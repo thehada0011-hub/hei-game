@@ -1457,7 +1457,7 @@ const FP_SAY={
     cyl(0.2,0.15,0.3,0xe5484d,bx+0.9,0.22,bz+1,scene,9); cyl(0.2,0.15,0.3,0x3b82c4,bx-1,0.22,bz-1.6,scene,9);
     for(const [x,z,coat,pants,s,girl] of [[-1.25,0.5,0x3ecf8e,0x4a4f55,0.6,false],[1.3,-0.5,0xff8fa3,0x2c3e63,0.64,true],[0.3,1.5,0xffd84d,0x6b4a8a,0.56,true]]){ const k=kid(coat,pants,s,girl,'dig'); k.x=bx+x; k.z=bz+z; k.p.g.position.set(k.x,-0.17,k.z); k.p.g.rotation.y=Math.atan2(-x,-z); k.ph=x*3; box(0.05,0.34,0.05,0x7a5b3a,0,-0.72,0,k.p.armR); box(0.14,0.16,0.03,0xffc53d,0,-0.95,0,k.p.armR); FP.diggers.push(k); } }
   // 뛰어노는 아이들: 놀이터 가운데를 빙글빙글 돌며 잡기 놀이를 해요
-  for(const [coat,pants,s,girl] of [[0xe5484d,0x2c3e63,0.68,false],[0x7fd3e6,0x6b4a8a,0.6,true],[0xff8a3d,0x4a4f55,0.64,false]]){ const k=kid(coat,pants,s,girl,'run'); k.ph=FP.runners.length*1.25; FP.runners.push(k); }
+  for(const [coat,pants,s,girl] of [[0xe5484d,0x2c3e63,0.68,false],[0x7fd3e6,0x6b4a8a,0.6,true],[0xff8a3d,0x4a4f55,0.64,false]]){ const k=kid(coat,pants,s,girl,'run'); k.ph=FP.runners.length*1.25; k.x=-113+Math.cos(k.ph)*6.2; k.z=-68.5+Math.sin(k.ph)*4.6; k.p.g.position.set(k.x,0,k.z); FP.runners.push(k); }
 }
 function forestTick(dt,time){ if(Math.abs(camera.position.x-FP.x)>80||Math.abs(camera.position.z-FP.z)>80) return;   // 멀리 있을 때는 쉬어요
   for(const k of FP.sliders){ const g=k.p.g, W=k.wp, b=W[k.i]; if(k.wait>0){ k.wait-=dt; animPerson(k.p,false,dt); k.p.armL.rotation.x=-2.9; if(!(k.p.wave>0)) k.p.armR.rotation.x=-2.9; continue; }
