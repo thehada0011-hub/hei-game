@@ -787,14 +787,14 @@ const XMS={
 let XM=XMS.d;
 const xStn=()=>G.xk==='d'?DSTN.find(s=>!s.ok):null, xAt=()=>{ const s=xStn(); return s?s.at:XM.at; };   // 미세먼지 임무는 아직 점검하지 않은 측정소가 목적지예요
 const XCAR_NEAR=34, xCar=()=>({d:carD,i:carI,l:carL,g:carG})[G.xk]||car2, xCarName=()=>XM.name+' 차량';   // 이 세 임무도 장비를 실은 차를 현장 가까이 몰고 가야 해요
-const doneCount=()=>Object.values(G.done).filter(Boolean).length, allDone=()=>doneCount()>=7;
+const doneCount=()=>Object.values(G.done).filter(Boolean).length, CERT_NEED=3, allDone=()=>doneCount()>=CERT_NEED, NUMW=['','한','두','세','네','다섯','여섯','일곱'];   // 도장 3개면 임명장을 받아요. 남은 임무는 계속 할 수 있어요
 
 /* ───────── 게임 상태 ───────── */
 const G={ name:'', step:0, driving:false, yaw:0, lock:true, waitLeft:0,
   score:{equip:0,depth:0,bottle:0,order:0,grade:0}, bod:0, receipt:'',
   air:{equip:0,haul:0,gauge:0,filter:0,weigh:0,judge:0}, dust:0, done:{w:false,a:false,p:false,d:false,i:false,l:false,g:false}, xStars:0, cert:false, vy:0, pl:{equip:0,sample:0,cl:0,ph:0,judge:0}, playCase:null };
 const STEPS=[
-  {t:'선배 연구원에게 가서 임무를 고르세요', at:()=>G.cert?null:allDone()?P.boss:P.npc},
+  {t:'선배 연구원에게 가서 임무를 고르세요', at:()=>allDone()&&!G.cert?P.boss:doneCount()>=7?null:P.npc},
   {t:'주차장에 세워 둔 물환경조사과 차량에 타세요', at:()=>[car.position.x,car.position.z]},
   {t:'차를 몰고 동쪽 강의 다리로! 다리 근처에 흩어진 장비 3개를 찾으세요', at:()=>P.bridge},
   {t:'다리 위에서 강물을 채취하세요', at:()=>P.bridge},
@@ -823,8 +823,8 @@ const STEPS=[
   {t:'본관 TMS 상황실로 가서 대기질 상황판을 지켜보세요', at:()=>P.hq},
   {t:'농산물검사소 검사실로 가서 농약을 검사하세요', at:()=>P.agri},
 ];
-function setStep(n){ G.step=n; qtCache=null; const all=allDone(); $('#qno').textContent=n===0?(all?(G.cert?'완료':'임명장'):'임무 선택'):n<8?`수질 ${n}/7`:n<17?`대기 ${n-8}/7`:n>20?'물놀이터 재측정':`물놀이터 ${n-16}/4`;
-  $('#qtx').textContent=n===0&&all?(G.cert?'명예 연구원이 되었어요! 마을을 자유롭게 둘러보세요':'도장을 모두 모았어요! 원장님께 가서 임명장을 받으세요'):n===0&&doneCount()>0?'선배 연구원에게 가서 다음 임무를 고르세요':STEPS[n].t;
+function setStep(n){ G.step=n; qtCache=null; const all=allDone(); $('#qno').textContent=n===0?(all&&!G.cert?'임명장':doneCount()>=7?'완료':'임무 선택'):n<8?`수질 ${n}/7`:n<17?`대기 ${n-8}/7`:n>20?'물놀이터 재측정':`물놀이터 ${n-16}/4`;
+  $('#qtx').textContent=n===0&&all?(G.cert?(doneCount()>=7?'일곱 임무를 모두 해냈어요! 마을을 자유롭게 둘러보세요':`명예 연구원이 되었어요! 남은 임무에도 도전해 보세요 (도장 ${doneCount()}/7)`):'도장 3개를 모았어요! 원장님께 가서 임명장을 받으세요'):n===0&&doneCount()>0?'선배 연구원에게 가서 다음 임무를 고르세요':STEPS[n].t;
   if(n>=24){ STEPS[24].t=XM.go; $('#qno').textContent=XM.name; $('#qtx').textContent=STEPS[n].t; }
   drawChips(); $('#timer').style.display=(n===5||n===13||n===22)?'flex':'none'; }
 
@@ -1261,22 +1261,23 @@ function playReport(){ const s=G.pl, C=G.playCase, total=s.equip+s.sample+s.cl+s
 /* ───────── 도장과 임명장 ───────── */
 function stampsHtml(nw){ return `<div class="stamps">${[['w','<small>물환경조사과</small><br>하천 수질'],['p','<small>물환경조사과</small><br>물놀이터'],['a','<small>대기환경과</small><br>굴뚝 대기'],['d','<small>미세먼지분석과</small><br>미세먼지'],['i','<small>산업폐수과</small><br>폐수 검사'],['l','<small>생활환경과</small><br>소음 측정'],['g','<small>농산물검사소</small><br>농약 검사']].map(([k,t])=>`<div class="stamp ${G.done[k]?'on':''} ${k===nw?'new':''}"><span>${t}${G.done[k]?'<br>완료':''}</span></div>`).join('')}</div>`; }
 function stampBook(){ if(G.lock) return; const n=doneCount();
-  openMini(`<div class="card"><h3>연구 도장판</h3><p>임무를 끝낼 때마다 도장을 받아요.<br>모두 모으면 원장님이 임명장을 주세요. (${n}/7)</p>${stampsHtml()}<p style="font-weight:700">🪧 마을에서 읽은 팻말 ${SIGNS.filter(x=>x.read).length} / ${SIGNS.length}<br>🐾 인사한 동물 친구 ${ANIMALS.filter(x=>x.met).length} / ${ANIMALS.length}</p><button class="go" id="ok">닫기</button></div>`); $('#ok').addEventListener('click',closeMini); }
+  openMini(`<div class="card"><h3>연구 도장판</h3><p>임무를 끝낼 때마다 도장을 받아요.<br>3개를 모으면 원장님이 임명장을 주세요. 7개 모두에 도전해 보세요! (${n}/7)</p>${stampsHtml()}<p style="font-weight:700">🪧 마을에서 읽은 팻말 ${SIGNS.filter(x=>x.read).length} / ${SIGNS.length}<br>🐾 인사한 동물 친구 ${ANIMALS.filter(x=>x.met).length} / ${ANIMALS.length}</p><button class="go" id="ok">닫기</button></div>`); $('#ok').addEventListener('click',closeMini); }
 $('#stampBtn').addEventListener('click',stampBook);
 function bossTalk(){ const n=doneCount();
-  if(n<7){ say([['원장님',`반가워요, {n} 연구원! 임무 도장 7개를 모두 모아 오면 임명장을 줄게요. 지금은 ${n}/7개예요.`]]); return; }
+  if(n<CERT_NEED){ say([['원장님',`반가워요, {n} 연구원! 임무 도장 3개를 모아 오면 임명장을 줄게요. 지금은 ${n}/3개예요.`]]); return; }
   if(G.cert){ certCard(); return; }
-  say([['원장님','{n} 연구원, 일곱 가지 임무를 모두 해냈군요. 정말 수고했어요!'],['원장님','시민의 건강과 깨끗한 환경을 지키는 일에 함께해 줘서 고마워요. 명예 연구원으로 임명합니다.']],certCard); }
+  say([['원장님',n>=7?'{n} 연구원, 일곱 가지 임무를 모두 해냈군요. 정말 수고했어요!':`{n} 연구원, 임무를 ${NUMW[n]} 가지나 해냈군요. 정말 수고했어요!`],['원장님','시민의 건강과 깨끗한 환경을 지키는 일에 함께해 줘서 고마워요. 명예 연구원으로 임명합니다.']],certCard); }
 function certCard(){ G.cert=true; setStep(G.step); const cv=document.createElement('canvas'); cv.width=900; cv.height=1200; const g=cv.getContext('2d');
   g.fillStyle='#fffaf0'; g.fillRect(0,0,900,1200); g.strokeStyle='#b8943f'; g.lineWidth=10; g.strokeRect(30,30,840,1140); g.strokeStyle='#12a594'; g.lineWidth=3; g.strokeRect(52,52,796,1096);
   g.textAlign='center'; g.fillStyle='#17323a'; g.font=`bold 96px ${FONT}`; g.fillText('임 명 장',450,230);
   g.font=`bold 40px ${FONT}`; g.fillStyle='#0b7d70'; g.fillText('명예 연구원',450,315);
   g.fillStyle='#17323a'; g.font=`bold 68px ${FONT}`; g.fillText(G.name,450,455); g.fillRect(250,478,400,3);
-  g.font=`32px ${FONT}`; ['위 사람은 일곱 가지 검사 임무를 훌륭히 마치고','시민의 건강과 깨끗한 환경을 지키는 일에','함께하였으므로 명예 연구원으로 임명합니다.'].forEach((l,i)=>g.fillText(l,450,575+i*56));
+  g.font=`32px ${FONT}`; [`위 사람은 ${NUMW[doneCount()]} 가지 검사 임무를 훌륭히 마치고`,'시민의 건강과 깨끗한 환경을 지키는 일에','함께하였으므로 명예 연구원으로 임명합니다.'].forEach((l,i)=>g.fillText(l,450,575+i*56));
   const seal=(x,y,t,u)=>{ g.save(); g.translate(x,y); g.scale(0.72,0.72); g.rotate(-0.2); g.strokeStyle='#c8102e'; g.fillStyle='#c8102e'; g.lineWidth=6; g.beginPath(); g.arc(0,0,74,0,7); g.stroke(); g.lineWidth=2; g.beginPath(); g.arc(0,0,63,0,7); g.stroke();
     g.font=`bold 19px ${FONT}`; g.fillText(t,0,-18); g.font=`bold 22px ${FONT}`; g.fillText(u,0,10); g.font=`bold 16px ${FONT}`; g.fillText('완료',0,36); g.restore(); };
-  seal(210,790,'물환경조사과','하천 수질'); seal(370,790,'물환경조사과','물놀이터'); seal(530,790,'대기환경과','굴뚝 대기'); seal(690,790,'미세먼지분석과','미세먼지');
-  seal(290,908,'산업폐수과','폐수 검사'); seal(450,908,'생활환경과','소음 측정'); seal(610,908,'농산물검사소','농약 검사');
+  { const S=[['w','물환경조사과','하천 수질'],['p','물환경조사과','물놀이터'],['a','대기환경과','굴뚝 대기'],['d','미세먼지분석과','미세먼지'],['i','산업폐수과','폐수 검사'],['l','생활환경과','소음 측정'],['g','농산물검사소','농약 검사']].filter(s=>G.done[s[0]]), r1=S.slice(0,4), r2=S.slice(4);   // 받은 도장만 찍혀요
+    r1.forEach((s,i)=>seal(450+(i-(r1.length-1)/2)*160,r2.length?790:850,s[1],s[2])); r2.forEach((s,i)=>seal(450+(i-(r2.length-1)/2)*160,908,s[1],s[2])); }
+
   const d=new Date(); g.fillStyle='#17323a'; g.font=`30px ${FONT}`; g.fillText(`${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`,450,1005);
   g.font=`bold 46px ${FONT}`; g.fillText(CONFIG.ORG+'장',450,1080);
   g.font=`20px ${FONT}`; g.fillStyle='#8a8f94'; g.fillText('홍보 게임 「나는야 보건환경연구원」 기념 임명장',450,1128);
@@ -1431,7 +1432,7 @@ const FP_SAY={
   [[-125,-45.6,1.2],[-117,-44.8,1],[-109.5,-45.4,1.3],[-102.5,-44.6,1.1]].forEach(([x,z,s])=>pine(x,z,s,0x3f8a4f));
   // 남쪽 통나무 울타리와 입구 팻말
   for(let x=-128;x<=-101;x+=3) cyl(0.12,0.14,1.1,0x8a6f52,x,0.55,-47.6,scene,6); for(const y of [0.45,0.9]) box(27.4,0.1,0.1,0x9a7d5c,-114.5,y,-47.6);
-  for(const z of [-73.4,-66.6]) cyl(0.2,0.24,3.8,0x8a6f52,-100.6,1.9,z,scene,7); box(0.3,0.3,7.6,0x7a5b3a,-100.6,3.85,-70); panel2('🌲 어린이 숲 놀이터',6.6,1,-100.5,3.05,-70,{bg:'#2f6f4f',fg:'#fff'});
+  for(const z of [-73.4,-66.6]) cyl(0.2,0.24,3.8,0x8a6f52,-100.6,1.9,z,scene,7); box(0.3,0.3,7.6,0x7a5b3a,-100.6,3.85,-70); box(0.12,1,6.6,0xf4f5f3,-100.6,3.05,-70); for(const s of [-1,1]) sign('🌲 어린이 숲 놀이터',6.48,0.88,-100.6+s*0.075,3.05,-70,s*Math.PI/2,{bg:'#2f6f4f',fg:'#fff'});   // 문과 나란히, 마을 쪽과 놀이터 쪽 양면
   flat(5,4.4,0xd8c7a0,-102.6,0.05,-70); for(const [x,z,r] of [[-108,-80,5.9],[-126,-71.6,2.6],[-108.9,-56.6,1.7]]){ const m=new THREE.Mesh(new THREE.CircleGeometry(r,22),L(0xdccba2)); m.rotation.x=-Math.PI/2; m.position.set(x,0.055,z); scene.add(m); }
   // 숲속에서 내려오는 긴 미끄럼틀: 통나무 계단으로 올라가 나무 사이로 내려와요
   { const x0=-136, x1=-128, y0=hillH(x0,HZ)+0.4, y1=0.45, len=Math.hypot(x1-x0,y0-y1), ang=-Math.atan2(y0-y1,x1-x0), cx=(x0+x1)/2, cy=(y0+y1)/2;
