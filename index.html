@@ -1354,6 +1354,8 @@ function getAction(){
   { let best=null, bd=4.6; for(const e of CARS){ const d=dist(p,[e[0].position.x,e[0].position.z]); if(d<bd){ bd=d; best=e; } }   // 차들이 나란히 서 있으니 가장 가까운 차를 골라요
     if(best) return {label:best[3]+' 차에 타기',fn:()=>board(best[0])}; }
   if(G.ride) return null;
+  if(G.swing) return {label:'그네에서 내리기',fn:swingOff};
+  if(!G.driving&&dist(p,[-105.3,-80])<3.4) return {label:'그네 타기',fn:()=>{ G.swing={t:0}; G.sit=null; toast('꽉 잡아요! 슝~',1800); }};
   if(!G.driving&&dist(p,[-126,-71])<4.2) return {label:'숲 미끄럼틀 타기',fn:()=>{ G.ride={i:1,y:0,wait:0}; toast('통나무 계단으로 올라가요!',1800); }};   // 연구원도 숲 미끄럼틀을 탈 수 있어요
   if(G.sit) return {label:'일어나기',fn:()=>{ G.sit=null; }};
   for(const b of BENCHES) if(dist(p,[b.x,b.z])<2.6) return {label:'의자에 앉아 쉬기',fn:()=>{ G.sit=b; G.sitT=0; toast('벚꽃나무 아래에서 잠깐 쉬어요 🌸',2400); }};
@@ -1430,7 +1432,7 @@ const FP_SAY={
   // 남쪽 통나무 울타리와 입구 팻말
   for(let x=-128;x<=-101;x+=3) cyl(0.12,0.14,1.1,0x8a6f52,x,0.55,-47.6,scene,6); for(const y of [0.45,0.9]) box(27.4,0.1,0.1,0x9a7d5c,-114.5,y,-47.6);
   for(const z of [-73.4,-66.6]) cyl(0.2,0.24,3.8,0x8a6f52,-100.6,1.9,z,scene,7); box(0.3,0.3,7.6,0x7a5b3a,-100.6,3.85,-70); panel2('🌲 어린이 숲 놀이터',6.6,1,-100.5,3.05,-70,{bg:'#2f6f4f',fg:'#fff'});
-  flat(5,4.4,0xd8c7a0,-102.6,0.05,-70); for(const [x,z,r] of [[-108,-80,4.6],[-126,-71.6,2.6],[-108.9,-56.6,1.7]]){ const m=new THREE.Mesh(new THREE.CircleGeometry(r,22),L(0xdccba2)); m.rotation.x=-Math.PI/2; m.position.set(x,0.055,z); scene.add(m); }
+  flat(5,4.4,0xd8c7a0,-102.6,0.05,-70); for(const [x,z,r] of [[-108,-80,5.9],[-126,-71.6,2.6],[-108.9,-56.6,1.7]]){ const m=new THREE.Mesh(new THREE.CircleGeometry(r,22),L(0xdccba2)); m.rotation.x=-Math.PI/2; m.position.set(x,0.055,z); scene.add(m); }
   // 숲속에서 내려오는 긴 미끄럼틀: 통나무 계단으로 올라가 나무 사이로 내려와요
   { const x0=-136, x1=-128, y0=hillH(x0,HZ)+0.4, y1=0.45, len=Math.hypot(x1-x0,y0-y1), ang=-Math.atan2(y0-y1,x1-x0), cx=(x0+x1)/2, cy=(y0+y1)/2;
     box(len,0.12,1.1,0xffc53d,cx,cy,HZ).rotation.z=ang; for(const s of [-1,1]) box(len,0.42,0.12,0xe5484d,cx,cy+0.2,HZ+s*0.6).rotation.z=ang;
@@ -1448,11 +1450,12 @@ const FP_SAY={
     WALLS.push([sx-4.6,sx+1.1,sz-0.8,sz+0.8]);
     const k=kid(0xffd84d,0x3b82c4,0.58,false,'slide'); k.wp=[[sx+1.7,0,sz,'walk'],[sx+0.5,2.06,sz,'climb'],[sx-0.6,2.06,sz,'walk'],[sx-4.5,0.42,sz,'slide'],[sx-5.6,0,sz,'walk'],[sx-5.4,0,sz-2.2,'walk'],[sx+1.6,0,sz-2.2,'walk']]; k.i=1; k.y=0; k.wait=0; k.p.g.position.set(sx+1.7,0,sz); FP.sliders.push(k); }
   // 그네 두 개
-  { const sx=-108, sz=-80; for(const ex of [-3.1,3.1]) for(const s of [-1,1]){ const m=cyl(0.1,0.1,3.7,0xe5484d,sx+ex,1.72,sz+s*0.95,scene,6); m.rotation.x=-s*0.52; } const bar=cyl(0.09,0.09,6.4,0xe5484d,sx,3.3,sz,scene,6); bar.rotation.z=Math.PI/2;
-    WALLS.push([sx-3.5,sx+3.5,sz-1.6,sz+1.6]);
-    [[-1.45,0xff8a3d,0x2c3e63,0.64,true],[1.45,0x8b5cf6,0x4a4f55,0.68,false]].forEach(([ox,coat,pants,s,girl],i)=>{ const pv=new THREE.Group(); pv.position.set(sx+ox,3.3,sz); scene.add(pv);
+  { const sx=-108, sz=-80; for(const ex of [-4.4,4.4]) for(const s of [-1,1]){ const m=cyl(0.1,0.1,3.7,0xe5484d,sx+ex,1.72,sz+s*0.95,scene,6); m.rotation.x=-s*0.52; } const bar=cyl(0.09,0.09,9,0xe5484d,sx,3.3,sz,scene,6); bar.rotation.z=Math.PI/2;
+    WALLS.push([sx-4.8,sx+4.8,sz-1.6,sz+1.6]);
+    [[-2.7,0xff8a3d,0x2c3e63,0.64,true],[0,0x8b5cf6,0x4a4f55,0.68,false]].forEach(([ox,coat,pants,s,girl],i)=>{ const pv=new THREE.Group(); pv.position.set(sx+ox,3.3,sz); scene.add(pv);
       for(const r of [-0.34,0.34]) cyl(0.025,0.025,2.5,0x6b7780,r,-1.25,0,pv,5); box(0.86,0.08,0.36,0x3a2c26,0,-2.5,0,pv);
-      const k=kid(coat,pants,s,girl,'swing'); pv.add(k.p.g); k.p.g.position.set(0,-2.46-0.6*s,0); k.pv=pv; k.ph=i*1.9; k.x=sx+ox; k.z=sz; FP.swings.push(k); }); }
+      const k=kid(coat,pants,s,girl,'swing'); pv.add(k.p.g); k.p.g.position.set(0,-2.46-0.6*s,0); k.pv=pv; k.ph=i*1.9; k.x=sx+ox; k.z=sz; FP.swings.push(k); });
+    { const pv=new THREE.Group(); pv.position.set(sx+2.7,3.3,sz); scene.add(pv); for(const r of [-0.4,0.4]) cyl(0.025,0.025,2.5,0x6b7780,r,-1.25,0,pv,5); box(1,0.08,0.4,0x3a2c26,0,-2.5,0,pv); FP.myPv=pv; } }   // 비어 있는 세 번째 그네는 연구원 자리예요
   // 모래밭: 모래성과 양동이, 흙장난하는 아이들
   { const bx=-120, bz=-57; flat(6,5,0xe8d5a0,bx,0.07,bz); for(const s of [-1,1]){ box(6.4,0.28,0.26,0x8a6f52,bx,0.14,bz+s*2.6); box(0.26,0.28,5.2,0x8a6f52,bx+s*3.1,0.14,bz); }
     cyl(0.42,0.5,0.5,0xdcc48c,bx,0.32,bz,scene,9); { const m=new THREE.Mesh(new THREE.ConeGeometry(0.36,0.5,8),L(0xdcc48c)); m.position.set(bx,0.82,bz); scene.add(m); } box(0.03,0.4,0.03,0x7a5b3a,bx,1.2,bz); box(0.22,0.14,0.02,0xe5484d,bx+0.11,1.32,bz);
@@ -1471,6 +1474,11 @@ function rideTick(dt){ const R=G.ride, g=player.g, W=FP.wp, b=W[R.i], sl=b[3]===
   if(Math.hypot(dx,dz)>0.05) g.rotation.y=lerpAng(g.rotation.y,Math.atan2(dx,dz),dt*10);
   animPerson(player,!sl,dt); g.position.y=R.y-(sl?0.45:0);
   if(sl){ player.legL.rotation.x=player.legR.rotation.x=-1.35; player.armL.rotation.x=player.armR.rotation.x=-2.9; } }
+// 연구원이 빈 그네를 타요. 점점 크게 흔들리고, 버튼을 누르거나 조이스틱을 움직이면 내려요.
+function swingTick(dt){ const S=G.swing, g=player.g; S.t+=dt; G.vy=0; const a=Math.sin(S.t*2.1)*0.62*Math.min(1,S.t/3.5), pv=FP.myPv; pv.rotation.x=a;
+  g.position.set(pv.position.x,3.3-3.02*Math.cos(a),pv.position.z-3.02*Math.sin(a)); g.rotation.set(a,0,0);
+  player.legL.rotation.x=player.legR.rotation.x=-1.3+a*0.7; player.armL.rotation.x=-1.1; if(!(player.wave>0)) player.armR.rotation.x=-1.1; }
+function swingOff(){ G.swing=null; const g=player.g; g.rotation.set(0,0,0); g.position.set(FP.myPv.position.x,0,FP.myPv.position.z+2.3); }
 function forestTick(dt,time){ if(Math.abs(camera.position.x-FP.x)>80||Math.abs(camera.position.z-FP.z)>80) return;   // 멀리 있을 때는 쉬어요
   for(const k of FP.sliders){ const g=k.p.g, W=k.wp, b=W[k.i]; if(k.wait>0){ k.wait-=dt; animPerson(k.p,false,dt); k.p.armL.rotation.x=-2.9; if(!(k.p.wave>0)) k.p.armR.rotation.x=-2.9; continue; }
     const dx=b[0]-g.position.x, dy=b[1]-k.y, dz=b[2]-g.position.z, d=Math.hypot(dx,dy,dz), sl=b[3]==='slide', sp=(sl?6:b[3]==='climb'?1.5:2.3)*dt;
@@ -1513,7 +1521,7 @@ function frame(now){
   if(keys.KeyW||keys.ArrowUp) f=1; if(keys.KeyS||keys.ArrowDown) f=-1; if(keys.KeyD||keys.ArrowRight) r=1; if(keys.KeyA||keys.ArrowLeft) r=-1;
   const mx=-Math.sin(G.yaw)*f+Math.cos(G.yaw)*r, mz=-Math.cos(G.yaw)*f-Math.sin(G.yaw)*r, mag=Math.min(1,Math.hypot(mx,mz));
   const ent=G.driving?drv:player.g, rad=G.driving?1.7:0.5; let moving=false;
-  if(mag>0.1&&!G.lock&&!G.ride){ moving=true; G.sit=null; const sp=(G.driving?14:6.2)*mag, h=Math.hypot(mx,mz), dx=mx/h*sp*dt, dz=mz/h*sp*dt;
+  if(mag>0.1&&!G.lock&&!G.ride){ moving=true; G.sit=null; if(G.swing) swingOff(); const sp=(G.driving?14:6.2)*mag, h=Math.hypot(mx,mz), dx=mx/h*sp*dt, dz=mz/h*sp*dt;
     const stop=(x,z)=>G.driving?blocked(x,z,rad):pBlocked(x,z,ent.position.x,ent.position.z);
     if(!stop(ent.position.x+dx,ent.position.z)) ent.position.x+=dx;
     if(!stop(ent.position.x,ent.position.z+dz)) ent.position.z+=dz;
@@ -1554,6 +1562,7 @@ function frame(now){
   // 의자에 앉기: 다리를 굽히고 의자 위에 앉아요. 움직이거나 뛰면 일어나요.
   if(G.sit&&!G.driving){ if(G.vy>0) G.sit=null; else { const b=G.sit; G.vy=0; player.g.position.set(b.x+Math.sin(b.ry)*0.1,0.2,b.z+Math.cos(b.ry)*0.1); player.g.rotation.y=b.ry; player.legL.rotation.x=player.legR.rotation.x=-1.5; player.armL.rotation.x=player.armR.rotation.x=-0.35; } }
   if(G.ride) rideTick(dt);
+  if(G.swing) swingTick(dt); else FP.myPv.rotation.x*=0.94;
   for(const m of PETALS){ m.position.y-=dt*0.7; m.position.x+=Math.sin(time*1.5+m.userData.ph)*dt*0.5; m.rotation.x+=dt*2; m.rotation.z+=dt*1.4; if(m.position.y<0.1){ m.position.y=7+Math.random()*2; m.position.x=-83+(Math.random()-0.5)*9; m.position.z=-28+(Math.random()-0.5)*9; } }
   for(const f of FISH){
     if(f.t0<0){ if(time>f.next){ f.t0=time; const east=Math.abs(ent.position.x-130)<50&&Math.random()<0.55;   // 동쪽 강 가까이 있으면 그쪽 강에서도 뛰어요
